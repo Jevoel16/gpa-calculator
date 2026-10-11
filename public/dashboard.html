@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard • GPA Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <script src="/darkmode.js"></script>
+</head>
+<body>
+  <header class="app-header">
+    <div class="app-header-inner">
+      <div class="brand">
+        <span class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg>
+        </span>
+        GPA Calculator
+      </div>
+      <div class="header-actions">
+        <div class="user-chip">
+          <span class="avatar" id="avatar">?</span>
+          <div class="user-meta">
+            <strong id="welcome">Loading…</strong>
+            <span id="userEmail"></span>
+          </div>
+        </div>
+        <button id="themeToggleBtn" class="btn btn-ghost btn-icon" type="button" aria-label="Toggle theme"></button>
+        <button id="logoutBtn" class="btn btn-ghost btn-icon" type="button" aria-label="Log out" title="Log out">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <div class="page-head">
+      <div>
+        <h1 id="pageTitle">New Term</h1>
+        <p id="pageSubtitle">Add your courses and see your GPA update instantly.</p>
+      </div>
+      <nav class="tabs" role="tablist">
+        <button class="tab" id="newTermBtn" data-view="term" role="tab" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span>New Term</span>
+        </button>
+        <button class="tab" id="cumulativeBtn" data-view="cumulative" role="tab" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg><span>Cumulative</span>
+        </button>
+        <button class="tab" id="historyBtn" data-view="history" role="tab" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>History</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- New term -->
+    <section id="newTermSection" class="layout-split">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h2>Courses</h2>
+            <p>Enter each course with its units and final grade.</p>
+          </div>
+          <div style="min-width: 220px; flex: 1; max-width: 300px;">
+            <label for="termName" class="hidden">Term name</label>
+            <input id="termName" type="text" placeholder="Term name, e.g. 1st Sem 2025–2026" />
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="editingBanner" class="editing-banner hidden"></div>
+          <div class="table-wrap">
+            <table class="table course-table" id="coursesTable">
+              <thead>
+                <tr>
+                  <th style="width: 28px">#</th>
+                  <th>Course</th>
+                  <th style="width: 120px">Units</th>
+                  <th style="width: 150px">Grade</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="coursesBody"></tbody>
+            </table>
+          </div>
+          <button id="addRowBtn" type="button" class="btn btn-soft btn-sm" style="margin-top: 14px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Add course
+          </button>
+        </div>
+        <div class="card-foot">
+          <span class="muted" id="calcMsg" style="font-size: 13px;"></span>
+          <div style="display: flex; gap: 8px;">
+            <button id="clearBtn" type="button" class="btn btn-ghost">Clear</button>
+            <button id="saveBtn" type="button" class="btn">Save record</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="stack">
+        <div class="gpa-hero">
+          <div class="stat-label">Term GPA</div>
+          <div class="gpa-number" id="termGpaDisplay">—</div>
+          <div class="gpa-sub" id="termGpaSub">Add courses to compute</div>
+          <div class="stat-grid">
+            <div class="stat"><div class="stat-label">Units</div><div class="stat-value" id="termUnitsDisplay">0</div></div>
+            <div class="stat"><div class="stat-label">Courses</div><div class="stat-value" id="termCoursesDisplay">0</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Grading scale</h3></div>
+          <div class="card-body">
+            <div class="scale-list">
+              <div><span>1.00</span><span>Excellent</span></div>
+              <div><span>1.25–1.50</span><span>Very good</span></div>
+              <div><span>1.75–2.00</span><span>Good</span></div>
+              <div><span>2.25–2.50</span><span>Satisfactory</span></div>
+              <div><span>2.75–3.00</span><span>Passing</span></div>
+              <div><span>5.00</span><span>Failed</span></div>
+              <div><span>INC</span><span>Not counted</span></div>
+              <div><span>DROP</span><span>Not counted</span></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- Cumulative -->
+    <section id="cumulativeSection" class="hidden stack">
+      <div class="stat-grid">
+        <div class="stat card"><div class="stat-label">Total units</div><div class="stat-value" id="totalUnitsDisplay">0</div></div>
+        <div class="stat card"><div class="stat-label">Grade points</div><div class="stat-value" id="gradePointsDisplay">0.00</div></div>
+        <div class="stat card" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; border-color: transparent;">
+          <div class="stat-label" style="color: rgba(255,255,255,.8)">Cumulative GPA</div>
+          <div class="stat-value" id="cumulativeGpaDisplay">0.00</div>
+        </div>
+      </div>
+
+      <div class="layout-split">
+        <div class="stack">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2>Saved terms</h2>
+                <p>Choose which terms to include in your cumulative GPA.</p>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="termsCheckList" class="term-picks"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h2>Additional subjects</h2>
+                <p>Include subjects that aren't part of a saved term.</p>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="inline-form">
+                <input type="text" id="additionalSubjectName" placeholder="Subject name" aria-label="Subject name" />
+                <input type="number" min="0" step="0.5" id="additionalSubjectUnits" placeholder="Units" aria-label="Units" />
+                <select id="additionalSubjectGrade" aria-label="Grade"></select>
+                <button id="addSubjectBtn" type="button" class="btn">Add</button>
+              </div>
+              <div class="table-wrap" style="margin-top: 16px;">
+                <table class="table" id="additionalSubjectsTable">
+                  <thead><tr><th>Subject</th><th class="num">Units</th><th class="num">Grade</th><th style="width: 48px"></th></tr></thead>
+                  <tbody id="additionalSubjectsBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="stack">
+          <div class="card">
+            <div class="card-head"><h3>Breakdown</h3></div>
+            <div class="card-body" id="cumulativeTermsTable"><p class="muted" style="font-size: 14px;">Select terms or add subjects to see the breakdown.</p></div>
+          </div>
+          <div class="card hidden" id="cgpaSaveSection">
+            <div class="card-head"><h3>Save this CGPA</h3></div>
+            <div class="card-body stack" style="gap: 10px;">
+              <input type="text" id="cgpaRecordName" placeholder="e.g. First Year CGPA" aria-label="Record name" />
+              <button id="saveCgpaBtn" type="button" class="btn btn-block">Save CGPA record</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- History -->
+    <section id="historySection" class="hidden">
+      <div id="historyList"></div>
+    </section>
+  </main>
+
+  <div class="toast-stack" id="toasts" aria-live="polite"></div>
+
+  <script src="/dashboard.js"></script>
+</body>
+</html>
