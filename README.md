@@ -195,6 +195,8 @@ Every `/api/gpa/*` endpoint requires an authenticated session.
 | `DELETE` | `/api/gpa/cgpa/:id` | Delete a CGPA record |
 | `GET` | `/api/health` | Health check, including database connectivity |
 
+Pages are served at clean URLs: `/login` and `/dashboard`. Old `.html` links (for example `/login.html`) get a `301` redirect to the clean URL, with the query string kept. Express does this locally and `cleanUrls` in `vercel.json` does it on Vercel.
+
 Unknown `/api/*` routes return `404` with `{ "error": "Not found" }`. Any other unknown URL shows the branded 404 page (`public/404.html`) in a browser, or a plain `Not found` for non-browser clients.
 
 ## Project Structure
@@ -257,4 +259,5 @@ Existing accounts are linked the same way, through the GitHub account's primary 
 - A strict Content-Security-Policy (no inline scripts) plus `nosniff`, `X-Frame-Options`, HSTS and Referrer-Policy headers are sent by both Express and `vercel.json`.
 - State-changing API requests from another origin are rejected, request bodies are capped at 100 KB, and course names, units and grades are validated on the server.
 - CGPA records are recomputed on the server from the user's own terms, so a client cannot save an arbitrary value.
+- Only `public/` is served as static files. `.env`, source files, `.git` and `node_modules` all return `404`, including path-traversal attempts such as `/%2e%2e/.env`. `.vercelignore` also keeps `.env` out of Vercel uploads.
 - Never commit `.env` or downloaded `client_secret_*.json` files.

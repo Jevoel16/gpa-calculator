@@ -96,15 +96,15 @@ function logIn(req, res, userId) {
   req.session.regenerate(err => {
     if (err) {
       console.error(err);
-      return res.redirect('/login.html?error=oauth');
+      return res.redirect('/login?error=oauth');
     }
     req.session.userId = userId;
     req.session.save(saveErr => {
       if (saveErr) {
         console.error(saveErr);
-        return res.redirect('/login.html?error=oauth');
+        return res.redirect('/login?error=oauth');
       }
-      res.redirect('/dashboard.html');
+      res.redirect('/dashboard');
     });
   });
 }
@@ -125,7 +125,7 @@ router.get('/google', (req, res) => {
   req.session.save(err => {
     if (err) {
       console.error(err);
-      return res.redirect('/login.html?error=oauth');
+      return res.redirect('/login?error=oauth');
     }
     res.redirect(url);
   });
@@ -139,7 +139,7 @@ router.get('/google/callback', async (req, res) => {
     delete req.session.oauthState;
 
     if (!code || !state || !expectedState || state !== expectedState) {
-      return res.redirect('/login.html?error=oauth');
+      return res.redirect('/login?error=oauth');
     }
 
     const { tokens } = await client.getToken(code);
@@ -150,14 +150,14 @@ router.get('/google/callback', async (req, res) => {
     const payload = ticket.getPayload();
 
     if (!isAllowedAccount(payload)) {
-      return res.redirect('/login.html?error=domain');
+      return res.redirect('/login?error=domain');
     }
 
     const userId = await findOrCreateUser(payload);
     logIn(req, res, userId);
   } catch (err) {
     console.error(err);
-    res.redirect('/login.html?error=oauth');
+    res.redirect('/login?error=oauth');
   }
 });
 
@@ -176,7 +176,7 @@ router.get('/github', (req, res) => {
   req.session.save(err => {
     if (err) {
       console.error(err);
-      return res.redirect('/login.html?error=oauth');
+      return res.redirect('/login?error=oauth');
     }
     res.redirect(`https://github.com/login/oauth/authorize?${params}`);
   });
@@ -190,7 +190,7 @@ router.get('/github/callback', async (req, res) => {
     delete req.session.oauthState;
 
     if (!code || !state || !expectedState || state !== expectedState) {
-      return res.redirect('/login.html?error=oauth');
+      return res.redirect('/login?error=oauth');
     }
 
     // GitHub returns no ID token, so trade the code for an access token and read the profile from the API
@@ -226,14 +226,14 @@ router.get('/github/callback', async (req, res) => {
 
     // Only a primary, verified email is trusted (it may be private on the profile)
     const primary = emails.find(e => e.primary && e.verified);
-    if (!primary) return res.redirect('/login.html?error=email');
-    if (!isAllowedEmail(primary.email)) return res.redirect('/login.html?error=domain');
+    if (!primary) return res.redirect('/login?error=email');
+    if (!isAllowedEmail(primary.email)) return res.redirect('/login?error=domain');
 
     const userId = await findOrCreateGithubUser(ghUser, primary.email);
     logIn(req, res, userId);
   } catch (err) {
     console.error(err);
-    res.redirect('/login.html?error=oauth');
+    res.redirect('/login?error=oauth');
   }
 });
 

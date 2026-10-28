@@ -28,7 +28,7 @@ function renderPolicy(allowedDomains, allowExternal) {
 
 // Already signed in: skip the login page
 fetch('/api/auth/me')
-  .then(res => { if (res.ok && !new URLSearchParams(window.location.search).has('error')) window.location.replace('/dashboard.html'); })
+  .then(res => { if (res.ok && !new URLSearchParams(window.location.search).has('error')) window.location.replace('/dashboard'); })
   .catch(() => {});
 
 fetch('/api/auth/config')

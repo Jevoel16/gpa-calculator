@@ -77,8 +77,15 @@ app.use('/api', (req, res, next) => {
   next();
 });
 
+// Pages live at /login and /dashboard; old .html links redirect there (Vercel does the same via cleanUrls).
+// The strict pattern keeps paths like //evil.com.html from turning into an open redirect.
+app.use((req, res, next) => {
+  if (!['GET', 'HEAD'].includes(req.method) || !/^\/[\w-]+\.html$/.test(req.path)) return next();
+  res.redirect(301, req.path.slice(0, -'.html'.length) + req.originalUrl.slice(req.path.length));
+});
+
 // On Vercel the CDN serves public/ directly and this is skipped; it serves the files when running locally
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 
 app.get('/api/health', async (req, res) => {
   try {
@@ -96,7 +103,7 @@ app.use('/api/gpa', require('./routes/gpa'));
 app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 
 app.get('/', (req, res) => {
-  res.redirect(req.session && req.session.userId ? '/dashboard.html' : '/login.html');
+  res.redirect(req.session && req.session.userId ? '/dashboard' : '/login');
 });
 
 // Anything left over is an unknown page; browsers get the 404 page, other clients a plain message

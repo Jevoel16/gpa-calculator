@@ -51,7 +51,7 @@ function standing(gpa){
 async function api(path, opts={}){
   const res = await fetch(path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts));
   if (res.status === 401) {
-    window.location.href = '/login.html';
+    window.location.href = '/login';
     throw new Error('Signed out');
   }
   // A proxy or platform error page may not be JSON
@@ -469,7 +469,7 @@ function initializeEventListeners(){
     try {
       await api('/api/auth/logout', { method: 'POST', body: JSON.stringify({}) });
     } catch {}
-    window.location.href = '/login.html';
+    window.location.href = '/login';
   });
 }
 
