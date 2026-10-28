@@ -195,6 +195,8 @@ Every `/api/gpa/*` endpoint requires an authenticated session.
 | `DELETE` | `/api/gpa/cgpa/:id` | Delete a CGPA record |
 | `GET` | `/api/health` | Health check, including database connectivity |
 
+Unknown `/api/*` routes return `404` with `{ "error": "Not found" }`. Any other unknown URL shows the branded 404 page (`public/404.html`) in a browser, or a plain `Not found` for non-browser clients.
+
 ## Project Structure
 
 ```
@@ -207,6 +209,7 @@ gpa-calculator/
 │   └── auth.js            # Session guard for protected routes
 ├── public/
 │   ├── login.html         # Sign-in page
+│   ├── 404.html           # Not-found page
 │   ├── dashboard.html     # Main app
 │   ├── dashboard.js       # Dashboard logic
 │   ├── darkmode.js        # Theme handling

@@ -99,6 +99,13 @@ app.get('/', (req, res) => {
   res.redirect(req.session && req.session.userId ? '/dashboard.html' : '/login.html');
 });
 
+// Anything left over is an unknown page; browsers get the 404 page, other clients a plain message
+app.use((req, res) => {
+  res.status(404);
+  if (req.accepts('html')) return res.sendFile(path.join(__dirname, 'public', '404.html'));
+  res.type('txt').send('Not found');
+});
+
 app.use((err, req, res, next) => {
   if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Invalid JSON' });
   if (err.type === 'entity.too.large') return res.status(413).json({ error: 'Request too large' });

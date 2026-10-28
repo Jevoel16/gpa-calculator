@@ -171,6 +171,19 @@ input:focus, select:focus { outline: none; border-color: var(--primary); box-sha
 .auth-hero .brand-mark { background: rgba(255, 255, 255, .18); box-shadow: none; }
 .brand-mark svg { width: 22px; height: 22px; }
 
+/* ---------- Not found ---------- */
+.notfound-page { display: flex; flex-direction: column; min-height: 100vh; padding: 24px 32px; }
+.notfound-top { display: flex; align-items: center; justify-content: space-between; }
+.notfound-top .brand { color: var(--text); text-decoration: none; }
+.notfound-card { margin: auto; width: 100%; max-width: 440px; text-align: center; padding: 48px 0; }
+.notfound-code {
+  font-size: 96px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; margin-bottom: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.notfound-card .lead { color: var(--text-muted); margin: 10px 0 28px; }
+.notfound-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
 /* ---------- App shell ---------- */
 .app-header {
   position: sticky; top: 0; z-index: 20;
@@ -333,6 +346,8 @@ input:focus, select:focus { outline: none; border-color: var(--primary); box-sha
   .inline-form > .btn { grid-column: 1 / -1; }
   .hero-stats { grid-template-columns: 1fr 1fr 1fr; }
   .auth-panel { padding: 20px 16px; }
+  .notfound-page { padding: 20px 16px; }
+  .notfound-code { font-size: 72px; }
   .course-table thead { display: none; }
   .course-table, .course-table tbody, .course-table tr, .course-table td { display: block; width: 100%; }
   .course-table tr { display: grid; grid-template-columns: 1fr 1fr 42px; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--border); }
