@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="GPA Calculator">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4f46e5"/>
+      <stop offset=".7" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#9d3bd8"/>
+    </linearGradient>
+    <clipPath id="tile"><rect width="64" height="64" rx="16"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="64" height="64" fill="url(#bg)"/>
+    <circle cx="60" cy="2" r="22" fill="#fff" opacity=".1"/>
+  </g>
+  <!-- rising grade bars -->
+  <rect x="14" y="38" width="9" height="12" rx="3" fill="#fff" opacity=".55"/>
+  <rect x="27.5" y="30" width="9" height="20" rx="3" fill="#fff" opacity=".8"/>
+  <rect x="41" y="25" width="9" height="25" rx="3" fill="#fff"/>
+  <!-- mortarboard capping the top bar -->
+  <path d="M45.5 10.5 56 15.5 45.5 20.5 35 15.5z" fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M56 15.5v6" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="56" cy="22.5" r="1.6" fill="#fff"/>
+</svg>

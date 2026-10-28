@@ -4,9 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dashboard • GPA Calculator</title>
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#4f46e5" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="/logo.svg" />
   <link rel="stylesheet" href="/style.css" />
   <script src="/darkmode.js"></script>
 </head>
@@ -15,7 +18,7 @@
     <div class="app-header-inner">
       <div class="brand">
         <span class="brand-mark">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg>
+          <svg viewBox="11 8 48 48" fill="currentColor" aria-hidden="true"><rect x="14" y="38" width="9" height="12" rx="3" opacity=".55"/><rect x="27.5" y="30" width="9" height="20" rx="3" opacity=".8"/><rect x="41" y="25" width="9" height="25" rx="3"/><path d="M45.5 10.5 56 15.5 45.5 20.5 35 15.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M56 15.5v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="56" cy="22.5" r="1.6"/></svg>
         </span>
         GPA Calculator
       </div>
@@ -64,7 +67,7 @@
           </div>
           <div style="min-width: 220px; flex: 1; max-width: 300px;">
             <label for="termName" class="hidden">Term name</label>
-            <input id="termName" type="text" placeholder="Term name, e.g. 1st Sem 2025–2026" />
+            <input id="termName" type="text" maxlength="100" placeholder="Term name, e.g. 1st Sem 2025–2026" />
           </div>
         </div>
         <div class="card-body">
@@ -159,7 +162,7 @@
             </div>
             <div class="card-body">
               <div class="inline-form">
-                <input type="text" id="additionalSubjectName" placeholder="Subject name" aria-label="Subject name" />
+                <input type="text" id="additionalSubjectName" maxlength="100" placeholder="Subject name" aria-label="Subject name" />
                 <input type="number" min="0" step="0.5" id="additionalSubjectUnits" placeholder="Units" aria-label="Units" />
                 <select id="additionalSubjectGrade" aria-label="Grade"></select>
                 <button id="addSubjectBtn" type="button" class="btn">Add</button>
@@ -182,9 +185,13 @@
           <div class="card hidden" id="cgpaSaveSection">
             <div class="card-head"><h3>Save this CGPA</h3></div>
             <div class="card-body stack" style="gap: 10px;">
-              <input type="text" id="cgpaRecordName" placeholder="e.g. First Year CGPA" aria-label="Record name" />
+              <input type="text" id="cgpaRecordName" maxlength="100" placeholder="e.g. First Year CGPA" aria-label="Record name" />
               <button id="saveCgpaBtn" type="button" class="btn btn-block">Save CGPA record</button>
             </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Saved CGPA records</h3></div>
+            <div class="card-body" id="cgpaRecordsList"><p class="muted" style="font-size: 14px;">No saved CGPA records yet.</p></div>
           </div>
         </aside>
       </div>

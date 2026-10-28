@@ -5,3 +5,16 @@ npm-debug.log*
 
 # Google OAuth client secret downloads
 client_secret*.json
+dibs/
+
+# Local-only: drafted commit message and personal Claude Code settings
+commit-msg.txt
+.claude/settings.local.json
+
+# Vercel CLI project link and pulled env files
+.vercel
+.env*.local
+
+#logos
+logo-github-rounded.png
+logo-github-square.png

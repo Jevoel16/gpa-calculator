@@ -1,12 +1,17 @@
 {
   "name": "gpa-calculator",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "GPA Calculator with login/register using Node.js, Express, MySQL, HTML/CSS",
+  "description": "GPA Calculator with Google/GitHub sign-in using Node.js, Express, MySQL, HTML/CSS",
+  "type": "commonjs",
   "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon --env-file .env server.js"
+    "dev": "nodemon --env-file .env server.js",
+    "db:setup": "node scripts/setup-db.js"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

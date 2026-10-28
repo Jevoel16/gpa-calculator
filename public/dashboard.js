@@ -50,9 +50,13 @@ function standing(gpa){
 
 async function api(path, opts={}){
   const res = await fetch(path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts));
-  if (res.status === 401) { window.location.href = '/login.html'; return; }
-  const json = await res.json();
-  if (!res.ok) throw new Error(json.error || 'Request failed');
+  if (res.status === 401) {
+    window.location.href = '/login.html';
+    throw new Error('Signed out');
+  }
+  // A proxy or platform error page may not be JSON
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error || `Request failed (${res.status})`);
   return json;
 }
 
@@ -356,12 +360,17 @@ function updateCumulativeGpa(){
   calculateCumulativeGpaServer(selectedTermIds, additionalSubjects);
 }
 
+// Ignores responses from earlier calculations that finish after a newer one
+let cumulativeRequestId = 0;
+
 async function calculateCumulativeGpaServer(termIds, additionalSubjects = []){
+  const requestId = ++cumulativeRequestId;
   try {
     const response = await api('/api/gpa/calculate-cumulative', {
       method: 'POST',
       body: JSON.stringify({ termIds, additionalSubjects })
     });
+    if (requestId !== cumulativeRequestId) return;
 
     $('totalUnitsDisplay').textContent = response.totalUnits;
     $('gradePointsDisplay').textContent = response.totalGradePoints;
@@ -382,17 +391,48 @@ async function calculateCumulativeGpaServer(termIds, additionalSubjects = []){
 
     if (response.cumulativeGpa > 0) {
       $('cgpaSaveSection').classList.remove('hidden');
-      window.currentCGPA = {
-        cumulativeGpa: response.cumulativeGpa,
-        totalUnits: response.totalUnits,
-        totalGradePoints: response.totalGradePoints,
-        termsIncluded: response.termsIncluded,
-        additionalSubjectsIncluded: response.additionalSubjectsIncluded
-      };
+      // The server recomputes the CGPA from these inputs when it is saved
+      window.currentCGPA = { termIds, additionalSubjects: [...additionalSubjects] };
+    } else {
+      $('cgpaSaveSection').classList.add('hidden');
+      window.currentCGPA = null;
     }
   } catch (err) {
-    resetCumulativeDisplay('Error');
+    if (requestId === cumulativeRequestId) resetCumulativeDisplay('Error');
   }
+}
+
+async function loadCgpaRecords(){
+  const records = await api('/api/gpa/cgpa');
+  const container = $('cgpaRecordsList');
+  if (!records.length) {
+    container.innerHTML = '<p class="muted" style="font-size: 14px;">No saved CGPA records yet.</p>';
+    return;
+  }
+  const rows = records.map(r => `
+    <tr data-id="${r.id}">
+      <td><strong>${escapeHtml(r.recordName)}</strong><br/><span class="muted" style="font-size: 12px;">${escapeHtml(new Date(r.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }))} · ${r.totalUnits} units</span></td>
+      <td class="num">${r.cumulativeGpa.toFixed(5)}</td>
+      <td><button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Delete CGPA record" title="Delete">${icons.trash}</button></td>
+    </tr>`).join('');
+  container.innerHTML = `
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>Record</th><th class="num">CGPA</th><th style="width: 48px"></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+  container.querySelectorAll('tbody tr').forEach((tr, i) => {
+    tr.querySelector('button').addEventListener('click', async () => {
+      const record = records[i];
+      if (!confirm(`Delete "${record.recordName}"? This can't be undone.`)) return;
+      try {
+        await api(`/api/gpa/cgpa/${record.id}`, { method: 'DELETE' });
+        toast('CGPA record deleted');
+        await loadCgpaRecords();
+      } catch (err) {
+        toast('Failed to delete record: ' + err.message, 'error');
+      }
+    });
+  });
 }
 
 async function saveCgpa(){
@@ -400,12 +440,17 @@ async function saveCgpa(){
   if (!recordName) return toast('Record name is required', 'error');
   if (!window.currentCGPA) return toast('No CGPA calculated. Select terms or add subjects.', 'error');
 
+  const btn = $('saveCgpaBtn');
+  btn.disabled = true;
   try {
     const saved = await api('/api/gpa/save-cgpa', { method: 'POST', body: JSON.stringify({ recordName, ...window.currentCGPA }) });
     toast(`Saved “${saved.recordName}” · CGPA ${Number(saved.cumulativeGpa).toFixed(5)}`);
     $('cgpaRecordName').value = '';
+    await loadCgpaRecords();
   } catch (e) {
     toast('Error: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
   }
 }
 
@@ -421,7 +466,9 @@ function initializeEventListeners(){
   $('saveBtn').addEventListener('click', saveTerm);
   $('saveCgpaBtn').addEventListener('click', saveCgpa);
   $('logoutBtn').addEventListener('click', async () => {
-    await api('/api/auth/logout', { method: 'POST', body: JSON.stringify({}) });
+    try {
+      await api('/api/auth/logout', { method: 'POST', body: JSON.stringify({}) });
+    } catch {}
     window.location.href = '/login.html';
   });
 }
@@ -433,7 +480,11 @@ async function initializePage(){
   try {
     await loadMe();
   } catch {}
-  await loadHistory();
+  try {
+    await Promise.all([loadHistory(), loadCgpaRecords()]);
+  } catch (err) {
+    if (err.message !== 'Signed out') toast('Could not load your records: ' + err.message, 'error');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
