@@ -36,6 +36,7 @@ Sign in with Google or GitHub, enter your courses, and watch your GPA update as 
 ## Features
 
 - **Google and GitHub sign-in for everyone.** School accounts (for example `@g.msuiit.edu.ph`), personal Google accounts (Gmail and others) and GitHub accounts can all sign in. Signing in with a different provider that has the same verified email opens the same account. Set `ALLOW_EXTERNAL_EMAILS=false` to restrict sign-in to school accounts only.
+- **Username and password sign-in.** New accounts are created through Google or GitHub. On the first sign-in the app asks for a username and password before it opens. After that you can sign in with your username (or email) and password, or keep using Google or GitHub.
 - **Live term GPA.** GPA, total units and course count update as you type.
 - **Cumulative GPA (CGPA).** Combine any saved terms, add extra subjects that aren't part of a term, and save the result as a named CGPA record.
 - **History.** Saved terms appear as cards showing GPA, an academic standing badge, course count and units. You can open, edit or delete any of them.
@@ -68,7 +69,7 @@ Sign in with Google or GitHub, enter your courses, and watch your GPA update as 
 | --- | --- |
 | Backend | Node.js, Express |
 | Database | MySQL 8 (`mysql2`) |
-| Auth | Google OAuth 2.0 (`google-auth-library`), GitHub OAuth (built-in `fetch`), `express-session` |
+| Auth | Username / password (Node `crypto.scrypt`), Google OAuth 2.0 (`google-auth-library`), GitHub OAuth (built-in `fetch`), `express-session` |
 | Sessions | `express-mysql-session` |
 | Frontend | Vanilla HTML, CSS and JavaScript, with the Inter font |
 
@@ -175,7 +176,7 @@ GPA is the unit-weighted average: **Σ(grade × units) / Σ units**, over graded
 
 ## API Reference
 
-Every `/api/gpa/*` endpoint requires an authenticated session.
+Every `/api/gpa/*` endpoint requires an authenticated session. After a first OAuth sign-in the session is only *pending* (redirected to `/setup`) until a username and password are chosen, and pending sessions can't use the GPA endpoints.
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
@@ -183,6 +184,9 @@ Every `/api/gpa/*` endpoint requires an authenticated session.
 | `GET` | `/api/auth/google/callback` | Google OAuth callback |
 | `GET` | `/api/auth/github` | Start GitHub sign-in |
 | `GET` | `/api/auth/github/callback` | GitHub OAuth callback |
+| `POST` | `/api/auth/login` | Sign in with a password `{ identifier, password }` (identifier is a username or email) |
+| `GET` | `/api/auth/setup` | Name and email of the account waiting for setup after its first OAuth sign-in |
+| `POST` | `/api/auth/setup` | Finish setup `{ username, password }` |
 | `GET` | `/api/auth/config` | Sign-in policy (`allowedDomains`, `allowExternal`) |
 | `GET` | `/api/auth/me` | Current user |
 | `POST` | `/api/auth/logout` | Sign out |
@@ -196,7 +200,7 @@ Every `/api/gpa/*` endpoint requires an authenticated session.
 | `DELETE` | `/api/gpa/cgpa/:id` | Delete a CGPA record |
 | `GET` | `/api/health` | Health check, including database connectivity |
 
-Pages are served at clean URLs: `/login` and `/dashboard`. Old `.html` links (for example `/login.html`) get a `301` redirect to the clean URL, with the query string kept. Express does this locally and `cleanUrls` in `vercel.json` does it on Vercel.
+Pages are served at clean URLs: `/login`, `/setup` and `/dashboard`. Old `.html` links (for example `/login.html`) get a `301` redirect to the clean URL, with the query string kept. Express does this locally and `cleanUrls` in `vercel.json` does it on Vercel.
 
 Unknown `/api/*` routes return `404` with `{ "error": "Not found" }`. Any other unknown URL shows the branded 404 page (`public/404.html`) in a browser, or a plain `Not found` for non-browser clients.
 
@@ -208,18 +212,26 @@ gpa-calculator/
 │   ├── db.js              # MySQL connection pool
 │   └── schema.sql         # Database schema
 ├── docs/screenshots/      # README images
+├── lib/
+│   └── password.js        # scrypt password hashing
 ├── middleware/
 │   └── auth.js            # Session guard for protected routes
 ├── public/
 │   ├── login.html         # Sign-in page
+│   ├── login.js           # Sign-in form and OAuth error messages
+│   ├── setup.html         # Choose a username and password after the first OAuth sign-in
+│   ├── setup.js           # Setup form logic
 │   ├── 404.html           # Not-found page
 │   ├── dashboard.html     # Main app
 │   ├── dashboard.js       # Dashboard logic
 │   ├── darkmode.js        # Theme handling
 │   └── style.css          # Design system and styles
 ├── routes/
-│   ├── auth.js            # Google/GitHub OAuth and session routes
+│   ├── auth.js            # Google/GitHub OAuth, password sign-in, setup and session routes
 │   └── gpa.js             # GPA and CGPA routes
+├── scripts/
+│   ├── setup-db.js        # Creates/upgrades the tables (npm run db:setup)
+│   └── import-terms.js    # Copies terms from an old mysqldump (npm run db:import)
 ├── server.js              # Express app entry point
 └── .env.example           # Environment template
 ```
@@ -250,10 +262,28 @@ ALTER TABLE users ADD COLUMN github_id BIGINT UNSIGNED NULL UNIQUE AFTER google_
 
 Existing accounts are linked the same way, through the GitHub account's primary verified email.
 
+**Username and password sign-in:**
+
+```sql
+ALTER TABLE users ADD COLUMN username VARCHAR(30) NULL AFTER email;
+ALTER TABLE users ADD UNIQUE INDEX username (username);
+```
+
+`npm run db:setup` adds this column automatically when it is missing. Existing OAuth users are asked to choose a username and password the next time they sign in.
+
+### Importing terms from an old database dump
+
+`scripts/import-terms.js` copies the saved terms of one user in an old `mysqldump` of `gpa_records` into an existing account (sign in to the app with that account once first). Each term's GPA is recomputed with the current grading rules and the original save date is kept. Terms that were already imported are skipped, so the script is safe to run again. Preview with `--dry-run` first:
+
+```bash
+npm run db:import -- path/to/gpa_app_gpa_records.sql --from-user 3 --to-email you@g.msuiit.edu.ph --dry-run
+```
+
 ## Security Notes
 
 - Only Google accounts with a **verified email** can sign in. When external emails are disabled, the school domain is checked on the server (the `hd` claim plus the email suffix), not just through the Google URL hint.
 - GitHub sign-in only uses the account's **primary verified email**, which is read through the `user:email` scope even if it's private. The GitHub access token is used once to read the profile and is never stored.
+- Passwords are hashed with Node's built-in **scrypt** and a per-user random salt, and compared in constant time. Failed password sign-ins return one generic message whether or not the account exists. After 10 failures for the same IP and username within 15 minutes, further attempts are refused for a while. This limit is kept in memory, so on Vercel each function instance counts on its own.
 - The OAuth `state` parameter protects the sign-in flow against CSRF, and the session ID is regenerated after login.
 - Session cookies are `httpOnly` and `sameSite=lax`, and they are `secure` in production.
 - User-entered text is HTML-escaped before it is rendered.

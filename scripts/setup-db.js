@@ -17,6 +17,23 @@ async function main() {
     await pool.query(sql);
     console.log('OK  ', sql.split('\n')[0]);
   }
+
+  // CREATE TABLE IF NOT EXISTS leaves older tables alone, so add columns introduced later
+  // (column and unique index are added separately because TiDB can't do both in one ALTER)
+  const [cols] = await pool.query(
+    "SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'username'"
+  );
+  if (!cols.length) {
+    await pool.query('ALTER TABLE users ADD COLUMN username VARCHAR(30) NULL AFTER email');
+    console.log('OK   ALTER TABLE users ADD COLUMN username');
+  }
+  const [indexes] = await pool.query(
+    "SELECT 1 FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'username' AND NON_UNIQUE = 0"
+  );
+  if (!indexes.length) {
+    await pool.query('ALTER TABLE users ADD UNIQUE INDEX username (username)');
+    console.log('OK   ALTER TABLE users ADD UNIQUE INDEX username');
+  }
   console.log('Database is ready.');
 }
 

@@ -103,7 +103,8 @@ app.use('/api/gpa', require('./routes/gpa'));
 app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 
 app.get('/', (req, res) => {
-  res.redirect(req.session && req.session.userId ? '/dashboard' : '/login');
+  if (req.session && req.session.userId) return res.redirect('/dashboard');
+  res.redirect(req.session && req.session.pendingUserId ? '/setup' : '/login');
 });
 
 // Anything left over is an unknown page; browsers get the 404 page, other clients a plain message
