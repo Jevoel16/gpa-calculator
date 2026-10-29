@@ -13,17 +13,13 @@ function showError() {
   }
 }
 
-function renderPolicy(allowedDomains, allowExternal) {
+// Only mention the policy when sign-in is restricted to school accounts
+function renderPolicy(allowExternal) {
   policy.textContent = '';
+  if (allowExternal) return;
   const strong = document.createElement('strong');
   strong.textContent = domainText;
-  if (allowExternal && allowedDomains.length) {
-    policy.append('School accounts (', strong, ') and personal accounts such as Gmail or GitHub are welcome.');
-  } else if (allowExternal) {
-    policy.append('Any Google or GitHub account can sign in, including Gmail and school accounts.');
-  } else {
-    policy.append('Only ', strong, ' school accounts can sign in.');
-  }
+  policy.append('Only ', strong, ' school accounts can sign in.');
 }
 
 const loginForm = document.getElementById('loginForm');
@@ -67,7 +63,7 @@ fetch('/api/auth/config')
   .then(res => res.json())
   .then(({ allowedDomains = [], allowExternal = true }) => {
     if (allowedDomains.length) domainText = allowedDomains.map(d => '@' + d).join(', ');
-    renderPolicy(allowedDomains, allowExternal);
+    renderPolicy(allowExternal);
   })
   .catch(() => {})
   .finally(showError);

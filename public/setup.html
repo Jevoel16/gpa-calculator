@@ -15,27 +15,16 @@
 </head>
 <body>
   <main class="auth-page">
-    <section class="auth-hero">
-      <div class="brand">
-        <span class="brand-mark">
-          <svg viewBox="11 8 48 48" fill="currentColor" aria-hidden="true"><rect x="14" y="38" width="9" height="12" rx="3" opacity=".55"/><rect x="27.5" y="30" width="9" height="20" rx="3" opacity=".8"/><rect x="41" y="25" width="9" height="25" rx="3"/><path d="M45.5 10.5 56 15.5 45.5 20.5 35 15.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M56 15.5v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="56" cy="22.5" r="1.6"/></svg>
-        </span>
-        GPA Calculator
-      </div>
-
-      <div style="position: relative; z-index: 1;">
-        <h1>One more step.</h1>
-        <p>Choose a username and password. You can then sign in with them, or keep using Google or GitHub.</p>
-      </div>
-    </section>
-
     <section class="auth-panel">
       <div class="topbar">
         <button id="themeToggleBtn" class="btn btn-ghost btn-icon" type="button" aria-label="Toggle theme"></button>
       </div>
 
       <div class="auth-card">
-        <h2>Finish setting up</h2>
+        <span class="brand-mark">
+          <svg viewBox="11 8 48 48" fill="currentColor" aria-hidden="true"><rect x="14" y="38" width="9" height="12" rx="3" opacity=".55"/><rect x="27.5" y="30" width="9" height="20" rx="3" opacity=".8"/><rect x="41" y="25" width="9" height="25" rx="3"/><path d="M45.5 10.5 56 15.5 45.5 20.5 35 15.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M56 15.5v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="56" cy="22.5" r="1.6"/></svg>
+        </span>
+        <h1>Finish setting up</h1>
         <p class="lead">Pick a username and password to continue to the app.</p>
         <p id="account" class="auth-account"></p>
 
@@ -61,9 +50,8 @@
 
         <div class="auth-divider">wrong account?</div>
         <button id="cancelBtn" class="btn btn-ghost btn-block" type="button">Sign in with a different account</button>
+        <p class="auth-hint">Your password is stored only as a secure hash.</p>
       </div>
-
-      <p class="auth-footer">Your password is stored only as a secure hash.</p>
     </section>
   </main>
 
