@@ -9,8 +9,11 @@ const gradePoints = {
   '2': 2.0, '2.00': 2.0, '2.25': 2.25, '2.50': 2.5, '2.75': 2.75,
   '3': 3.0, '3.00': 3.0,
   '5': 5.0, '5.00': 5.0,
-  'INC': null, 'DROP': null
+  'P': null, 'INC': null, 'DROP': null
 };
+
+// Grades left out of the GPA whose units are still credited
+const CREDIT_ONLY_GRADES = new Set(['P']);
 
 const MAX_NAME_LENGTH = 100; // matches the VARCHAR(100) name columns
 const MAX_COURSES = 100;
@@ -42,15 +45,20 @@ function sanitizeCourses(courses) {
 function sumCourses(courses) {
   let gradePointsTotal = 0;
   let units = 0;
+  let creditedUnits = 0;
   for (const c of courses) {
     const u = Number(c.units ?? c.credits) || 0;
-    const gp = gradePoints[gradeKey(c.grade)] ?? null;
+    const key = gradeKey(c.grade);
+    const gp = gradePoints[key] ?? null;
     if (u > 0 && gp !== null) {
       gradePointsTotal += gp * u;
       units += u;
+      creditedUnits += u;
+    } else if (u > 0 && CREDIT_ONLY_GRADES.has(key)) {
+      creditedUnits += u;
     }
   }
-  return { gradePointsTotal, units };
+  return { gradePointsTotal, units, creditedUnits };
 }
 
 function computeGpa(courses) {
@@ -78,7 +86,8 @@ async function computeCumulative(userId, termIds, additionalSubjects) {
   const extras = Array.isArray(additionalSubjects) ? (sanitizeCourses(additionalSubjects) || []) : [];
 
   let totalGradePoints = 0;
-  let totalUnits = 0;
+  let gpaUnits = 0;
+  let totalUnits = 0; // includes Passed units, which are credited but not in the GPA
   const termsData = [];
 
   if (ids.length) {
@@ -93,18 +102,21 @@ async function computeCumulative(userId, termIds, additionalSubjects) {
       const courses = parseCourses(row.coursesJson);
       const sum = sumCourses(courses);
       totalGradePoints += sum.gradePointsTotal;
-      totalUnits += sum.units;
+      gpaUnits += sum.units;
+      totalUnits += sum.creditedUnits;
       termsData.push({ id: row.id, termName: row.termName, gpa: Number(row.gpa), courseCount: courses.length });
     }
   }
 
   const extraSum = sumCourses(extras);
   totalGradePoints += extraSum.gradePointsTotal;
-  totalUnits += extraSum.units;
+  gpaUnits += extraSum.units;
+  totalUnits += extraSum.creditedUnits;
 
   return {
-    cumulativeGpa: totalUnits > 0 ? Number((totalGradePoints / totalUnits).toFixed(5)) : 0,
+    cumulativeGpa: gpaUnits > 0 ? Number((totalGradePoints / gpaUnits).toFixed(5)) : 0,
     totalUnits,
+    gpaUnits,
     totalGradePoints: Number(totalGradePoints.toFixed(2)),
     termsIncluded: termsData,
     termCount: termsData.length,

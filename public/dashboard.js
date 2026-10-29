@@ -1,5 +1,7 @@
-const gradeOptions = ['1.00','1.25','1.50','1.75','2.00','2.25','2.50','2.75','3.00','5.00','INC','DROP'];
+const gradeOptions = ['1.00','1.25','1.50','1.75','2.00','2.25','2.50','2.75','3.00','5.00','P','INC','DROP'];
 const gradePoints = { '1.00':1.0,'1.25':1.25,'1.50':1.5,'1.75':1.75,'2.00':2.0,'2.25':2.25,'2.50':2.5,'2.75':2.75,'3.00':3.0,'5':5.0,'5.00':5.0 };
+// Grades left out of the GPA whose units are still credited
+const creditOnlyGrades = new Set(['P']);
 let allHistory = [];
 let additionalSubjects = [];
 let editingRecordId = null;
@@ -136,7 +138,7 @@ function computeGpa(courses){
 function updateTermSummary(){
   const courses = readCourses();
   const gpa = computeGpa(courses);
-  const units = courses.filter(c => gradePoints[c.grade] != null).reduce((sum, c) => sum + c.units, 0);
+  const units = courses.filter(c => gradePoints[c.grade] != null || creditOnlyGrades.has(c.grade)).reduce((sum, c) => sum + c.units, 0);
   $('termGpaDisplay').textContent = gpa ? gpa.toFixed(5) : '—';
   $('termGpaSub').textContent = gpa ? standing(gpa) : 'Add courses to compute';
   $('termUnitsDisplay').textContent = units;

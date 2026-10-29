@@ -167,10 +167,11 @@ All settings are read from `.env` locally, and from Project Settings → Environ
 | `2.25` – `2.50` | Satisfactory | ✅ |
 | `2.75` – `3.00` | Passing | ✅ |
 | `5.00` | Failed | ✅ |
+| `P` | Passed | ❌ (units credited) |
 | `INC` | Incomplete | ❌ |
 | `DROP` | Dropped | ❌ |
 
-GPA is the unit-weighted average: **Σ(grade × units) / Σ units**. A lower GPA is better. `INC` and `DROP` are saved with the term but left out of the calculation.
+GPA is the unit-weighted average: **Σ(grade × units) / Σ units**, over graded courses only. A lower GPA is better. `P` (Passed) courses are left out of the GPA, but their units are credited and included in the term and cumulative unit totals. `INC` and `DROP` are saved with the term but left out of both the GPA and the unit totals.
 
 ## API Reference
 
