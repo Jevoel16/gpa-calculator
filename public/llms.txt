@@ -1,0 +1,22 @@
+# GPA Calculator
+
+> A free web app for students to compute term GPA and cumulative GPA (CGPA) and keep a private history of their grades. The grading scale currently follows MSU-IIT (1.00 is the highest grade, 5.00 is failing).
+
+Sign in with a username and password, Google or GitHub. All grade records are private to each account; only the sign-in page is public.
+
+## Features
+
+- Term GPA: enter courses with units and final grades (1.00–3.00, 5.00, P, INC, DROP); the GPA updates as you type.
+- Cumulative GPA: combine saved terms and extra subjects into one CGPA and save it as a named record.
+- History: open, copy, edit or delete saved terms.
+- Settings: view your username and email, and change your password.
+
+## Grading scale
+
+- 1.00 Excellent; 1.25–1.50 Very good; 1.75–2.00 Good; 2.25–2.50 Satisfactory; 2.75–3.00 Passing; 5.00 Failed
+- P (Passed): units are credited but not counted in the GPA
+- INC and DROP: not counted
+
+## Pages
+
+- [Sign in](/login): the only public page

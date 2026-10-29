@@ -3,6 +3,7 @@ const express = require('express');
 const { OAuth2Client } = require('google-auth-library');
 const pool = require('../db/db');
 const { hashPassword, verifyPassword } = require('../lib/password');
+const APP_URL = require('../lib/app-url');
 
 const router = express.Router();
 
@@ -15,13 +16,6 @@ const {
   ALLOW_EXTERNAL_EMAILS = 'true'
 } = process.env;
 
-// The public address of the site (e.g. https://gpa.example.com); the OAuth callback URLs are built from it.
-// On Vercel it falls back to the project's production domain (your custom domain once one is added).
-const APP_URL = (
-  process.env.APP_URL ||
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL && `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`) ||
-  `http://localhost:${process.env.PORT || 3000}`
-).replace(/\/+$/, '');
 const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || `${APP_URL}/api/auth/google/callback`;
 const GITHUB_REDIRECT_URI = process.env.GITHUB_REDIRECT_URI || `${APP_URL}/api/auth/github/callback`;
 
@@ -385,6 +379,56 @@ router.post('/logout', (req, res) => {
     res.clearCookie('gpa.sid', { path: '/', httpOnly: true, sameSite: 'lax', secure: req.secure });
     res.json({ ok: true });
   });
+});
+
+// Change the password of the signed-in account; other devices are signed out
+router.post('/password', async (req, res) => {
+  try {
+    const userId = req.session && req.session.userId;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { currentPassword, newPassword } = req.body;
+    if (typeof currentPassword !== 'string' || !currentPassword || currentPassword.length > MAX_PASSWORD) {
+      return res.status(400).json({ error: 'Enter your current password' });
+    }
+    if (!isValidPassword(newPassword)) {
+      return res.status(400).json({ error: `New password must be ${MIN_PASSWORD}–${MAX_PASSWORD} characters` });
+    }
+    if (newPassword === currentPassword) {
+      return res.status(400).json({ error: 'New password must be different from the current one' });
+    }
+
+    const key = loginKey(req, `pw|${userId}`);
+    if (isThrottled(key)) {
+      return res.status(429).json({ error: 'Too many failed attempts. Please wait a few minutes and try again.' });
+    }
+
+    const [rows] = await pool.query('SELECT password_hash FROM users WHERE id = ?', [userId]);
+    if (!rows.length) return res.status(401).json({ error: 'Unauthorized' });
+    if (!(await verifyPassword(currentPassword, rows[0].password_hash))) {
+      recordFailedLogin(key);
+      return res.status(400).json({ error: 'Current password is incorrect' });
+    }
+
+    failedLogins.delete(key);
+    await pool.query('UPDATE users SET password_hash = ? WHERE id = ?', [await hashPassword(newPassword), userId]);
+    // express-mysql-session keeps each session as JSON text, so other sessions of this account can be found by userId
+    await pool.query(
+      "DELETE FROM sessions WHERE session_id <> ? AND JSON_EXTRACT(data, '$.userId') = ?",
+      [req.sessionID, userId]
+    );
+
+    startSession(req, { userId }, err => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Server error' });
+      }
+      res.json({ ok: true });
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 router.get('/me', async (req, res) => {

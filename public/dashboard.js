@@ -14,10 +14,19 @@ const icons = {
 };
 
 const views = {
-  term: { section: 'newTermSection', title: 'New Term', subtitle: 'Add your courses and see your GPA update instantly.' },
-  cumulative: { section: 'cumulativeSection', title: 'Cumulative GPA', subtitle: 'Combine saved terms and extra subjects into one CGPA.' },
-  history: { section: 'historySection', title: 'History', subtitle: 'All your saved terms. Click a card to open it.' }
+  term: { section: 'newTermSection', title: 'New Term' },
+  cumulative: { section: 'cumulativeSection', title: 'Cumulative GPA' },
+  history: { section: 'historySection', title: 'History' },
+  settings: { section: 'settingsSection', title: 'Settings' }
 };
+
+const paneHints = {
+  termsPane: 'Choose which terms to include.',
+  subjectsPane: "Add subjects that aren't part of a saved term."
+};
+
+const MIN_PASSWORD = 8;
+const MAX_PASSWORD = 128;
 
 const $ = id => document.getElementById(id);
 
@@ -64,13 +73,22 @@ async function api(path, opts={}){
 
 async function loadMe(){
   const me = await api('/api/auth/me', { method: 'GET' });
+  const initial = (me.name || '?').trim().charAt(0).toUpperCase();
   $('welcome').textContent = me.name;
-  $('userEmail').textContent = me.email;
-  $('avatar').textContent = (me.name || '?').trim().charAt(0).toUpperCase();
+  $('avatar').textContent = initial;
+  $('accountBtn').setAttribute('aria-label', `Account settings for ${me.name}`);
+  $('settingsAvatar').textContent = initial;
+  $('settingsName').textContent = me.name;
+  $('settingsHandle').textContent = me.username ? `@${me.username}` : '';
+  $('settingsUsername').textContent = me.username || 'Not set';
+  $('settingsEmail').textContent = me.email;
+  $('pwUsername').value = me.username || me.email;
 }
 
 function showView(name){
   const view = views[name] || views.term;
+  // On phones the page itself scrolls, so a new view should start at the top
+  if ($(view.section).classList.contains('hidden')) window.scrollTo(0, 0);
   for (const [key, v] of Object.entries(views)) {
     $(v.section).classList.toggle('hidden', v !== view);
     const tab = document.querySelector(`.tab[data-view="${key}"]`);
@@ -78,7 +96,7 @@ function showView(name){
     tab.setAttribute('aria-selected', String(v === view));
   }
   $('pageTitle').textContent = view.title;
-  $('pageSubtitle').textContent = view.subtitle;
+  document.title = `${view.title} • GPA Calculator`;
   if (location.hash !== `#${name}`) history.replaceState(null, '', `#${name}`);
 }
 
@@ -169,6 +187,7 @@ function loadTermData(record, { edit = false } = {}){
   setEditing(edit ? record : null);
   $('calcMsg').textContent = edit ? '' : `Loaded a copy of “${record.termName}”. Saving creates a new record.`;
   showView('term');
+  $('coursesScroll').scrollTop = 0;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -456,10 +475,56 @@ async function saveCgpa(){
   }
 }
 
+function showPane(paneId){
+  document.querySelectorAll('.seg').forEach(seg => {
+    const active = seg.dataset.pane === paneId;
+    seg.classList.toggle('active', active);
+    seg.setAttribute('aria-selected', String(active));
+    $(seg.dataset.pane).classList.toggle('hidden', !active);
+  });
+  $('paneHint').textContent = paneHints[paneId];
+}
+
+/* ---------- Settings ---------- */
+
+async function changePassword(event){
+  event.preventDefault();
+  const currentPassword = $('currentPassword').value;
+  const newPassword = $('newPassword').value;
+  const confirmPassword = $('confirmPassword').value;
+  const errorBox = $('passwordError');
+  errorBox.textContent = '';
+
+  let problem = '';
+  if (!currentPassword) problem = 'Enter your current password';
+  else if (newPassword.length < MIN_PASSWORD || newPassword.length > MAX_PASSWORD) problem = `New password must be ${MIN_PASSWORD}–${MAX_PASSWORD} characters`;
+  else if (newPassword !== confirmPassword) problem = "New passwords don't match";
+  else if (newPassword === currentPassword) problem = 'New password must be different from the current one';
+  if (problem) {
+    errorBox.textContent = problem;
+    return;
+  }
+
+  const btn = $('passwordSaveBtn');
+  btn.disabled = true;
+  try {
+    await api('/api/auth/password', { method: 'POST', body: JSON.stringify({ currentPassword, newPassword }) });
+    $('passwordForm').reset();
+    toast('Password updated. Other devices were signed out.');
+  } catch (err) {
+    if (err.message !== 'Signed out') errorBox.textContent = err.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 /* ---------- Init ---------- */
 
 function initializeEventListeners(){
   document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => showView(tab.dataset.view)));
+  document.querySelectorAll('.seg').forEach(seg => seg.addEventListener('click', () => showPane(seg.dataset.pane)));
+  $('accountBtn').addEventListener('click', () => showView('settings'));
+  $('passwordForm').addEventListener('submit', changePassword);
   $('additionalSubjectGrade').innerHTML = gradeSelectHtml();
   $('addSubjectBtn').addEventListener('click', addAdditionalSubject);
   $('additionalSubjectName').addEventListener('keydown', e => { if (e.key === 'Enter') addAdditionalSubject(); });

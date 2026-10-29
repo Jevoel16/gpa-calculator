@@ -1,0 +1,84 @@
+Sprucetrap Source-Available License, Version 1.0
+
+Copyright (c) 2026 Sprucetrap (github.com/Jevoel16). All rights reserved
+except as granted below.
+
+Project: GPA Calculator
+
+1. Definitions
+
+   "Software" means the source code, assets, documentation and any other
+   material in this repository.
+   "Author" means Sprucetrap, the GitHub account holder of
+   github.com/Jevoel16.
+   "Commercial Use" means any use that is intended for, or directed toward,
+   commercial advantage or monetary compensation, including selling or
+   licensing the Software, offering it as a paid or ad-supported service,
+   or using it in the operations of a business.
+
+2. Permissions
+
+   Subject to the conditions in section 3, you may, free of charge:
+   a. view, download and study the Software;
+   b. run the Software for personal, educational or other non-commercial
+      purposes;
+   c. modify the Software and share copies or modified versions
+      (including forks) for non-commercial purposes.
+
+3. Conditions
+
+   Every copy or modified version of the Software, in whole or in part,
+   must:
+   a. keep this LICENSE file and the copyright notice above unchanged;
+   b. give visible credit to the Author, with a link, in its README and,
+      where the Software has a user interface, in an "About" page or the
+      footer, in the form:
+      "Based on GPA Calculator by Sprucetrap (https://github.com/Jevoel16)";
+   c. state clearly that it has been modified from the original and
+      describe the changes in general terms.
+
+4. Restrictions
+
+   Without the Author's prior written permission, you may not:
+   a. make any Commercial Use of the Software or of a modified version;
+   b. sell, resell, rent or sublicense the Software;
+   c. rebrand the Software or present it, or a modified version, as your
+      own original work;
+   d. distribute the Software under any other license;
+   e. use the Author's name, pen name, logos or project name to endorse or
+      promote other products, except for the credit required by section 3.
+
+5. Requesting permission
+
+   To ask for Commercial Use or any other use not granted here, open an
+   issue or contact the Author through https://github.com/Jevoel16.
+   Permission is valid only if it is given in writing by the Author.
+
+6. Contributions
+
+   Unless agreed otherwise in writing, anyone who submits a contribution
+   (such as a pull request) grants the Author a perpetual, worldwide,
+   royalty-free right to use, modify and relicense that contribution as
+   part of the Software.
+
+7. Termination
+
+   Your rights under this license end automatically if you break any of
+   its terms. They are restored if you fix the breach within 30 days of
+   becoming aware of it, unless the Author has notified you in writing
+   that they are revoked.
+
+8. No warranty
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+   GPA RESULTS ARE ESTIMATES; ALWAYS CONFIRM OFFICIAL GRADES WITH YOUR
+   SCHOOL.
+
+9. Limitation of liability
+
+   IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE.

@@ -4,6 +4,7 @@ const express = require('express');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const pool = require('./db/db');
+const APP_URL = require('./lib/app-url');
 
 const { SESSION_SECRET, NODE_ENV, PORT = 3000 } = process.env;
 
@@ -95,6 +96,30 @@ app.get('/api/health', async (req, res) => {
     console.error(err);
     res.status(503).json({ ok: false, db: false });
   }
+});
+
+// Built from APP_URL so the absolute URLs match whichever domain the app is deployed on
+app.get('/robots.txt', (req, res) => {
+  res.type('txt').send([
+    'User-agent: *',
+    'Allow: /$',
+    'Allow: /login',
+    'Disallow: /dashboard',
+    'Disallow: /setup',
+    'Disallow: /api/',
+    '',
+    `Sitemap: ${APP_URL}/sitemap.xml`,
+    ''
+  ].join('\n'));
+});
+
+app.get('/sitemap.xml', (req, res) => {
+  res.type('application/xml').send(
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    `  <url><loc>${APP_URL}/login</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>\n` +
+    '</urlset>\n'
+  );
 });
 
 app.use('/api/auth', require('./routes/auth'));

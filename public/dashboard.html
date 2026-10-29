@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Dashboard • GPA Calculator</title>
   <meta name="robots" content="noindex" />
   <meta name="theme-color" content="#4f46e5" />
@@ -13,24 +13,35 @@
   <link rel="stylesheet" href="/style.css" />
   <script src="/darkmode.js"></script>
 </head>
-<body>
+<body class="app-body">
   <header class="app-header">
     <div class="app-header-inner">
       <div class="brand">
         <span class="brand-mark">
           <svg viewBox="11 8 48 48" fill="currentColor" aria-hidden="true"><rect x="14" y="38" width="9" height="12" rx="3" opacity=".55"/><rect x="27.5" y="30" width="9" height="20" rx="3" opacity=".8"/><rect x="41" y="25" width="9" height="25" rx="3"/><path d="M45.5 10.5 56 15.5 45.5 20.5 35 15.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M56 15.5v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="56" cy="22.5" r="1.6"/></svg>
         </span>
-        GPA Calculator
+        <span class="brand-name">GPA Calculator</span>
       </div>
+      <nav class="tabs app-nav" role="tablist" aria-label="Sections">
+        <button class="tab" id="newTermBtn" data-view="term" role="tab" type="button" aria-controls="newTermSection">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span>New Term</span>
+        </button>
+        <button class="tab" id="cumulativeBtn" data-view="cumulative" role="tab" type="button" aria-controls="cumulativeSection">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg><span>Cumulative</span>
+        </button>
+        <button class="tab" id="historyBtn" data-view="history" role="tab" type="button" aria-controls="historySection">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>History</span>
+        </button>
+        <button class="tab" id="settingsBtn" data-view="settings" role="tab" type="button" aria-controls="settingsSection">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Settings</span>
+        </button>
+      </nav>
       <div class="header-actions">
-        <div class="user-chip">
-          <span class="avatar" id="avatar">?</span>
-          <div class="user-meta">
-            <strong id="welcome">Loading…</strong>
-            <span id="userEmail"></span>
-          </div>
-        </div>
         <button id="themeToggleBtn" class="btn btn-ghost btn-icon" type="button" aria-label="Toggle theme"></button>
+        <button id="accountBtn" class="user-chip" type="button" title="Account settings">
+          <span class="avatar" id="avatar">?</span>
+          <strong class="user-name" id="welcome">Loading…</strong>
+        </button>
         <button id="logoutBtn" class="btn btn-ghost btn-icon" type="button" aria-label="Log out" title="Log out">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
         </button>
@@ -39,38 +50,20 @@
   </header>
 
   <main class="app-main">
-    <div class="page-head">
-      <div>
-        <h1 id="pageTitle">New Term</h1>
-        <p id="pageSubtitle">Add your courses and see your GPA update instantly.</p>
-      </div>
-      <nav class="tabs" role="tablist">
-        <button class="tab" id="newTermBtn" data-view="term" role="tab" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span>New Term</span>
-        </button>
-        <button class="tab" id="cumulativeBtn" data-view="cumulative" role="tab" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg><span>Cumulative</span>
-        </button>
-        <button class="tab" id="historyBtn" data-view="history" role="tab" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>History</span>
-        </button>
-      </nav>
-    </div>
+    <!-- The active tab already shows where you are, so the page title is for screen readers only -->
+    <h1 id="pageTitle" class="sr-only">New Term</h1>
 
     <!-- New term -->
-    <section id="newTermSection" class="layout-split">
-      <div class="card">
+    <section id="newTermSection" class="view layout-split">
+      <div class="card panel">
         <div class="card-head">
-          <div>
-            <h2>Courses</h2>
-            <p>Enter each course with its units and final grade.</p>
-          </div>
-          <div style="min-width: 220px; flex: 1; max-width: 300px;">
-            <label for="termName" class="hidden">Term name</label>
+          <h2>Courses</h2>
+          <div class="term-name-field">
+            <label for="termName" class="sr-only">Term name</label>
             <input id="termName" type="text" maxlength="100" placeholder="Term name, e.g. 1st Sem 2025–2026" />
           </div>
         </div>
-        <div class="card-body">
+        <div class="card-body panel-scroll" id="coursesScroll">
           <div id="editingBanner" class="editing-banner hidden"></div>
           <div class="table-wrap">
             <table class="table course-table" id="coursesTable">
@@ -100,7 +93,7 @@
         </div>
       </div>
 
-      <aside class="stack">
+      <aside class="stack side-col">
         <div class="gpa-hero">
           <div class="stat-label">Term GPA</div>
           <div class="gpa-number" id="termGpaDisplay">—</div>
@@ -110,8 +103,11 @@
             <div class="stat"><div class="stat-label">Courses</div><div class="stat-value" id="termCoursesDisplay">0</div></div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-head"><h3>Grading scale</h3></div>
+        <details class="card scale-card">
+          <summary>
+            <h3>Grading scale</h3>
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </summary>
           <div class="card-body">
             <div class="scale-list">
               <div><span>1.00</span><span>Excellent</span></div>
@@ -125,43 +121,36 @@
               <div><span>DROP</span><span>Not counted</span></div>
             </div>
           </div>
-        </div>
+        </details>
       </aside>
     </section>
 
     <!-- Cumulative -->
-    <section id="cumulativeSection" class="hidden stack">
+    <section id="cumulativeSection" class="view view-cumulative hidden">
       <div class="stat-grid">
         <div class="stat card"><div class="stat-label">Total units</div><div class="stat-value" id="totalUnitsDisplay">0</div></div>
         <div class="stat card"><div class="stat-label">Grade points</div><div class="stat-value" id="gradePointsDisplay">0.00</div></div>
-        <div class="stat card" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; border-color: transparent;">
-          <div class="stat-label" style="color: rgba(255,255,255,.8)">Cumulative GPA</div>
+        <div class="stat card stat-accent">
+          <div class="stat-label">Cumulative GPA</div>
           <div class="stat-value" id="cumulativeGpaDisplay">0.00</div>
         </div>
       </div>
 
       <div class="layout-split">
-        <div class="stack">
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <h2>Saved terms</h2>
-                <p>Choose which terms to include in your cumulative GPA.</p>
-              </div>
+        <div class="card panel">
+          <div class="card-head">
+            <h2 class="sr-only">Included in your CGPA</h2>
+            <div class="segmented" role="tablist" aria-label="Included in your CGPA">
+              <button type="button" class="seg active" role="tab" aria-selected="true" aria-controls="termsPane" data-pane="termsPane">Saved terms</button>
+              <button type="button" class="seg" role="tab" aria-selected="false" aria-controls="subjectsPane" data-pane="subjectsPane">Additional subjects</button>
             </div>
-            <div class="card-body">
+            <p id="paneHint">Choose which terms to include.</p>
+          </div>
+          <div class="card-body panel-scroll">
+            <div id="termsPane" role="tabpanel">
               <div id="termsCheckList" class="term-picks"></div>
             </div>
-          </div>
-
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <h2>Additional subjects</h2>
-                <p>Include subjects that aren't part of a saved term.</p>
-              </div>
-            </div>
-            <div class="card-body">
+            <div id="subjectsPane" role="tabpanel" class="hidden">
               <div class="inline-form">
                 <input type="text" id="additionalSubjectName" maxlength="100" placeholder="Subject name" aria-label="Subject name" />
                 <input type="number" min="0" step="0.5" id="additionalSubjectUnits" placeholder="Units" aria-label="Units" />
@@ -178,29 +167,86 @@
           </div>
         </div>
 
-        <aside class="stack">
-          <div class="card">
-            <div class="card-head"><h3>Breakdown</h3></div>
-            <div class="card-body" id="cumulativeTermsTable"><p class="muted" style="font-size: 14px;">Select terms or add subjects to see the breakdown.</p></div>
-          </div>
-          <div class="card hidden" id="cgpaSaveSection">
-            <div class="card-head"><h3>Save this CGPA</h3></div>
-            <div class="card-body stack" style="gap: 10px;">
-              <input type="text" id="cgpaRecordName" maxlength="100" placeholder="e.g. First Year CGPA" aria-label="Record name" />
-              <button id="saveCgpaBtn" type="button" class="btn btn-block">Save CGPA record</button>
+        <aside class="side-col side-panels">
+          <div class="card panel">
+            <div class="card-head"><h2 class="h-sm">Breakdown</h2></div>
+            <div class="card-body panel-scroll" id="cumulativeTermsTable"><p class="muted" style="font-size: 14px;">Select terms or add subjects to see the breakdown.</p></div>
+            <div class="card-foot save-row hidden" id="cgpaSaveSection">
+              <input type="text" id="cgpaRecordName" maxlength="100" placeholder="Name this CGPA, e.g. First Year" aria-label="Record name" />
+              <button id="saveCgpaBtn" type="button" class="btn">Save</button>
             </div>
           </div>
-          <div class="card">
-            <div class="card-head"><h3>Saved CGPA records</h3></div>
-            <div class="card-body" id="cgpaRecordsList"><p class="muted" style="font-size: 14px;">No saved CGPA records yet.</p></div>
+          <div class="card panel">
+            <div class="card-head"><h2 class="h-sm">Saved CGPA records</h2></div>
+            <div class="card-body panel-scroll" id="cgpaRecordsList"><p class="muted" style="font-size: 14px;">No saved CGPA records yet.</p></div>
           </div>
         </aside>
       </div>
     </section>
 
     <!-- History -->
-    <section id="historySection" class="hidden">
-      <div id="historyList"></div>
+    <section id="historySection" class="view view-history hidden">
+      <h2 class="sr-only">Saved terms</h2>
+      <div id="historyList" class="history-scroll"></div>
+    </section>
+
+    <!-- Settings -->
+    <section id="settingsSection" class="view view-settings hidden">
+      <div class="settings-grid">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h2>Account</h2>
+              <p>Your profile and sign-in details.</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="account-head">
+              <span class="avatar avatar-lg" id="settingsAvatar">?</span>
+              <div>
+                <strong id="settingsName">—</strong>
+                <span id="settingsHandle"></span>
+              </div>
+            </div>
+            <dl class="account-list">
+              <div><dt>Username</dt><dd id="settingsUsername">—</dd></div>
+              <div><dt>Email</dt><dd id="settingsEmail">—</dd></div>
+              <div><dt>Sign in with</dt><dd>Username or email and password, Google or GitHub</dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <form class="card" id="passwordForm" method="post" action="/api/auth/password" novalidate>
+          <div class="card-head">
+            <div>
+              <h2>Change password</h2>
+              <p>Your other devices will be signed out.</p>
+            </div>
+          </div>
+          <div class="card-body auth-form">
+            <!-- Lets password managers tie the new password to the right account -->
+            <input type="text" id="pwUsername" name="username" autocomplete="username" class="sr-only" tabindex="-1" aria-hidden="true" readonly />
+            <div class="field">
+              <label for="currentPassword">Current password</label>
+              <input id="currentPassword" name="currentPassword" type="password" autocomplete="current-password" maxlength="128" required />
+            </div>
+            <div class="field">
+              <label for="newPassword">New password</label>
+              <input id="newPassword" name="newPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required />
+              <div class="field-hint">8–128 characters.</div>
+            </div>
+            <div class="field">
+              <label for="confirmPassword">Confirm new password</label>
+              <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" maxlength="128" required />
+            </div>
+            <div class="alert" id="passwordError" role="alert"></div>
+          </div>
+          <div class="card-foot">
+            <span></span>
+            <button id="passwordSaveBtn" type="submit" class="btn">Update password</button>
+          </div>
+        </form>
+      </div>
     </section>
   </main>
 
