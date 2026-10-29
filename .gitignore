@@ -7,9 +7,10 @@ npm-debug.log*
 client_secret*.json
 dibs/
 
-# Local-only: drafted commit message and personal Claude Code settings
+# Local-only: drafted commit message, Claude Code settings/worktrees and personal instructions
 commit-msg.txt
-.claude/settings.local.json
+.claude/
+CLAUDE.md
 
 # Vercel CLI project link and pulled env files
 .vercel
