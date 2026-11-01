@@ -334,4 +334,4 @@ router.delete('/:id', requireAuth, async (req, res) => {
 
 module.exports = router;
 // Shared with scripts/import-terms.js so imported terms follow the same rules as saved ones
-module.exports.helpers = { sanitizeCourses, computeGpa };
+module.exports.helpers = { sanitizeCourses, computeGpa, sumCourses };
