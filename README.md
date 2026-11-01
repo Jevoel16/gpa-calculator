@@ -14,7 +14,8 @@
 ![google-auth-library](https://img.shields.io/badge/google--auth--library-11.3.2-blue?style=flat)
 ![dotenv](https://img.shields.io/badge/dotenv-16.6.1-blue?style=flat)
 
-![Version](https://img.shields.io/badge/version-1.4.1-green?style=flat)
+![Version](https://img.shields.io/badge/version-1.4.2-green?style=flat)
+![Tests](https://img.shields.io/badge/tests-26%20passing-brightgreen?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
 ![Platform](https://img.shields.io/badge/platform-web%20%7C%20vercel-informational?style=flat)
 
@@ -49,13 +50,17 @@
 - **Settings.** See your name, username and email, and change your password. Changing it signs out every other device.
 - **Live term GPA.** GPA, total units and course count update as you type.
 - **Cumulative GPA (CGPA).** Combine any saved terms, add extra subjects that aren't part of a term, and save the result as a named CGPA record.
-- **History.** Saved terms appear as cards with GPA, an academic standing badge, course count and units. Open, edit or delete any of them.
-- **Fits the screen on desktop.** The sections (New Term, Cumulative, History, Settings) live in the header. Each view fits the window without page scrolling; long lists scroll inside their own panel.
-- **Phone friendly.** On phones the sections move to a bottom tab bar, and the page scrolls normally.
-- **Light and dark themes.** Follows your system theme by default and remembers your choice.
+- **History.** Saved terms appear as cards with GPA, an academic standing badge, course count and units. **Edit** a term, **Copy** it into a new one, or **Delete** it (with a confirmation dialog).
+- **Fits the screen on desktop.** The sections (New Term, Cumulative, History, Settings) live in the header. On windows at least 700 px tall each view fits without page scrolling; long lists scroll inside their own panel. Shorter windows scroll normally.
+- **Linkable views.** Each section has its own URL (`/dashboard#history`), so back/forward, bookmarks and "open in new tab" work.
+- **Phone friendly.** On phones the sections move to a bottom tab bar, the page scrolls normally, and fields use 16 px text so iOS doesn't zoom in.
+- **Light and dark themes.** Follows your system theme live until you pick one; picking your system's theme goes back to following it. Native scrollbars and menus match the theme.
+- **Accessible.** WCAG 2.2 AA checked with axe-core on every view: skip link, visible focus rings, labelled controls, keyboard-friendly dialogs and tabs, announced errors, and reduced motion when the system asks for it.
+- **Installable.** A web app manifest, maskable icons and an Apple touch icon let you add it to your home screen.
+- **Fast first paint.** The Inter font is self-hosted and preloaded (no third-party font request).
 - **Precise.** GPA values are computed and stored to 5 decimal places.
 - **Persistent sessions.** Sessions are stored in MySQL, so you stay signed in after the server restarts.
-- **Search-ready sign-in page.** `robots.txt` and `sitemap.xml` are built from `APP_URL`, plus a canonical tag, JSON-LD and `llms.txt`.
+- **Search-ready sign-in page.** `robots.txt` and `sitemap.xml` are built from `APP_URL`, plus an absolute canonical tag, JSON-LD, Open Graph and Twitter share cards with a preview image, and `llms.txt`.
 
 <details>
 <summary><strong>Grading scale</strong></summary>
@@ -88,7 +93,8 @@ GPA is the unit-weighted average **Σ(grade × units) / Σ units** over graded c
 | Database | MySQL 8 or TiDB Cloud (`mysql2`) |
 | Auth | Username / password (Node `crypto.scrypt`), Google OAuth 2.0 (`google-auth-library`), GitHub OAuth (built-in `fetch`), `express-session` |
 | Sessions | `express-mysql-session` |
-| Frontend | Vanilla HTML, CSS and JavaScript, Inter font |
+| Frontend | Vanilla HTML, CSS and JavaScript, self-hosted Inter variable font (SIL OFL) |
+| Testing | Node's built-in test runner (`node:test`), GitHub Actions CI |
 | Hosting | Vercel (see [DEPLOY.md](DEPLOY.md)) |
 
 <p align="right"><a href="#top">back to top ↑</a></p>
@@ -247,7 +253,7 @@ If `ALLOWED_EMAIL_DOMAINS` is empty, external accounts are always allowed.
 2. Use the header tabs (bottom bar on phones):
    - **New Term**: enter a new term. Open the **Grading scale** panel for the grade meanings.
    - **Cumulative**: tick the saved terms to include, switch to **Additional subjects** to add extra subjects, then name and save the CGPA from the Breakdown panel.
-   - **History**: click a card to load a copy, **Edit** to update it, or **Delete** it.
+   - **History**: **Edit** a term to update it, **Copy** it to start a new term from it, or **Delete** it.
    - **Settings** (or click your avatar): check your username and email, and change your password.
 
 ### Changing your password
@@ -277,6 +283,7 @@ Every `/api/gpa/*` endpoint requires a signed-in session. After a first OAuth si
 | `POST` | `/api/auth/setup` | Finish setup `{ username, password }` |
 | `POST` | `/api/auth/password` | Change password `{ currentPassword, newPassword }`; signs out other sessions |
 | `GET` | `/api/auth/config` | Sign-in policy (`allowedDomains`, `allowExternal`) |
+| `GET` | `/api/auth/status` | `{ signedIn, pendingSetup }`, always `200` (used by public pages) |
 | `GET` | `/api/auth/me` | Current user (`id`, `name`, `email`, `username`) |
 | `POST` | `/api/auth/logout` | Sign out |
 | `GET` | `/api/gpa/history` | List saved terms |
@@ -287,10 +294,10 @@ Every `/api/gpa/*` endpoint requires a signed-in session. After a first OAuth si
 | `GET` | `/api/gpa/cgpa` | List saved CGPA records |
 | `POST` | `/api/gpa/save-cgpa` | Save a CGPA record (recomputed on the server) |
 | `DELETE` | `/api/gpa/cgpa/:id` | Delete a CGPA record |
-| `GET` | `/api/health` | Health check, including the database |
+| `GET` | `/api/health` | Health check, including the database (result cached for 30 seconds) |
 | `GET` | `/robots.txt`, `/sitemap.xml` | Built from `APP_URL` |
 
-Pages use clean URLs: `/login`, `/setup`, `/dashboard`. Old `.html` links get a `301` to the clean URL. Unknown `/api/*` routes return `404` JSON; other unknown URLs show `public/404.html`.
+Every `/api/*` response is sent with `Cache-Control: no-store`. Pages use clean URLs: `/login`, `/setup`, `/dashboard`. Old `.html` links get a `301` to the clean URL. Unknown `/api/*` routes return `404` JSON; other unknown URLs show `public/404.html`.
 
 </details>
 
@@ -310,13 +317,16 @@ npm run db:import -- path/to/gpa_app_gpa_records.sql --from-user 3 --to-email yo
 
 ```
 gpa-calculator/
+├── .github/workflows/
+│   └── ci.yml             # Runs the tests and npm audit on Node 20 and 22
 ├── db/
 │   ├── db.js              # MySQL connection pool
 │   └── schema.sql         # Database schema
 ├── docs/screenshots/      # README images
 ├── lib/
 │   ├── app-url.js         # Public site address (APP_URL) shared by OAuth, robots.txt and sitemap.xml
-│   └── password.js        # scrypt password hashing
+│   ├── password.js        # scrypt password hashing
+│   └── rate-limit.js      # Failed-attempt counter stored in MySQL (memory fallback)
 ├── middleware/
 │   └── auth.js            # Session guard for protected routes
 ├── public/
@@ -327,7 +337,13 @@ gpa-calculator/
 │   ├── 404.html           # Not-found page
 │   ├── dashboard.html     # Main app: header tabs, New Term, Cumulative, History, Settings
 │   ├── dashboard.js       # Dashboard logic
-│   ├── darkmode.js        # Theme handling
+│   ├── darkmode.js        # Theme handling (follows the system until you choose)
+│   ├── fonts/             # Self-hosted Inter variable font and its OFL license
+│   ├── icons/             # App icons (192, 512, maskable, Apple touch icon)
+│   ├── favicon.ico        # Legacy favicon for crawlers and old browsers
+│   ├── logo.svg           # Vector logo and modern favicon
+│   ├── manifest.webmanifest # Install-to-home-screen metadata
+│   ├── og-image.png       # 1200×630 social share image
 │   ├── llms.txt           # Plain-language summary for AI crawlers
 │   └── style.css          # Design system, no-scroll desktop layout, mobile bottom bar
 ├── routes/
@@ -336,6 +352,7 @@ gpa-calculator/
 ├── scripts/
 │   ├── setup-db.js        # Creates/upgrades the tables (npm run db:setup)
 │   └── import-terms.js    # Copies terms from an old mysqldump (npm run db:import)
+├── test/                  # Automated tests (npm test), no database needed
 ├── server.js              # Express app, security headers, robots.txt and sitemap.xml
 ├── LICENSE                # Sprucetrap Source-Available License 1.0
 ├── vercel.json            # Clean URLs and security headers on Vercel
@@ -352,6 +369,7 @@ gpa-calculator/
 | --- | --- |
 | `npm start` | Start the server |
 | `npm run dev` | Start with auto-reload (Node's built-in `--watch`) and `.env` |
+| `npm test` | Run the automated tests |
 | `npm run db:setup` | Create or upgrade the tables in the configured database |
 | `npm run db:import` | Import terms from an old `mysqldump` (see [Usage](#usage)) |
 
@@ -361,18 +379,36 @@ gpa-calculator/
 
 ## Testing
 
-There are no automated tests yet. Run these manual checks with `npm run dev`:
+### Automated tests
 
-1. **Sign-in:** Google, GitHub, and username/password all reach the dashboard; a wrong password shows one generic error.
+```bash
+npm test
+```
+
+The tests use Node's built-in test runner and need **no database** (they point at an address that refuses connections and keep sessions in memory). GitHub Actions runs them, plus `npm audit`, on every push and pull request to `main`.
+
+| File | Covers |
+| --- | --- |
+| `test/gpa.test.js` | Weighted GPA, `P` / `INC` / `DROP` rules, input validation limits |
+| `test/password.test.js` | scrypt hashing, salts, verification, rejecting non-scrypt values |
+| `test/rate-limit.test.js` | Failure counting, windows, clearing, memory fallback |
+| `test/api.test.js` | 401 on private routes, `no-store`, security headers, cross-origin block, bad JSON / too-large bodies, OAuth `state` and short session, robots/sitemap, redirects, 404s, static assets |
+
+### Manual checks
+
+Run these with `npm run dev`:
+
+1. **Sign-in:** Google, GitHub, and username/password all reach the dashboard; a wrong password shows one generic error; an empty submit focuses the empty field.
 2. **Desktop layout (1440×900):** every tab fits the window with no page scrollbar; add 15+ courses and the course list scrolls inside its panel.
 3. **New Term:** the GPA updates while typing; **Save record** adds a History card.
 4. **Cumulative:** ticking terms updates the totals; extra subjects are included; a named CGPA saves and can be deleted.
-5. **History:** open, edit and delete work.
-6. **Settings:** your username and email show; a wrong current password, a mismatched confirmation and a short password are rejected; a valid change shows a success toast, the new password signs in, and another browser's session is signed out.
-7. **Phone (375 px):** the bottom tab bar reaches every section, nothing hides behind it, no horizontal scroll.
-8. **Themes:** light and dark both look right.
-9. **SEO files:** `/robots.txt`, `/sitemap.xml` and `/llms.txt` load and use your `APP_URL`.
-10. **Dependencies:** `npm audit` reports 0 vulnerabilities.
+5. **History:** **Edit**, **Copy** and **Delete** work; Delete asks first and Escape cancels.
+6. **Navigation:** switching sections changes the URL; browser back/forward moves between sections.
+7. **Settings:** your username and email show; a wrong current password, a mismatched confirmation and a short password are rejected; a valid change shows a success toast, the new password signs in, and another browser's session is signed out.
+8. **Phone (375 px):** the bottom tab bar reaches every section, nothing hides behind it, no horizontal scroll.
+9. **Themes:** light and dark both look right, including scrollbars and dropdowns.
+10. **Keyboard:** Tab from the top shows "Skip to content"; every control has a visible focus ring.
+11. **SEO files:** `/robots.txt`, `/sitemap.xml` and `/llms.txt` load and use your `APP_URL`.
 
 <p align="right"><a href="#top">back to top ↑</a></p>
 
@@ -386,7 +422,7 @@ There are no automated tests yet. Run these manual checks with `npm run dev`:
 | OAuth redirects to `/login?error=oauth` | The callback URL in Google/GitHub must match `APP_URL` exactly. |
 | `/login?error=domain` | `ALLOW_EXTERNAL_EMAILS=false` and the account is not in `ALLOWED_EMAIL_DOMAINS`. |
 | Database connection errors | Check `DATABASE_URL` or `DB_*`; hosted databases need `DB_SSL=true`. `GET /api/health` shows whether the database is reachable. |
-| "Too many failed attempts" | Wait 15 minutes; the limit is per IP and account. |
+| "Too many failed attempts" | Wait 15 minutes; the limit is per account guess and per IP. To clear it early, delete the rows in the `auth_attempts` table. |
 | Sitemap shows `localhost` | Set `APP_URL` to your public domain in production. |
 
 <p align="right"><a href="#top">back to top ↑</a></p>
@@ -397,20 +433,23 @@ There are no automated tests yet. Run these manual checks with `npm run dev`:
 
 1. Branch from `main` with a matching prefix: `feat/short-description`, `fix/short-description`, `docs/…`, `chore/…`.
 2. Use [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `style:`, `perf:`, `test:`; an imperative subject of 72 characters or less, a blank line, then one bullet per change.
-3. Run the [manual checks](#testing) and `npm audit`.
-4. **Update this README with every change** (features, configuration, structure, version badges when dependencies change).
-5. Never commit `.env` or downloaded `client_secret_*.json` files.
+3. **Bump the version in every commit** and end the subject with it, e.g. `feat: add CSV export (v1.4.0)`. Breaking change → major, `feat` → minor, anything else → patch. Update `package.json`, `package-lock.json` and the version badge at the top of this README in the same commit.
+4. Run `npm test`, the [manual checks](#testing) and `npm audit`.
+5. **Update this README with every change** (features, configuration, structure, version badges when dependencies change).
+6. Never commit `.env` or downloaded `client_secret_*.json` files.
 
 <details>
 <summary><strong>Security notes</strong></summary>
 
 - Only OAuth accounts with a **verified email** can sign in; the school domain is checked on the server when external emails are off.
 - GitHub sign-in uses only the account's primary verified email; the GitHub token is used once and never stored.
-- Passwords are hashed with **scrypt** and a per-user salt, compared in constant time. Sign-in and password changes are rate-limited (10 failures per 15 minutes; in memory, so per instance on Vercel).
+- Passwords are hashed with **scrypt** and a per-user salt, compared in constant time. Sign-in and password changes are rate-limited: 10 failures per account guess and 50 per IP address every 15 minutes. Counts are stored in MySQL (`auth_attempts`, keys hashed), so every Vercel instance shares them.
+- Visitors who start an OAuth sign-in get a 10-minute session, and an unfinished account setup lasts 30 minutes, so abandoned attempts expire quickly.
 - Changing a password removes every other session of that account and rotates the current session ID.
 - OAuth `state` protects against CSRF; the session ID is regenerated after sign-in.
 - Session cookies are `httpOnly`, `sameSite=lax` and `secure` in production.
-- User text is HTML-escaped; a strict CSP (no inline scripts), `nosniff`, `X-Frame-Options`, HSTS and Referrer-Policy are sent by Express and `vercel.json`.
+- User text is HTML-escaped; a strict CSP (`'self'` only, no inline scripts, no third-party hosts), `nosniff`, `X-Frame-Options`, `Cross-Origin-Opener-Policy`, HSTS and Referrer-Policy are sent by Express and `vercel.json`.
+- API responses are `Cache-Control: no-store`, so per-user data is never stored by browsers or the CDN.
 - Cross-origin state-changing requests are rejected; bodies are capped at 100 KB; inputs are validated on the server; every GPA query is scoped to the signed-in user.
 - Only `public/` is served statically; `.env`, sources and `node_modules` return `404`.
 
