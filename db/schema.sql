@@ -20,6 +20,14 @@ CREATE TABLE IF NOT EXISTS sessions (
   data MEDIUMTEXT
 ) ENGINE=InnoDB;
 
+-- Failed sign-in and password-change attempts, shared by all server instances
+-- (created automatically by lib/rate-limit.js, included for reference)
+CREATE TABLE IF NOT EXISTS auth_attempts (
+  attempt_key CHAR(64) NOT NULL PRIMARY KEY,
+  count INT UNSIGNED NOT NULL,
+  reset_at BIGINT UNSIGNED NOT NULL
+) ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS gpa_records (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,

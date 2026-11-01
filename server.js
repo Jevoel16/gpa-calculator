@@ -32,11 +32,12 @@ app.use((req, res, next) => {
     'X-Frame-Options': 'DENY',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    'Cross-Origin-Opener-Policy': 'same-origin',
     'Content-Security-Policy': [
       "default-src 'self'",
       "script-src 'self'",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com",
+      "style-src 'self' 'unsafe-inline'",
+      "font-src 'self'",
       "img-src 'self' data:",
       "connect-src 'self'",
       "frame-ancestors 'none'",
@@ -50,8 +51,17 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: '100kb' }));
 
-// Shares the app's pool so a serverless instance doesn't open a second set of connections
-const sessionStore = new MySQLStore({ createDatabaseTable: true }, pool);
+// API responses are per-user, so no browser or CDN may store them
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
+// Shares the app's pool so a serverless instance doesn't open a second set of connections.
+// The automated tests run without a database, so they keep sessions in memory.
+const sessionStore = NODE_ENV === 'test'
+  ? new session.MemoryStore()
+  : new MySQLStore({ createDatabaseTable: true }, pool);
 
 app.use(session({
   name: 'gpa.sid',
@@ -88,14 +98,22 @@ app.use((req, res, next) => {
 // On Vercel the CDN serves public/ directly and this is skipped; it serves the files when running locally
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 
+// The database check is cached briefly so the public endpoint can't be used to hammer the database
+const HEALTH_CACHE_MS = 30 * 1000;
+let lastHealth = null;
+
 app.get('/api/health', async (req, res) => {
-  try {
-    await pool.query('SELECT 1');
-    res.json({ ok: true, db: true });
-  } catch (err) {
-    console.error(err);
-    res.status(503).json({ ok: false, db: false });
+  if (!lastHealth || Date.now() - lastHealth.at > HEALTH_CACHE_MS) {
+    let db = true;
+    try {
+      await pool.query('SELECT 1');
+    } catch (err) {
+      console.error('health: database unreachable', err.code || err.message);
+      db = false;
+    }
+    lastHealth = { db, at: Date.now() };
   }
+  res.status(lastHealth.db ? 200 : 503).json({ ok: lastHealth.db, db: lastHealth.db });
 });
 
 // Built from APP_URL so the absolute URLs match whichever domain the app is deployed on

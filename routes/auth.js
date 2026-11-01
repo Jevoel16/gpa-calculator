@@ -3,6 +3,7 @@ const express = require('express');
 const { OAuth2Client } = require('google-auth-library');
 const pool = require('../db/db');
 const { hashPassword, verifyPassword } = require('../lib/password');
+const rateLimit = require('../lib/rate-limit');
 const APP_URL = require('../lib/app-url');
 
 const router = express.Router();
@@ -86,12 +87,26 @@ async function findOrCreateGithubUser(ghUser, verifiedEmail) {
   return result.insertId;
 }
 
-// Starts a fresh session (prevents session fixation) holding the given values
-function startSession(req, values, cb) {
+// Starts a fresh session (prevents session fixation) holding the given values.
+// maxAge overrides the default lifetime for short-lived sessions.
+function startSession(req, values, cb, maxAge) {
   req.session.regenerate(err => {
     if (err) return cb(err);
     Object.assign(req.session, values);
+    if (maxAge) req.session.cookie.maxAge = maxAge;
     req.session.save(cb);
+  });
+}
+
+// Visitors who aren't signed in get a short session for the OAuth round trip, so abandoned attempts expire quickly
+function beginOAuth(req, res, authUrl) {
+  if (!req.session.userId) req.session.cookie.maxAge = OAUTH_SESSION_MS;
+  req.session.save(err => {
+    if (err) {
+      console.error(err);
+      return res.redirect('/login?error=oauth');
+    }
+    res.redirect(authUrl);
   });
 }
 
@@ -105,7 +120,7 @@ async function logIn(req, res, userId) {
       return res.redirect('/login?error=oauth');
     }
     res.redirect(needsSetup ? '/setup' : '/dashboard');
-  });
+  }, needsSetup ? SETUP_SESSION_MS : undefined);
 }
 
 const USERNAME_PATTERN = /^[A-Za-z0-9_.]{3,30}$/;
@@ -116,29 +131,27 @@ function isValidPassword(value) {
   return typeof value === 'string' && value.length >= MIN_PASSWORD && value.length <= MAX_PASSWORD;
 }
 
-// Best-effort brute-force guard. It lives in memory, so on serverless hosts each instance counts on its own.
+// Brute-force guard shared by all instances (see lib/rate-limit.js).
+// One limit per account guess from an IP, and a wider one per IP so a single address can't spray many accounts.
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
-const MAX_FAILED_LOGINS = 10;
-const failedLogins = new Map();
+const MAX_FAILED_PER_ACCOUNT = 10;
+const MAX_FAILED_PER_IP = 50;
+const TOO_MANY = 'Too many failed attempts. Please wait a few minutes and try again.';
 
-function loginKey(req, identifier) {
-  return `${req.ip}|${identifier}`;
+// OAuth hand-offs and unfinished setups only need a short-lived session
+const OAUTH_SESSION_MS = 10 * 60 * 1000;
+const SETUP_SESSION_MS = 30 * 60 * 1000;
+
+async function isThrottled(keys) {
+  const counts = await Promise.all(keys.map(k => rateLimit.getCount(k.key)));
+  return counts.some((count, i) => count >= keys[i].max);
 }
 
-function isThrottled(key) {
-  const entry = failedLogins.get(key);
-  if (entry && entry.resetAt < Date.now()) failedLogins.delete(key);
-  return Boolean(entry && entry.resetAt >= Date.now() && entry.count >= MAX_FAILED_LOGINS);
-}
-
-function recordFailedLogin(key) {
-  const now = Date.now();
-  if (failedLogins.size > 10000) {
-    for (const [k, v] of failedLogins) if (v.resetAt < now) failedLogins.delete(k);
-  }
-  const entry = failedLogins.get(key);
-  if (entry && entry.resetAt >= now) entry.count++;
-  else failedLogins.set(key, { count: 1, resetAt: now + LOGIN_WINDOW_MS });
+function loginLimits(req, identifier) {
+  return [
+    { key: `login|${req.ip}|${identifier}`, max: MAX_FAILED_PER_ACCOUNT },
+    { key: `login-ip|${req.ip}`, max: MAX_FAILED_PER_IP }
+  ];
 }
 
 // Compared against when no account matches, so a wrong username takes as long as a wrong password
@@ -157,13 +170,7 @@ router.get('/google', (req, res) => {
     prompt: 'select_account'
   });
 
-  req.session.save(err => {
-    if (err) {
-      console.error(err);
-      return res.redirect('/login?error=oauth');
-    }
-    res.redirect(url);
-  });
+  beginOAuth(req, res, url);
 });
 
 // Google redirects back here
@@ -208,13 +215,7 @@ router.get('/github', (req, res) => {
     state
   });
 
-  req.session.save(err => {
-    if (err) {
-      console.error(err);
-      return res.redirect('/login?error=oauth');
-    }
-    res.redirect(`https://github.com/login/oauth/authorize?${params}`);
-  });
+  beginOAuth(req, res, `https://github.com/login/oauth/authorize?${params}`);
 });
 
 // GitHub redirects back here
@@ -281,10 +282,8 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Enter your username or email and your password' });
     }
 
-    const key = loginKey(req, identifier);
-    if (isThrottled(key)) {
-      return res.status(429).json({ error: 'Too many failed attempts. Please wait a few minutes and try again.' });
-    }
+    const limits = loginLimits(req, identifier);
+    if (await isThrottled(limits)) return res.status(429).json({ error: TOO_MANY });
 
     const column = identifier.includes('@') ? 'email' : 'username';
     const [rows] = await pool.query(`SELECT id, password_hash FROM users WHERE ${column} = ?`, [identifier]);
@@ -295,11 +294,12 @@ router.post('/login', async (req, res) => {
       await verifyPassword(password, dummyHash);
     }
     if (!user || !user.password_hash || !(await verifyPassword(password, user.password_hash))) {
-      recordFailedLogin(key);
+      await Promise.all(limits.map(l => rateLimit.recordFailure(l.key, LOGIN_WINDOW_MS)));
       return res.status(401).json({ error: 'Invalid username/email or password' });
     }
 
-    failedLogins.delete(key);
+    // Only the per-account count resets; the per-IP count keeps limiting spraying from that address
+    await rateLimit.clear(limits[0].key);
     startSession(req, { userId: user.id }, err => {
       if (err) {
         console.error(err);
@@ -368,6 +368,14 @@ router.post('/setup', async (req, res) => {
   }
 });
 
+// Lets public pages check the session without a 401 showing up as a console error
+router.get('/status', (req, res) => {
+  res.json({
+    signedIn: Boolean(req.session && req.session.userId),
+    pendingSetup: Boolean(req.session && req.session.pendingUserId)
+  });
+});
+
 // Exposes the sign-in policy so the login page can describe it
 router.get('/config', (req, res) => {
   res.json({ allowedDomains, allowExternal });
@@ -398,19 +406,17 @@ router.post('/password', async (req, res) => {
       return res.status(400).json({ error: 'New password must be different from the current one' });
     }
 
-    const key = loginKey(req, `pw|${userId}`);
-    if (isThrottled(key)) {
-      return res.status(429).json({ error: 'Too many failed attempts. Please wait a few minutes and try again.' });
-    }
+    const limit = { key: `password|${userId}`, max: MAX_FAILED_PER_ACCOUNT };
+    if (await isThrottled([limit])) return res.status(429).json({ error: TOO_MANY });
 
     const [rows] = await pool.query('SELECT password_hash FROM users WHERE id = ?', [userId]);
     if (!rows.length) return res.status(401).json({ error: 'Unauthorized' });
     if (!(await verifyPassword(currentPassword, rows[0].password_hash))) {
-      recordFailedLogin(key);
+      await rateLimit.recordFailure(limit.key, LOGIN_WINDOW_MS);
       return res.status(400).json({ error: 'Current password is incorrect' });
     }
 
-    failedLogins.delete(key);
+    await rateLimit.clear(limit.key);
     await pool.query('UPDATE users SET password_hash = ? WHERE id = ?', [await hashPassword(newPassword), userId]);
     // express-mysql-session keeps each session as JSON text, so other sessions of this account can be found by userId
     await pool.query(
