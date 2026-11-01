@@ -10,7 +10,9 @@ const icons = {
   trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>',
   edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
-  book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/></svg>'
+  book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>',
+  close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>'
 };
 
 const views = {
@@ -34,12 +36,35 @@ function escapeHtml(value){
   return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
 }
 
+// Errors are announced immediately and stay longer; every toast can be dismissed
 function toast(message, type = 'success'){
   const el = document.createElement('div');
   el.className = `toast ${type}`;
-  el.textContent = message;
+  if (type === 'error') el.setAttribute('role', 'alert');
+  const text = document.createElement('span');
+  text.textContent = message;
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'toast-close';
+  close.setAttribute('aria-label', 'Dismiss');
+  close.innerHTML = icons.close;
+  close.addEventListener('click', () => el.remove());
+  el.append(text, close);
   $('toasts').appendChild(el);
-  setTimeout(() => el.remove(), 3200);
+  setTimeout(() => el.remove(), type === 'error' ? 8000 : 4000);
+}
+
+// Promise-based replacement for window.confirm() using the themed <dialog>
+function confirmAction(title, text, okLabel = 'Delete'){
+  const dialog = $('confirmDialog');
+  $('confirmTitle').textContent = title;
+  $('confirmText').textContent = text;
+  $('confirmOk').textContent = okLabel;
+  dialog.returnValue = '';
+  dialog.showModal();
+  return new Promise(resolve => {
+    dialog.addEventListener('close', () => resolve(dialog.returnValue === 'confirm'), { once: true });
+  });
 }
 
 function gradeChipClass(gpa){
@@ -86,18 +111,28 @@ async function loadMe(){
 }
 
 function showView(name){
-  const view = views[name] || views.term;
+  // hasOwn so hashes like #constructor don't match inherited Object properties
+  const key = Object.hasOwn(views, name) ? name : 'term';
+  const view = views[key];
   // On phones the page itself scrolls, so a new view should start at the top
   if ($(view.section).classList.contains('hidden')) window.scrollTo(0, 0);
-  for (const [key, v] of Object.entries(views)) {
+  for (const [k, v] of Object.entries(views)) {
     $(v.section).classList.toggle('hidden', v !== view);
-    const tab = document.querySelector(`.tab[data-view="${key}"]`);
+    const tab = document.querySelector(`.tab[data-view="${k}"]`);
     tab.classList.toggle('active', v === view);
-    tab.setAttribute('aria-selected', String(v === view));
+    if (v === view) tab.setAttribute('aria-current', 'page');
+    else tab.removeAttribute('aria-current');
   }
   $('pageTitle').textContent = view.title;
   document.title = `${view.title} • GPA Calculator`;
-  if (location.hash !== `#${name}`) history.replaceState(null, '', `#${name}`);
+  // Unknown or missing hashes are normalised without adding a history entry
+  if (location.hash !== `#${key}`) history.replaceState(null, '', `#${key}`);
+}
+
+// Views are addressed by the URL hash, so the nav links, back/forward and bookmarks all go through hashchange
+function goTo(name){
+  if (location.hash === `#${name}`) showView(name);
+  else location.hash = name;
 }
 
 /* ---------- New term ---------- */
@@ -119,7 +154,7 @@ function addRow(values={}){
   tr.innerHTML = `
     <td class="course-row-index"></td>
     <td><input type="text" placeholder="e.g. Calculus I" class="course-name" aria-label="Course name" value="${escapeHtml(values.name)}"/></td>
-    <td><input type="number" min="0" step="0.5" placeholder="Units" class="course-units" aria-label="Units" value="${escapeHtml(values.units)}"/></td>
+    <td><input type="number" min="0" step="0.5" inputmode="decimal" placeholder="Units" class="course-units" aria-label="Units" value="${escapeHtml(values.units)}"/></td>
     <td><select class="course-grade" aria-label="Grade">${gradeSelectHtml(values.grade)}</select></td>
     <td><button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Remove course" title="Remove">${icons.trash}</button></td>
   `;
@@ -186,7 +221,7 @@ function loadTermData(record, { edit = false } = {}){
   if (!record.courses.length) addRow();
   setEditing(edit ? record : null);
   $('calcMsg').textContent = edit ? '' : `Loaded a copy of “${record.termName}”. Saving creates a new record.`;
-  showView('term');
+  goTo('term');
   $('coursesScroll').scrollTop = 0;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -235,7 +270,8 @@ function renderHistory(){
         <p>Create your first term to start building your history.</p>
         <button class="btn" type="button" style="margin-top: 16px;" id="emptyNewTerm">Create a term</button>
       </div>`;
-    $('emptyNewTerm').addEventListener('click', () => showView('term'));
+    $('emptyNewTerm').addEventListener('click', () => goTo('term'));
+    container.removeAttribute('aria-busy');
     return;
   }
 
@@ -245,7 +281,6 @@ function renderHistory(){
     const units = r.courses.reduce((sum, c) => sum + (Number(c.units ?? c.credits) || 0), 0);
     const card = document.createElement('article');
     card.className = 'card term-card';
-    card.tabIndex = 0;
     card.innerHTML = `
       <div class="term-card-top">
         <div>
@@ -260,20 +295,20 @@ function renderHistory(){
         <span class="chip">${units} units</span>
       </div>
       <div class="actions">
-        <button class="btn btn-ghost btn-sm" type="button" data-action="edit">${icons.edit} Edit</button>
-        <button class="btn btn-danger btn-sm" type="button" data-action="delete">${icons.trash} Delete</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-action="edit" aria-label="Edit ${escapeHtml(r.termName)}">${icons.edit} Edit</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-action="copy" aria-label="Copy ${escapeHtml(r.termName)} into a new term" title="Start a new term from this one">${icons.copy} Copy</button>
+        <button class="btn btn-danger btn-sm" type="button" data-action="delete" aria-label="Delete ${escapeHtml(r.termName)}">${icons.trash} Delete</button>
       </div>`;
-    card.addEventListener('click', () => loadTermData(r));
-    card.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target === card) loadTermData(r); });
-    card.querySelector('[data-action="edit"]').addEventListener('click', e => { e.stopPropagation(); loadTermData(r, { edit: true }); });
-    card.querySelector('[data-action="delete"]').addEventListener('click', async e => {
-      e.stopPropagation();
-      if (confirm(`Delete "${r.termName}"? This can't be undone.`)) await deleteRecord(r.id);
+    card.querySelector('[data-action="edit"]').addEventListener('click', () => loadTermData(r, { edit: true }));
+    card.querySelector('[data-action="copy"]').addEventListener('click', () => loadTermData(r));
+    card.querySelector('[data-action="delete"]').addEventListener('click', async () => {
+      if (await confirmAction(`Delete “${r.termName}”?`, "This term will be removed from your history. This can't be undone.")) await deleteRecord(r.id);
     });
     grid.appendChild(card);
   }
   container.innerHTML = '';
   container.appendChild(grid);
+  container.removeAttribute('aria-busy');
 }
 
 async function deleteRecord(id){
@@ -444,7 +479,7 @@ async function loadCgpaRecords(){
   container.querySelectorAll('tbody tr').forEach((tr, i) => {
     tr.querySelector('button').addEventListener('click', async () => {
       const record = records[i];
-      if (!confirm(`Delete "${record.recordName}"? This can't be undone.`)) return;
+      if (!(await confirmAction(`Delete “${record.recordName}”?`, "This saved CGPA record will be removed. This can't be undone."))) return;
       try {
         await api(`/api/gpa/cgpa/${record.id}`, { method: 'DELETE' });
         toast('CGPA record deleted');
@@ -480,6 +515,7 @@ function showPane(paneId){
     const active = seg.dataset.pane === paneId;
     seg.classList.toggle('active', active);
     seg.setAttribute('aria-selected', String(active));
+    seg.tabIndex = active ? 0 : -1;
     $(seg.dataset.pane).classList.toggle('hidden', !active);
   });
   $('paneHint').textContent = paneHints[paneId];
@@ -521,9 +557,24 @@ async function changePassword(event){
 /* ---------- Init ---------- */
 
 function initializeEventListeners(){
-  document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => showView(tab.dataset.view)));
+  window.addEventListener('hashchange', () => {
+    showView(location.hash.slice(1));
+    // Moves screen readers and keyboard focus to the new view, like a page load would
+    $('main').focus({ preventScroll: true });
+  });
   document.querySelectorAll('.seg').forEach(seg => seg.addEventListener('click', () => showPane(seg.dataset.pane)));
-  $('accountBtn').addEventListener('click', () => showView('settings'));
+  // Arrow keys move between the segmented tabs, as the ARIA tabs pattern expects
+  document.querySelector('.segmented').addEventListener('keydown', e => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+    const segs = Array.from(document.querySelectorAll('.seg'));
+    const i = segs.indexOf(document.activeElement);
+    let next = e.key === 'Home' ? 0 : e.key === 'End' ? segs.length - 1 : i + (e.key === 'ArrowRight' ? 1 : -1);
+    next = (next + segs.length) % segs.length;
+    e.preventDefault();
+    segs[next].focus();
+    showPane(segs[next].dataset.pane);
+  });
+  $('accountBtn').addEventListener('click', () => goTo('settings'));
   $('passwordForm').addEventListener('submit', changePassword);
   $('additionalSubjectGrade').innerHTML = gradeSelectHtml();
   $('addSubjectBtn').addEventListener('click', addAdditionalSubject);
@@ -542,6 +593,7 @@ function initializeEventListeners(){
 
 async function initializePage(){
   showView(location.hash.slice(1));
+  showPane('termsPane');
   displayAdditionalSubjects();
   resetTermForm();
   try {

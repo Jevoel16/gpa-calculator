@@ -6,15 +6,24 @@
   <title>Sign in • GPA Calculator</title>
   <meta name="description" content="Compute your term GPA and cumulative GPA, and keep a private history of your grades. Sign in with a username and password, Google or GitHub." />
   <meta name="theme-color" content="#4f46e5" />
+  <meta property="og:site_name" content="GPA Calculator" />
   <meta property="og:title" content="GPA Calculator" />
   <meta property="og:description" content="Compute term and cumulative GPA, and keep a private history of your grades." />
   <meta property="og:type" content="website" />
-  <link rel="canonical" href="/login" />
+  <meta property="og:url" content="https://gpa-calculator.jevoelorbilla.dev/login" />
+  <meta property="og:image" content="https://gpa-calculator.jevoelorbilla.dev/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="GPA Calculator: compute your term and cumulative GPA" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="canonical" href="https://gpa-calculator.jevoelorbilla.dev/login" />
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "GPA Calculator",
+      "url": "https://gpa-calculator.jevoelorbilla.dev/login",
+      "image": "https://gpa-calculator.jevoelorbilla.dev/og-image.png",
       "description": "Compute your term GPA and cumulative GPA on the MSU-IIT grading scale, and keep a private history of your grades.",
       "applicationCategory": "EducationalApplication",
       "operatingSystem": "Any",
@@ -22,10 +31,11 @@
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "PHP" }
     }
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="preload" href="/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="icon" href="/favicon.ico" sizes="32x32" />
   <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="stylesheet" href="/style.css" />
   <script src="/darkmode.js"></script>
 </head>
@@ -68,6 +78,7 @@
         </form>
 
         <div id="msg" class="alert" role="alert"></div>
+        <noscript><p class="alert">Please enable JavaScript to sign in.</p></noscript>
 
         <p class="auth-hint">New here? Continue with Google or GitHub to create your account.</p>
         <p id="policy" class="auth-hint"></p>

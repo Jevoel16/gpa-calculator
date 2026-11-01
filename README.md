@@ -14,7 +14,7 @@
 ![google-auth-library](https://img.shields.io/badge/google--auth--library-11.3.2-blue?style=flat)
 ![dotenv](https://img.shields.io/badge/dotenv-16.6.1-blue?style=flat)
 
-![Version](https://img.shields.io/badge/version-1.2.1-green?style=flat)
+![Version](https://img.shields.io/badge/version-1.3.0-green?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
 ![Platform](https://img.shields.io/badge/platform-web%20%7C%20vercel-informational?style=flat)
 

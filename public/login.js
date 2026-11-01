@@ -25,12 +25,17 @@ function renderPolicy(allowExternal) {
 const loginForm = document.getElementById('loginForm');
 const loginBtn = document.getElementById('loginBtn');
 
+loginForm.addEventListener('input', e => e.target.removeAttribute('aria-invalid'));
+
 loginForm.addEventListener('submit', async e => {
   e.preventDefault();
   const identifier = loginForm.identifier.value.trim();
   const password = loginForm.password.value;
+  loginForm.identifier.setAttribute('aria-invalid', String(!identifier));
+  loginForm.password.setAttribute('aria-invalid', String(!password));
   if (!identifier || !password) {
     msg.textContent = 'Enter your username or email and your password.';
+    (identifier ? loginForm.password : loginForm.identifier).focus();
     return;
   }
 
@@ -55,8 +60,9 @@ loginForm.addEventListener('submit', async e => {
 });
 
 // Already signed in: skip the login page
-fetch('/api/auth/me')
-  .then(res => { if (res.ok && !new URLSearchParams(window.location.search).has('error')) window.location.replace('/dashboard'); })
+fetch('/api/auth/status')
+  .then(res => res.json())
+  .then(({ signedIn }) => { if (signedIn && !new URLSearchParams(window.location.search).has('error')) window.location.replace('/dashboard'); })
   .catch(() => {});
 
 fetch('/api/auth/config')

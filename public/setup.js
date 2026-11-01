@@ -12,22 +12,29 @@ fetch('/api/auth/setup')
   })
   .catch(() => {});
 
+// Returns the first problem and the field it belongs to, so focus can move there
 function validate(username, password, confirm) {
   if (!/^[A-Za-z0-9_.]{3,30}$/.test(username)) {
-    return 'Username must be 3–30 characters: letters, numbers, dots or underscores.';
+    return { field: 'username', text: 'Username must be 3–30 characters: letters, numbers, dots or underscores.' };
   }
-  if (password.length < 8) return 'Password must be at least 8 characters.';
-  if (password !== confirm) return 'Passwords do not match.';
-  return '';
+  if (password.length < 8) return { field: 'password', text: 'Password must be at least 8 characters.' };
+  if (password !== confirm) return { field: 'confirm', text: 'Passwords do not match.' };
+  return null;
 }
+
+form.addEventListener('input', e => e.target.removeAttribute('aria-invalid'));
 
 form.addEventListener('submit', async e => {
   e.preventDefault();
   const username = form.username.value.trim();
   const password = form.password.value;
   const error = validate(username, password, form.confirm.value);
-  msg.textContent = error;
-  if (error) return;
+  msg.textContent = error ? error.text : '';
+  if (error) {
+    form[error.field].setAttribute('aria-invalid', 'true');
+    form[error.field].focus();
+    return;
+  }
 
   setupBtn.disabled = true;
   try {
