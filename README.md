@@ -9,13 +9,12 @@
 ![Node.js](https://img.shields.io/badge/node.js-%E2%89%A520-blue?style=flat)
 ![Express](https://img.shields.io/badge/express-4.22.3-blue?style=flat)
 ![mysql2](https://img.shields.io/badge/mysql2-3.24.6-blue?style=flat)
-![express-session](https://img.shields.io/badge/express--session-1.18.2-blue?style=flat)
+![express-session](https://img.shields.io/badge/express--session-1.19.0-blue?style=flat)
 ![express-mysql-session](https://img.shields.io/badge/express--mysql--session-3.0.3-blue?style=flat)
-![google-auth-library](https://img.shields.io/badge/google--auth--library-11.2.0-blue?style=flat)
+![google-auth-library](https://img.shields.io/badge/google--auth--library-11.3.2-blue?style=flat)
 ![dotenv](https://img.shields.io/badge/dotenv-16.6.1-blue?style=flat)
-![nodemon](https://img.shields.io/badge/nodemon-3.1.11-blue?style=flat)
 
-![Version](https://img.shields.io/badge/version-1.2.0-green?style=flat)
+![Version](https://img.shields.io/badge/version-1.2.1-green?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
 ![Platform](https://img.shields.io/badge/platform-web%20%7C%20vercel-informational?style=flat)
 
@@ -352,7 +351,7 @@ gpa-calculator/
 | Script | Description |
 | --- | --- |
 | `npm start` | Start the server |
-| `npm run dev` | Start with auto-reload (nodemon) and `.env` |
+| `npm run dev` | Start with auto-reload (Node's built-in `--watch`) and `.env` |
 | `npm run db:setup` | Create or upgrade the tables in the configured database |
 | `npm run db:import` | Import terms from an old `mysqldump` (see [Usage](#usage)) |
 
