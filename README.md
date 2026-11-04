@@ -11,10 +11,10 @@
 ![mysql2](https://img.shields.io/badge/mysql2-3.24.6-blue?style=flat)
 ![express-session](https://img.shields.io/badge/express--session-1.19.0-blue?style=flat)
 ![express-mysql-session](https://img.shields.io/badge/express--mysql--session-3.0.3-blue?style=flat)
-![google-auth-library](https://img.shields.io/badge/google--auth--library-11.3.2-blue?style=flat)
+![google-auth-library](https://img.shields.io/badge/google--auth--library-11.3.3-blue?style=flat)
 ![dotenv](https://img.shields.io/badge/dotenv-16.6.1-blue?style=flat)
 
-![Version](https://img.shields.io/badge/version-1.8.1-green?style=flat)
+![Version](https://img.shields.io/badge/version-1.8.2-green?style=flat)
 ![CI](https://github.com/Jevoel16/gpa-calculator/actions/workflows/ci.yml/badge.svg)
 ![Tests](https://img.shields.io/badge/tests-54%20passing-brightgreen?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
