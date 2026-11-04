@@ -14,8 +14,9 @@
 ![google-auth-library](https://img.shields.io/badge/google--auth--library-11.3.2-blue?style=flat)
 ![dotenv](https://img.shields.io/badge/dotenv-16.6.1-blue?style=flat)
 
-![Version](https://img.shields.io/badge/version-1.8.0-green?style=flat)
-![Tests](https://img.shields.io/badge/tests-26%20passing-brightgreen?style=flat)
+![Version](https://img.shields.io/badge/version-1.8.1-green?style=flat)
+![CI](https://github.com/Jevoel16/gpa-calculator/actions/workflows/ci.yml/badge.svg)
+![Tests](https://img.shields.io/badge/tests-54%20passing-brightgreen?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
 ![Platform](https://img.shields.io/badge/platform-web%20%7C%20vercel-informational?style=flat)
 
@@ -415,7 +416,7 @@ gpa-calculator/
 npm test
 ```
 
-The tests use Node's built-in test runner and need **no database** (they point at an address that refuses connections and keep sessions in memory). GitHub Actions runs them, plus `npm audit`, on every push and pull request to `main`.
+The tests use Node's built-in test runner and need **no database** (they point at an address that refuses connections and keep sessions in memory). GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs them, plus `npm audit`, on Node 20 and 22 for every push and pull request to `main`; a newer push cancels the older run.
 
 | File | Covers |
 | --- | --- |
