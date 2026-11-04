@@ -321,7 +321,7 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 .course-table th:first-child { padding-left: 12px; }
 .empty-row td { text-align: center; color: var(--text-muted); padding: 22px; }
 
-.course-table .col-code { width: 96px; }
+.course-table .col-code { width: 116px; }
 
 .course-row-index { color: var(--text-muted); font-size: 12px; font-weight: 600; width: 28px; text-align: center; }
 

@@ -166,9 +166,9 @@ function addRow(values={}){
     updateTermSummary();
   }));
   tbody.appendChild(tr);
-  return tr;
   renumberRows();
   updateTermSummary();
+  return tr;
 }
 
 function readCourses(){
