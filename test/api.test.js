@@ -67,6 +67,15 @@ test('bad input is rejected before touching the database', async () => {
   assert.equal((await post('/api/auth/login', {})).status, 400);
   assert.equal((await post('/api/auth/login', { identifier: 'a', password: 'x'.repeat(129) })).status, 400);
   assert.equal((await post('/api/auth/login', 'x'.repeat(200 * 1024))).status, 413);
+  // Express 5 leaves req.body undefined when nothing is parsed; routes must still answer 400
+  const noBody = await fetch(base + '/api/auth/login', { method: 'POST' });
+  assert.equal(noBody.status, 400);
+  const formBody = await fetch(base + '/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'identifier=a&password=b'
+  });
+  assert.equal(formBody.status, 400);
 });
 
 test('OAuth start redirects with a state and a short-lived session', async () => {

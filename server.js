@@ -50,6 +50,11 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json({ limit: '100kb' }));
+// Express 5 leaves req.body undefined for non-JSON or empty requests; routes expect an object
+app.use((req, res, next) => {
+  if (req.body === undefined) req.body = {};
+  next();
+});
 
 // API responses are per-user, so no browser or CDN may store them
 app.use('/api', (req, res, next) => {

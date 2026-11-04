@@ -7,14 +7,14 @@
 **Compute, save and track your term GPA and cumulative GPA, on the MSU-IIT scale or another grading system.**
 
 ![Node.js](https://img.shields.io/badge/node.js-%E2%89%A520-blue?style=flat)
-![Express](https://img.shields.io/badge/express-4.22.3-blue?style=flat)
+![Express](https://img.shields.io/badge/express-5.3.0-blue?style=flat)
 ![mysql2](https://img.shields.io/badge/mysql2-3.24.6-blue?style=flat)
 ![express-session](https://img.shields.io/badge/express--session-1.19.0-blue?style=flat)
 ![express-mysql-session](https://img.shields.io/badge/express--mysql--session-3.0.3-blue?style=flat)
 ![google-auth-library](https://img.shields.io/badge/google--auth--library-11.3.3-blue?style=flat)
 ![dotenv](https://img.shields.io/badge/dotenv-18.0.9-blue?style=flat)
 
-![Version](https://img.shields.io/badge/version-1.8.4-green?style=flat)
+![Version](https://img.shields.io/badge/version-1.8.5-green?style=flat)
 ![CI](https://github.com/Jevoel16/gpa-calculator/actions/workflows/ci.yml/badge.svg)
 ![Tests](https://img.shields.io/badge/tests-54%20passing-brightgreen?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
@@ -95,7 +95,7 @@ Common spellings are accepted and stored in the system's own form: `1` → `1.00
 
 | Layer | Technology |
 | --- | --- |
-| Backend | Node.js 20+, Express 4 |
+| Backend | Node.js 20+, Express 5 |
 | Database | MySQL 8 or TiDB Cloud (`mysql2`) |
 | Auth | Username / password (Node `crypto.scrypt`), Google OAuth 2.0 (`google-auth-library`), GitHub OAuth (built-in `fetch`), `express-session` |
 | Sessions | `express-mysql-session` |
@@ -426,7 +426,7 @@ The tests use Node's built-in test runner and need **no database** (they point a
 | `test/myiit-paste.test.js` | Parsing MyIIT copies: term name, courses, grade normalising, spaced copies, ignoring ordinary text |
 | `test/password.test.js` | scrypt hashing, salts, verification, rejecting non-scrypt values |
 | `test/rate-limit.test.js` | Failure counting, windows, clearing, memory fallback |
-| `test/api.test.js` | 401 on private routes, `no-store`, security headers, cross-origin block, bad JSON / too-large bodies, OAuth `state` and short session, robots/sitemap, redirects, 404s, static assets |
+| `test/api.test.js` | 401 on private routes, `no-store`, security headers, cross-origin block, bad JSON / missing / too-large bodies, OAuth `state` and short session, robots/sitemap, redirects, 404s, static assets |
 
 ### Manual checks
 
