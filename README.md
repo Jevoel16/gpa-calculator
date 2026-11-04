@@ -14,7 +14,7 @@
 ![google-auth-library](https://img.shields.io/badge/google--auth--library-11.3.2-blue?style=flat)
 ![dotenv](https://img.shields.io/badge/dotenv-16.6.1-blue?style=flat)
 
-![Version](https://img.shields.io/badge/version-1.4.2-green?style=flat)
+![Version](https://img.shields.io/badge/version-1.5.0-green?style=flat)
 ![Tests](https://img.shields.io/badge/tests-26%20passing-brightgreen?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
 ![Platform](https://img.shields.io/badge/platform-web%20%7C%20vercel-informational?style=flat)
@@ -49,6 +49,8 @@
 - **Username and password sign-in.** New accounts are created through Google or GitHub. On the first sign-in the app asks for a username and password. After that you can sign in with your username (or email) and password, or keep using Google or GitHub.
 - **Settings.** See your name, username and email, and change your password. Changing it signs out every other device.
 - **Live term GPA.** GPA, total units and course count update as you type.
+- **Paste from MyIIT.** Copy a semester's grades from MyIIT and paste them into any New Term field: the `SY: … SEM: …` line becomes the term name and each line becomes a course with its code, title and grade. MyIIT doesn't show units, so the units fields are highlighted for you to fill in.
+- **Course codes.** An optional Code column (e.g. `CCC100`) is saved with each course.
 - **Cumulative GPA (CGPA).** Combine any saved terms, add extra subjects that aren't part of a term, and save the result as a named CGPA record.
 - **History.** Saved terms appear as cards with GPA, an academic standing badge, course count and units. **Edit** a term, **Copy** it into a new one, or **Delete** it (with a confirmation dialog).
 - **Fits the screen on desktop.** The sections (New Term, Cumulative, History, Settings) live in the header. On windows at least 700 px tall each view fits without page scrolling; long lists scroll inside their own panel. Shorter windows scroll normally.
@@ -247,6 +249,19 @@ If `ALLOWED_EMAIL_DOMAINS` is empty, external accounts are always allowed.
 2. On first sign-in, pick a username and password on the setup page.
 3. You land on **New Term**: type a term name, add courses with units and grades, and watch the GPA card update. Click **Save record**.
 
+### Pasting grades from MyIIT
+
+1. In MyIIT, select a semester's block (the `SY:` line and its course lines) and copy it, for example:
+   ```text
+   SY: 2023-2024 SEM: 1 (BSIT:BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY)
+   CCC100	Fundamentals of Computing	1.00
+   CCC101	Computer Programming 1	1.25
+   ```
+2. Click any field on **New Term** and paste (Ctrl+V / Cmd+V). The term name and every course fill in; the rows replace whatever was there.
+3. Fill in the highlighted **Units** fields, then click **Save record**.
+
+Pasting a single course line into a row fills just that row. If you copy several semesters at once, only the first is used. Ordinary text pastes normally.
+
 ### Returning student
 
 1. Sign in with your username (or email) and password, or Google/GitHub.
@@ -337,6 +352,7 @@ gpa-calculator/
 │   ├── 404.html           # Not-found page
 │   ├── dashboard.html     # Main app: header tabs, New Term, Cumulative, History, Settings
 │   ├── dashboard.js       # Dashboard logic
+│   ├── myiit-paste.js     # Parses grades copied from MyIIT (also used by the tests)
 │   ├── darkmode.js        # Theme handling (follows the system until you choose)
 │   ├── fonts/             # Self-hosted Inter variable font and its OFL license
 │   ├── icons/             # App icons (192, 512, maskable, Apple touch icon)
@@ -389,7 +405,8 @@ The tests use Node's built-in test runner and need **no database** (they point a
 
 | File | Covers |
 | --- | --- |
-| `test/gpa.test.js` | Weighted GPA, `P` / `INC` / `DROP` rules, input validation limits |
+| `test/gpa.test.js` | Weighted GPA, `P` / `INC` / `DROP` rules, input validation limits, optional course code |
+| `test/myiit-paste.test.js` | Parsing MyIIT copies: term name, courses, grade normalising, spaced copies, ignoring ordinary text |
 | `test/password.test.js` | scrypt hashing, salts, verification, rejecting non-scrypt values |
 | `test/rate-limit.test.js` | Failure counting, windows, clearing, memory fallback |
 | `test/api.test.js` | 401 on private routes, `no-store`, security headers, cross-origin block, bad JSON / too-large bodies, OAuth `state` and short session, robots/sitemap, redirects, 404s, static assets |
@@ -400,7 +417,7 @@ Run these with `npm run dev`:
 
 1. **Sign-in:** Google, GitHub, and username/password all reach the dashboard; a wrong password shows one generic error; an empty submit focuses the empty field.
 2. **Desktop layout (1440×900):** every tab fits the window with no page scrollbar; add 15+ courses and the course list scrolls inside its panel.
-3. **New Term:** the GPA updates while typing; **Save record** adds a History card.
+3. **New Term:** the GPA updates while typing; **Save record** adds a History card. Pasting a MyIIT copy fills the term name and courses and highlights the units.
 4. **Cumulative:** ticking terms updates the totals; extra subjects are included; a named CGPA saves and can be deleted.
 5. **History:** **Edit**, **Copy** and **Delete** work; Delete asks first and Escape cancels.
 6. **Navigation:** switching sections changes the URL; browser back/forward moves between sections.

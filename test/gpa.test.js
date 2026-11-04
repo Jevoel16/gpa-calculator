@@ -48,6 +48,18 @@ test('sanitizeCourses trims names and keeps valid courses', () => {
   );
 });
 
+test('sanitizeCourses keeps an optional course code', () => {
+  assert.deepEqual(
+    sanitizeCourses([{ code: ' CCC100 ', name: 'Computing', units: 3, grade: '1.00' }]),
+    [{ name: 'Computing', units: 3, grade: '1.00', code: 'CCC100' }]
+  );
+  assert.deepEqual(
+    sanitizeCourses([{ code: '  ', name: 'Computing', units: 3, grade: '1.00' }]),
+    [{ name: 'Computing', units: 3, grade: '1.00' }],
+    'blank code is dropped'
+  );
+});
+
 test('sanitizeCourses rejects malformed input', () => {
   const valid = { name: 'Math', units: 3, grade: '1.00' };
   assert.equal(sanitizeCourses([]), null, 'empty list');
@@ -59,4 +71,6 @@ test('sanitizeCourses rejects malformed input', () => {
   assert.equal(sanitizeCourses([{ ...valid, name: 'x'.repeat(101) }]), null, 'name too long');
   assert.equal(sanitizeCourses(Array(101).fill(valid)), null, 'too many courses');
   assert.equal(sanitizeCourses([{ ...valid, grade: 'toString' }]), null, 'prototype key as grade');
+  assert.equal(sanitizeCourses([{ ...valid, code: 'x'.repeat(21) }]), null, 'code too long');
+  assert.equal(sanitizeCourses([{ ...valid, code: 42 }]), null, 'code not a string');
 });

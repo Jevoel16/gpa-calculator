@@ -153,14 +153,19 @@ function addRow(values={}){
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td class="course-row-index"></td>
+    <td class="col-code"><input type="text" maxlength="20" placeholder="Code" class="course-code" aria-label="Course code" value="${escapeHtml(values.code)}"/></td>
     <td><input type="text" placeholder="e.g. Calculus I" class="course-name" aria-label="Course name" value="${escapeHtml(values.name)}"/></td>
     <td><input type="number" min="0" step="0.5" inputmode="decimal" placeholder="Units" class="course-units" aria-label="Units" value="${escapeHtml(values.units)}"/></td>
     <td><select class="course-grade" aria-label="Grade">${gradeSelectHtml(values.grade)}</select></td>
     <td><button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Remove course" title="Remove">${icons.trash}</button></td>
   `;
   tr.querySelector('button').addEventListener('click', () => { tr.remove(); renumberRows(); updateTermSummary(); });
-  tr.querySelectorAll('input, select').forEach(el => el.addEventListener('input', updateTermSummary));
+  tr.querySelectorAll('input, select').forEach(el => el.addEventListener('input', () => {
+    el.removeAttribute('aria-invalid');
+    updateTermSummary();
+  }));
   tbody.appendChild(tr);
+  return tr;
   renumberRows();
   updateTermSummary();
 }
@@ -168,6 +173,7 @@ function addRow(values={}){
 function readCourses(){
   const rows = Array.from(document.querySelectorAll('#coursesBody tr'));
   return rows.map(r => ({
+    code: r.querySelector('.course-code').value.trim(),
     name: r.querySelector('.course-name').value.trim(),
     units: Number(r.querySelector('.course-units').value) || 0,
     grade: r.querySelector('.course-grade').value
@@ -250,6 +256,59 @@ async function saveTerm(){
   } finally {
     btn.disabled = false;
   }
+}
+
+// Pasting grades copied from MyIIT into any New Term field fills the whole form
+function handleTermPaste(event){
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement)) return;
+  const text = event.clipboardData && event.clipboardData.getData('text/plain');
+  if (!text || !window.MyiitPaste) return;
+  const { termName, courses, moreTerms } = window.MyiitPaste.parseMyiitGrades(text);
+
+  // One course line pasted into a row fills just that row
+  const row = target.closest('#coursesBody tr');
+  if (!termName && courses.length === 1 && row) {
+    event.preventDefault();
+    fillRow(row, courses[0]);
+    markMissingUnits([row]);
+    updateTermSummary();
+    return;
+  }
+  // Otherwise only take over the paste when it really looks like a MyIIT copy
+  if (!termName && courses.length < 2) return;
+  if (!courses.length) return; // a bare header pasted into the term name stays a normal paste
+
+  event.preventDefault();
+  if (termName) $('termName').value = termName;
+  $('coursesBody').innerHTML = '';
+  const rows = courses.map(course => addRow(course));
+  $('calcMsg').textContent = '';
+  const missing = markMissingUnits(rows);
+  if (missing.length) missing[0].focus();
+  toast(`Pasted ${courses.length} course${courses.length === 1 ? '' : 's'} from MyIIT.` +
+    (missing.length ? ' Fill in the units to compute your GPA.' : '') +
+    (moreTerms ? ' Only the first term was used.' : ''));
+}
+
+function fillRow(row, course){
+  row.querySelector('.course-code').value = course.code;
+  row.querySelector('.course-name').value = course.name;
+  if (course.units) row.querySelector('.course-units').value = course.units;
+  if (course.grade) row.querySelector('.course-grade').value = course.grade;
+}
+
+// Units aren't in the MyIIT copy, so empty ones are flagged until the user fills them in
+function markMissingUnits(rows){
+  const missing = [];
+  for (const row of rows) {
+    const input = row.querySelector('.course-units');
+    if (!input.value) {
+      input.setAttribute('aria-invalid', 'true');
+      missing.push(input);
+    }
+  }
+  return missing;
 }
 
 /* ---------- History ---------- */
@@ -582,6 +641,7 @@ function initializeEventListeners(){
   $('addRowBtn').addEventListener('click', () => { addRow(); document.querySelector('#coursesBody tr:last-child .course-name').focus(); });
   $('clearBtn').addEventListener('click', resetTermForm);
   $('saveBtn').addEventListener('click', saveTerm);
+  $('newTermSection').addEventListener('paste', handleTermPaste);
   $('saveCgpaBtn').addEventListener('click', saveCgpa);
   $('logoutBtn').addEventListener('click', async () => {
     try {

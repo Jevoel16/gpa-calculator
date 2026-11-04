@@ -16,6 +16,7 @@ const gradePoints = {
 const CREDIT_ONLY_GRADES = new Set(['P']);
 
 const MAX_NAME_LENGTH = 100; // matches the VARCHAR(100) name columns
+const MAX_CODE_LENGTH = 20;
 const MAX_COURSES = 100;
 const MAX_UNITS = 30;
 
@@ -37,7 +38,12 @@ function sanitizeCourses(courses) {
     if (!Number.isFinite(units) || units <= 0 || units > MAX_UNITS) return null;
     const grade = gradeKey(c.grade);
     if (!Object.prototype.hasOwnProperty.call(gradePoints, grade)) return null;
-    clean.push({ name: c.name.trim(), units, grade: String(c.grade).trim() });
+    // Course code is optional (e.g. "CCC100" from a MyIIT paste); stored only when given
+    const code = c.code == null ? '' : c.code;
+    if (typeof code !== 'string' || code.trim().length > MAX_CODE_LENGTH) return null;
+    const course = { name: c.name.trim(), units, grade: String(c.grade).trim() };
+    if (code.trim()) course.code = code.trim();
+    clean.push(course);
   }
   return clean;
 }
