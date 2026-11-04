@@ -252,7 +252,6 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 .layout-split { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
 .stack { display: grid; gap: 20px; }
 .view-cumulative { display: grid; gap: 20px; }
-.side-panels { display: grid; gap: 20px; }
 .term-name-field { flex: 1; min-width: 200px; max-width: 320px; }
 .stat.stat-accent { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; border-color: transparent; }
 .stat.stat-accent .stat-label { color: rgba(255, 255, 255, .8); }
@@ -267,15 +266,16 @@ input[aria-invalid="true"] { border-color: var(--danger); }
   .app-body { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
   .app-body .app-main { flex: 1; min-height: 0; display: flex; flex-direction: column; padding-bottom: 24px; }
   .view { flex: 1; min-height: 0; }
-  .view.layout-split, .view-cumulative > .layout-split { grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+  .view.layout-split { grid-template-rows: minmax(0, 1fr); align-items: stretch; }
   .view-cumulative { grid-template-rows: auto minmax(0, 1fr); }
-  .view-cumulative > .layout-split { min-height: 0; grid-template-columns: minmax(0, 1fr) 380px; }
   .panel { display: flex; flex-direction: column; min-height: 0; }
   .panel > .card-head, .panel > .card-foot { flex: none; }
   .panel-scroll { flex: 1; min-height: 0; overflow-y: auto; }
   .side-col { min-height: 0; overflow-y: auto; align-content: start; }
-  .side-panels { grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); overflow: visible; }
-  .view-history { display: flex; flex-direction: column; }
+  .app-main .view-history { grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+  /* The scale fills the view's height; only the term cards scroll */
+  .view-history .scale-panel { position: static; overflow-y: auto; }
+  .history-main { display: flex; flex-direction: column; min-height: 0; }
   .history-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 4px; margin: -4px; }
   .view-settings { overflow-y: auto; }
 }
@@ -298,13 +298,10 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 .gpa-hero .stat { background: rgba(255, 255, 255, .12); border-color: rgba(255, 255, 255, .18); padding: 12px; }
 .gpa-hero .stat-value { font-size: 20px; }
 
-.scale-card summary { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; cursor: pointer; list-style: none; border-radius: var(--radius); }
-.scale-card summary::-webkit-details-marker { display: none; }
-.scale-card summary:focus-visible { outline: none; box-shadow: var(--ring); }
-.scale-card .chevron { width: 18px; height: 18px; color: var(--text-muted); transition: transform .2s; }
-.scale-card[open] .chevron { transform: rotate(180deg); }
-.scale-card[open] summary { border-bottom: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; }
-.scale-card .card-body { padding-top: 10px; padding-bottom: 12px; }
+/* History: the grading scale sits to the left of the saved terms, always open */
+.view-history { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 20px; align-items: start; }
+.scale-panel { position: sticky; top: 88px; }
+.scale-panel .card-body { padding-top: 10px; padding-bottom: 12px; }
 .scale-list { display: grid; grid-template-columns: 1fr; gap: 0; font-size: 13px; }
 .scale-list div { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--border); }
 .scale-list span:last-child { color: var(--text-muted); }
@@ -439,6 +436,8 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 }
 @media (max-width: 960px) {
   .layout-split { grid-template-columns: 1fr; }
+  .app-main .view-history { grid-template-columns: 1fr; }
+  .view-history .scale-panel { position: static; order: 1; }
   .app-header-inner { grid-template-columns: auto 1fr auto; }
   .brand-name { display: none; }
 }
@@ -479,7 +478,7 @@ input[aria-invalid="true"] { border-color: var(--danger); }
   .notfound-code { font-size: 72px; }
   .course-table thead { display: none; }
   .course-table, .course-table tbody, .course-table tr, .course-table td { display: block; width: 100%; }
-  .course-table tr { display: grid; grid-template-columns: 1fr 1fr 42px; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .course-table tr { display: grid; grid-template-columns: 96px minmax(0, 1fr) 42px; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--border); }
   .course-table td { padding: 0 !important; border: 0; }
   .course-table td:last-child { width: auto; }
   .course-table td.course-row-index { display: none; }

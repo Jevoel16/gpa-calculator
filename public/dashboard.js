@@ -24,7 +24,8 @@ const views = {
 
 const paneHints = {
   termsPane: 'Choose which terms to include.',
-  subjectsPane: "Add subjects that aren't part of a saved term."
+  subjectsPane: "Add subjects that aren't part of a saved term.",
+  cgpaPane: 'Your saved cumulative GPA records.'
 };
 
 const MIN_PASSWORD = 8;
@@ -461,9 +462,14 @@ function resetCumulativeDisplay(text = '0.00'){
   $('totalUnitsDisplay').textContent = text === '0.00' ? '0' : text;
   $('gradePointsDisplay').textContent = text;
   $('cumulativeGpaDisplay').textContent = text;
-  $('cumulativeTermsTable').innerHTML = '<p class="muted" style="font-size: 14px;">Select terms or add subjects to see the breakdown.</p>';
-  $('cgpaSaveSection').classList.add('hidden');
   window.currentCGPA = null;
+  updateSaveRow();
+}
+
+// The "Name this CGPA" row only belongs on the Saved terms tab, and only once there is a CGPA to save
+function updateSaveRow(){
+  const onTerms = !$('termsPane').classList.contains('hidden');
+  $('cgpaSaveSection').classList.toggle('hidden', !(onTerms && window.currentCGPA));
 }
 
 function updateCumulativeGpa(){
@@ -491,27 +497,9 @@ async function calculateCumulativeGpaServer(termIds, additionalSubjects = []){
     $('gradePointsDisplay').textContent = response.totalGradePoints;
     $('cumulativeGpaDisplay').textContent = response.cumulativeGpa.toFixed(5);
 
-    const termRows = response.termsIncluded.map(t =>
-      `<tr><td><strong>${escapeHtml(t.termName)}</strong><br/><span class="muted" style="font-size: 12px;">${t.courseCount} courses</span></td><td class="num">${t.gpa.toFixed(5)}</td></tr>`
-    ).join('');
-    const subjectRows = (response.additionalSubjectsIncluded || []).map(s =>
-      `<tr><td>${escapeHtml(s.name)}<br/><span class="muted" style="font-size: 12px;">Additional · ${escapeHtml(s.units)} units</span></td><td class="num">${escapeHtml(s.grade)}</td></tr>`
-    ).join('');
-
-    $('cumulativeTermsTable').innerHTML = `
-      <div class="table-wrap"><table class="table">
-        <thead><tr><th>Included</th><th class="num">GPA</th></tr></thead>
-        <tbody>${termRows}${subjectRows}</tbody>
-      </table></div>`;
-
-    if (response.cumulativeGpa > 0) {
-      $('cgpaSaveSection').classList.remove('hidden');
-      // The server recomputes the CGPA from these inputs when it is saved
-      window.currentCGPA = { termIds, additionalSubjects: [...additionalSubjects] };
-    } else {
-      $('cgpaSaveSection').classList.add('hidden');
-      window.currentCGPA = null;
-    }
+    // The server recomputes the CGPA from these inputs when it is saved
+    window.currentCGPA = response.cumulativeGpa > 0 ? { termIds, additionalSubjects: [...additionalSubjects] } : null;
+    updateSaveRow();
   } catch (err) {
     if (requestId === cumulativeRequestId) resetCumulativeDisplay('Error');
   }
@@ -520,6 +508,7 @@ async function calculateCumulativeGpaServer(termIds, additionalSubjects = []){
 async function loadCgpaRecords(){
   const records = await api('/api/gpa/cgpa');
   const container = $('cgpaRecordsList');
+  $('cgpaTab').textContent = records.length ? `Saved CGPA (${records.length})` : 'Saved CGPA';
   if (!records.length) {
     container.innerHTML = '<p class="muted" style="font-size: 14px;">No saved CGPA records yet.</p>';
     return;
@@ -578,6 +567,7 @@ function showPane(paneId){
     $(seg.dataset.pane).classList.toggle('hidden', !active);
   });
   $('paneHint').textContent = paneHints[paneId];
+  updateSaveRow();
 }
 
 /* ---------- Settings ---------- */

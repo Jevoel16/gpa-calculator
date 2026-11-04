@@ -14,7 +14,7 @@
 ![google-auth-library](https://img.shields.io/badge/google--auth--library-11.3.2-blue?style=flat)
 ![dotenv](https://img.shields.io/badge/dotenv-16.6.1-blue?style=flat)
 
-![Version](https://img.shields.io/badge/version-1.5.0-green?style=flat)
+![Version](https://img.shields.io/badge/version-1.6.0-green?style=flat)
 ![Tests](https://img.shields.io/badge/tests-26%20passing-brightgreen?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
 ![Platform](https://img.shields.io/badge/platform-web%20%7C%20vercel-informational?style=flat)
@@ -51,8 +51,8 @@
 - **Live term GPA.** GPA, total units and course count update as you type.
 - **Paste from MyIIT.** Copy a semester's grades from MyIIT and paste them into any New Term field: the `SY: … SEM: …` line becomes the term name and each line becomes a course with its code, title and grade. MyIIT doesn't show units, so the units fields are highlighted for you to fill in.
 - **Course codes.** An optional Code column (e.g. `CCC100`) is saved with each course.
-- **Cumulative GPA (CGPA).** Combine any saved terms, add extra subjects that aren't part of a term, and save the result as a named CGPA record.
-- **History.** Saved terms appear as cards with GPA, an academic standing badge, course count and units. **Edit** a term, **Copy** it into a new one, or **Delete** it (with a confirmation dialog).
+- **Cumulative GPA (CGPA).** Combine any saved terms, add extra subjects that aren't part of a term, and save the result as a named CGPA record. One panel with three tabs: **Saved terms** (pick terms, then name and save the CGPA), **Additional subjects** and **Saved CGPA** (your saved records, with a count).
+- **History.** Saved terms appear as cards with GPA, an academic standing badge, course count and units. **Edit** a term, **Copy** it into a new one, or **Delete** it (with a confirmation dialog). The grading scale stays open on the left, sticky and full height.
 - **Fits the screen on desktop.** The sections (New Term, Cumulative, History, Settings) live in the header. On windows at least 700 px tall each view fits without page scrolling; long lists scroll inside their own panel. Shorter windows scroll normally.
 - **Linkable views.** Each section has its own URL (`/dashboard#history`), so back/forward, bookmarks and "open in new tab" work.
 - **Phone friendly.** On phones the sections move to a bottom tab bar, the page scrolls normally, and fields use 16 px text so iOS doesn't zoom in.
@@ -266,9 +266,9 @@ Pasting a single course line into a row fills just that row. If you copy several
 
 1. Sign in with your username (or email) and password, or Google/GitHub.
 2. Use the header tabs (bottom bar on phones):
-   - **New Term**: enter a new term. Open the **Grading scale** panel for the grade meanings.
-   - **Cumulative**: tick the saved terms to include, switch to **Additional subjects** to add extra subjects, then name and save the CGPA from the Breakdown panel.
-   - **History**: **Edit** a term to update it, **Copy** it to start a new term from it, or **Delete** it.
+   - **New Term**: enter a new term, or paste your grades from MyIIT.
+   - **Cumulative**: tick the saved terms to include, switch to **Additional subjects** to add extra subjects, then name and save the CGPA at the bottom of the **Saved terms** tab. Open **Saved CGPA** to see or delete saved records.
+   - **History**: check the **Grading scale** on the left. **Edit** a term to update it, **Copy** it to start a new term from it, or **Delete** it.
    - **Settings** (or click your avatar): check your username and email, and change your password.
 
 ### Changing your password
@@ -418,8 +418,8 @@ Run these with `npm run dev`:
 1. **Sign-in:** Google, GitHub, and username/password all reach the dashboard; a wrong password shows one generic error; an empty submit focuses the empty field.
 2. **Desktop layout (1440×900):** every tab fits the window with no page scrollbar; add 15+ courses and the course list scrolls inside its panel.
 3. **New Term:** the GPA updates while typing; **Save record** adds a History card. Pasting a MyIIT copy fills the term name and courses and highlights the units.
-4. **Cumulative:** ticking terms updates the totals; extra subjects are included; a named CGPA saves and can be deleted.
-5. **History:** **Edit**, **Copy** and **Delete** work; Delete asks first and Escape cancels.
+4. **Cumulative:** ticking terms updates the totals; extra subjects are included; the name-and-save row shows only on **Saved terms**; a named CGPA saves, appears under **Saved CGPA** and can be deleted.
+5. **History:** the grading scale fills the height on the left; **Edit**, **Copy** and **Delete** work; Delete asks first and Escape cancels.
 6. **Navigation:** switching sections changes the URL; browser back/forward moves between sections.
 7. **Settings:** your username and email show; a wrong current password, a mismatched confirmation and a short password are rejected; a valid change shows a success toast, the new password signs in, and another browser's session is signed out.
 8. **Phone (375 px):** the bottom tab bar reaches every section, nothing hides behind it, no horizontal scroll.
