@@ -1,19 +1,9 @@
 const express = require('express');
 const pool = require('../db/db');
 const requireAuth = require('../middleware/auth');
+const scales = require('../public/grading-scales');
 
 const router = express.Router();
-
-const gradePoints = {
-  '1': 1.0, '1.00': 1.0, '1.25': 1.25, '1.50': 1.5, '1.75': 1.75,
-  '2': 2.0, '2.00': 2.0, '2.25': 2.25, '2.50': 2.5, '2.75': 2.75,
-  '3': 3.0, '3.00': 3.0,
-  '5': 5.0, '5.00': 5.0,
-  'P': null, 'INC': null, 'DROP': null
-};
-
-// Grades left out of the GPA whose units are still credited
-const CREDIT_ONLY_GRADES = new Set(['P']);
 
 const MAX_NAME_LENGTH = 100; // matches the VARCHAR(100) name columns
 const MAX_CODE_LENGTH = 20;
@@ -24,53 +14,30 @@ function isValidName(value) {
   return typeof value === 'string' && value.trim().length > 0 && value.trim().length <= MAX_NAME_LENGTH;
 }
 
-function gradeKey(grade) {
-  return String(grade ?? '').trim().toUpperCase();
-}
-
 // Returns a clean copy of the courses, or null when any course is malformed
-function sanitizeCourses(courses) {
+function sanitizeCourses(courses, scale = defaultScale()) {
   if (!Array.isArray(courses) || courses.length === 0 || courses.length > MAX_COURSES) return null;
   const clean = [];
   for (const c of courses) {
     if (!c || typeof c !== 'object' || !isValidName(c.name)) return null;
     const units = Number(c.units ?? c.credits);
     if (!Number.isFinite(units) || units <= 0 || units > MAX_UNITS) return null;
-    const grade = gradeKey(c.grade);
-    if (!Object.prototype.hasOwnProperty.call(gradePoints, grade)) return null;
+    const grade = scales.normalizeGrade(scale, c.grade);
+    if (!grade) return null;
     // Course code is optional (e.g. "CCC100" from a MyIIT paste); stored only when given
     const code = c.code == null ? '' : c.code;
     if (typeof code !== 'string' || code.trim().length > MAX_CODE_LENGTH) return null;
-    const course = { name: c.name.trim(), units, grade: String(c.grade).trim() };
+    const course = { name: c.name.trim(), units, grade };
     if (code.trim()) course.code = code.trim();
     clean.push(course);
   }
   return clean;
 }
 
-function sumCourses(courses) {
-  let gradePointsTotal = 0;
-  let units = 0;
-  let creditedUnits = 0;
-  for (const c of courses) {
-    const u = Number(c.units ?? c.credits) || 0;
-    const key = gradeKey(c.grade);
-    const gp = gradePoints[key] ?? null;
-    if (u > 0 && gp !== null) {
-      gradePointsTotal += gp * u;
-      units += u;
-      creditedUnits += u;
-    } else if (u > 0 && CREDIT_ONLY_GRADES.has(key)) {
-      creditedUnits += u;
-    }
-  }
-  return { gradePointsTotal, units, creditedUnits };
-}
-
-function computeGpa(courses) {
-  const { gradePointsTotal, units } = sumCourses(courses);
-  return units > 0 ? Number((gradePointsTotal / units).toFixed(5)) : 0;
-}
+// Saved terms predate per-term scales, so they are all on the default scale for now
+const defaultScale = () => scales.getScale(scales.DEFAULT_SCALE_ID);
+const sumCourses = (courses, scale = defaultScale()) => scales.sumCourses(courses, scale);
+const computeGpa = (courses, scale = defaultScale()) => scales.computeGpa(courses, scale);
 
 function parseCourses(value) {
   try {

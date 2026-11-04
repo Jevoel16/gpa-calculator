@@ -3,7 +3,9 @@
 //   CCC100<TAB>Fundamentals of Computing<TAB>1.00
 // Shared by the dashboard (browser global) and the tests (CommonJS).
 (function (root) {
-  const GRADES = ['1.00','1.25','1.50','1.75','2.00','2.25','2.50','2.75','3.00','5.00','P','INC','DROP'];
+  const Scales = typeof module !== 'undefined' && module.exports ? require('./grading-scales') : root.GradingScales;
+  // MyIIT copies are always on the MSU-IIT scale, whatever the user's default is
+  const SCALE = Scales.getScale('msu-iit');
   const MAX_NAME = 100;
   const HEADER = /^SY:\s*\d{4}\s*-\s*\d{4}\b.*\bSEM:/i;
   const CODE = /^[A-Z]{2,5}\s?\d{2,4}[A-Z]?$/i;
@@ -11,12 +13,7 @@
   const SPACED_LINE = /^([A-Z]{2,5}\s?\d{2,4}[A-Z]?)\s+(.+?)\s+(\d(?:\.\d{1,2})?|P|INC|DROP|DRP)$/i;
 
   function normalizeGrade(value){
-    const raw = String(value ?? '').trim().toUpperCase();
-    if (raw === 'DRP' || raw === 'DROPPED') return 'DROP';
-    if (raw === 'P' || raw === 'INC' || raw === 'DROP') return raw;
-    if (!/^\d(\.\d{1,2})?$/.test(raw)) return '';
-    const fixed = Number(raw).toFixed(2);
-    return GRADES.includes(fixed) ? fixed : '';
+    return Scales.normalizeGrade(SCALE, value) || '';
   }
 
   function isGradeToken(value){

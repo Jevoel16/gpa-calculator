@@ -14,7 +14,7 @@
 ![google-auth-library](https://img.shields.io/badge/google--auth--library-11.3.2-blue?style=flat)
 ![dotenv](https://img.shields.io/badge/dotenv-16.6.1-blue?style=flat)
 
-![Version](https://img.shields.io/badge/version-1.6.2-green?style=flat)
+![Version](https://img.shields.io/badge/version-1.6.3-green?style=flat)
 ![Tests](https://img.shields.io/badge/tests-26%20passing-brightgreen?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
 ![Platform](https://img.shields.io/badge/platform-web%20%7C%20vercel-informational?style=flat)
@@ -352,6 +352,7 @@ gpa-calculator/
 │   ├── 404.html           # Not-found page
 │   ├── dashboard.html     # Main app: header tabs, New Term, Cumulative, History, Settings
 │   ├── dashboard.js       # Dashboard logic
+│   ├── grading-scales.js  # Grading systems as data + GPA math, shared by the server and dashboard
 │   ├── myiit-paste.js     # Parses grades copied from MyIIT (also used by the tests)
 │   ├── darkmode.js        # Theme handling (follows the system until you choose)
 │   ├── fonts/             # Self-hosted Inter variable font and its OFL license
@@ -405,6 +406,7 @@ The tests use Node's built-in test runner and need **no database** (they point a
 
 | File | Covers |
 | --- | --- |
+| `test/grading-scales.test.js` | Scale lookup, grade normalising (`1` → `1.00`, `drp` → `DROP`), weighted GPA, credit-only grades, standings |
 | `test/gpa.test.js` | Weighted GPA, `P` / `INC` / `DROP` rules, input validation limits, optional course code |
 | `test/myiit-paste.test.js` | Parsing MyIIT copies: term name, courses, grade normalising, spaced copies, ignoring ordinary text |
 | `test/password.test.js` | scrypt hashing, salts, verification, rejecting non-scrypt values |

@@ -1,7 +1,6 @@
-const gradeOptions = ['1.00','1.25','1.50','1.75','2.00','2.25','2.50','2.75','3.00','5.00','P','INC','DROP'];
-const gradePoints = { '1.00':1.0,'1.25':1.25,'1.50':1.5,'1.75':1.75,'2.00':2.0,'2.25':2.25,'2.50':2.5,'2.75':2.75,'3.00':3.0,'5':5.0,'5.00':5.0 };
-// Grades left out of the GPA whose units are still credited
-const creditOnlyGrades = new Set(['P']);
+const Scales = window.GradingScales;
+// Every term uses the default scale until per-term scales arrive
+const termScale = Scales.getScale(Scales.DEFAULT_SCALE_ID);
 let allHistory = [];
 let additionalSubjects = [];
 let editingRecordId = null;
@@ -68,21 +67,17 @@ function confirmAction(title, text, okLabel = 'Delete'){
   });
 }
 
-function gradeChipClass(gpa){
-  if (!gpa) return 'chip';
-  if (gpa <= 1.75) return 'chip chip-success';
-  if (gpa <= 2.5) return 'chip chip-primary';
-  if (gpa <= 3.0) return 'chip chip-warning';
-  return 'chip chip-danger';
+function gradeChipClass(gpa, scale = termScale){
+  const tone = Scales.tone(scale, gpa);
+  return tone ? `chip chip-${tone}` : 'chip';
 }
 
-function standing(gpa){
-  if (!gpa) return '';
-  if (gpa <= 1.5) return 'Excellent standing';
-  if (gpa <= 2.0) return 'Very good standing';
-  if (gpa <= 2.5) return 'Good standing';
-  if (gpa <= 3.0) return 'Passing';
-  return 'Below passing';
+function standing(gpa, scale = termScale){
+  return Scales.standing(scale, gpa);
+}
+
+function formatGpa(gpa, scale = termScale){
+  return Scales.formatGpa(scale, gpa);
 }
 
 async function api(path, opts={}){
@@ -138,9 +133,10 @@ function goTo(name){
 
 /* ---------- New term ---------- */
 
-function gradeSelectHtml(selected = ''){
+function gradeSelectHtml(selected = '', scale = termScale){
+  const current = Scales.normalizeGrade(scale, selected);
   return `<option value="">Grade</option>` +
-    gradeOptions.map(g => `<option value="${g}" ${selected === g ? 'selected' : ''}>${g}</option>`).join('');
+    scale.grades.map(g => `<option value="${escapeHtml(g.value)}" ${current === g.value ? 'selected' : ''}>${escapeHtml(g.value)}</option>`).join('');
 }
 
 function renumberRows(){
@@ -181,25 +177,11 @@ function readCourses(){
   })).filter(c => c.name && c.units > 0 && c.grade);
 }
 
-function computeGpa(courses){
-  let numerator = 0;
-  let totalUnits = 0;
-  for(const c of courses){
-    const p = gradePoints[c.grade];
-    const units = Number(c.units ?? c.credits) || 0;
-    if(p!=null && units>0){
-      numerator += p * units;
-      totalUnits += units;
-    }
-  }
-  return totalUnits ? Number((numerator/totalUnits).toFixed(5)) : 0;
-}
-
 function updateTermSummary(){
   const courses = readCourses();
-  const gpa = computeGpa(courses);
-  const units = courses.filter(c => gradePoints[c.grade] != null || creditOnlyGrades.has(c.grade)).reduce((sum, c) => sum + c.units, 0);
-  $('termGpaDisplay').textContent = gpa ? gpa.toFixed(5) : '—';
+  const gpa = Scales.computeGpa(courses, termScale);
+  const units = Scales.sumCourses(courses, termScale).creditedUnits;
+  $('termGpaDisplay').textContent = gpa ? formatGpa(gpa) : '—';
   $('termGpaSub').textContent = gpa ? standing(gpa) : 'Add courses to compute';
   $('termUnitsDisplay').textContent = units;
   $('termCoursesDisplay').textContent = courses.length;
@@ -249,7 +231,7 @@ async function saveTerm(){
     const saved = editingRecordId
       ? await api(`/api/gpa/${editingRecordId}`, { method: 'PUT', body })
       : await api('/api/gpa/save', { method: 'POST', body });
-    toast(`${editingRecordId ? 'Updated' : 'Saved'} “${saved.termName}” · GPA ${Number(saved.gpa).toFixed(5)}`);
+    toast(`${editingRecordId ? 'Updated' : 'Saved'} “${saved.termName}” · GPA ${formatGpa(saved.gpa)}`);
     resetTermForm();
     await loadHistory();
   } catch (e) {
@@ -349,7 +331,7 @@ function renderHistory(){
         </div>
         <span class="${gradeChipClass(r.gpa)}">${escapeHtml(standing(r.gpa) || 'No GPA')}</span>
       </div>
-      <div class="gpa-pill">${r.gpa.toFixed(5)}</div>
+      <div class="gpa-pill">${formatGpa(r.gpa)}</div>
       <div class="meta">
         <span class="chip">${r.courses.length} course${r.courses.length === 1 ? '' : 's'}</span>
         <span class="chip">${units} units</span>
@@ -400,7 +382,7 @@ function updateCumulativeTermsList(){
       <span class="check">${icons.check}</span>
       <span>
         <span class="term-pick-name">${escapeHtml(record.termName)}</span><br/>
-        <span class="term-pick-meta">GPA ${record.gpa.toFixed(5)} · ${record.courses.length} courses</span>
+        <span class="term-pick-meta">GPA ${formatGpa(record.gpa)} · ${record.courses.length} courses</span>
       </span>`;
     label.querySelector('input').addEventListener('change', updateCumulativeGpa);
     list.appendChild(label);
@@ -495,7 +477,7 @@ async function calculateCumulativeGpaServer(termIds, additionalSubjects = []){
 
     $('totalUnitsDisplay').textContent = response.totalUnits;
     $('gradePointsDisplay').textContent = response.totalGradePoints;
-    $('cumulativeGpaDisplay').textContent = response.cumulativeGpa.toFixed(5);
+    $('cumulativeGpaDisplay').textContent = formatGpa(response.cumulativeGpa);
 
     // The server recomputes the CGPA from these inputs when it is saved
     window.currentCGPA = response.cumulativeGpa > 0 ? { termIds, additionalSubjects: [...additionalSubjects] } : null;
@@ -516,7 +498,7 @@ async function loadCgpaRecords(){
   const rows = records.map(r => `
     <tr data-id="${r.id}">
       <td><strong>${escapeHtml(r.recordName)}</strong><br/><span class="muted" style="font-size: 12px;">${escapeHtml(new Date(r.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }))} · ${r.totalUnits} units</span></td>
-      <td class="num">${r.cumulativeGpa.toFixed(5)}</td>
+      <td class="num">${formatGpa(r.cumulativeGpa)}</td>
       <td><button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Delete CGPA record" title="Delete">${icons.trash}</button></td>
     </tr>`).join('');
   container.innerHTML = `
@@ -548,7 +530,7 @@ async function saveCgpa(){
   btn.disabled = true;
   try {
     const saved = await api('/api/gpa/save-cgpa', { method: 'POST', body: JSON.stringify({ recordName, ...window.currentCGPA }) });
-    toast(`Saved “${saved.recordName}” · CGPA ${Number(saved.cumulativeGpa).toFixed(5)}`);
+    toast(`Saved “${saved.recordName}” · CGPA ${formatGpa(saved.cumulativeGpa)}`);
     $('cgpaRecordName').value = '';
     await loadCgpaRecords();
   } catch (e) {
