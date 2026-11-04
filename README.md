@@ -14,7 +14,7 @@
 ![google-auth-library](https://img.shields.io/badge/google--auth--library-11.3.3-blue?style=flat)
 ![dotenv](https://img.shields.io/badge/dotenv-16.6.1-blue?style=flat)
 
-![Version](https://img.shields.io/badge/version-1.8.2-green?style=flat)
+![Version](https://img.shields.io/badge/version-1.8.3-green?style=flat)
 ![CI](https://github.com/Jevoel16/gpa-calculator/actions/workflows/ci.yml/badge.svg)
 ![Tests](https://img.shields.io/badge/tests-54%20passing-brightgreen?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
@@ -466,7 +466,7 @@ Run these with `npm run dev`:
 ## Contributing
 
 1. Branch from `main` with a matching prefix: `feat/short-description`, `fix/short-description`, `docs/…`, `chore/…`.
-2. Use [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `style:`, `perf:`, `test:`; an imperative subject of 72 characters or less, a blank line, then one bullet per change.
+2. Use [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `style:`, `perf:`, `test:`, `ci:`; an imperative subject of 72 characters or less, a blank line, then one bullet per change.
 3. **Bump the version in every commit** and end the subject with it, e.g. `feat: add CSV export (v1.4.0)`. Breaking change → major, `feat` → minor, anything else → patch. Update `package.json`, `package-lock.json` and the version badge at the top of this README in the same commit.
 4. Run `npm test`, the [manual checks](#testing) and `npm audit`.
 5. **Update this README with every change** (features, configuration, structure, version badges when dependencies change).
@@ -511,6 +511,8 @@ Released under the **Sprucetrap Source-Available License 1.0**. See [LICENSE](LI
 - ✅ View, run, study and modify the code for personal, educational or other non-commercial use, and share non-commercial forks.
 - 📝 Keep the copyright notice, credit **Sprucetrap** with a link to [github.com/Jevoel16](https://github.com/Jevoel16), and say what you changed.
 - ❌ No commercial use, resale, sublicensing or rebranding without written permission. Ask through [GitHub](https://github.com/Jevoel16).
+
+<p align="right"><a href="#top">back to top ↑</a></p>
 
 ---
 
