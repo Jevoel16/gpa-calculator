@@ -1,6 +1,6 @@
 const fs = require('fs');
 const mysql = require('mysql2/promise');
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 
 const {
   DATABASE_URL,

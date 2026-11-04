@@ -1,6 +1,6 @@
 {
   "name": "gpa-calculator",
-  "version": "1.8.3",
+  "version": "1.8.4",
   "private": true,
   "description": "GPA Calculator with username/password and Google/GitHub sign-in using Node.js, Express, MySQL, HTML/CSS",
   "type": "commonjs",
@@ -16,7 +16,7 @@
     "db:import": "node scripts/import-terms.js"
   },
   "dependencies": {
-    "dotenv": "^16.4.5",
+    "dotenv": "^18.0.9",
     "express": "^4.22.3",
     "express-mysql-session": "^3.0.3",
     "express-session": "^1.19.0",
