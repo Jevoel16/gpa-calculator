@@ -1,6 +1,8 @@
 const Scales = window.GradingScales;
-// Every term uses the default scale until per-term scales arrive
-const termScale = Scales.getScale(Scales.DEFAULT_SCALE_ID);
+let defaultScaleId = Scales.DEFAULT_SCALE_ID; // the account's choice, set by loadMe()
+let termScale = Scales.getScale(defaultScaleId); // scale of the term in the New Term form
+let cumulativeScaleId = null; // scale picked in the Cumulative view; null until history loads
+const MYIIT_SCALE_ID = 'msu-iit';
 let allHistory = [];
 let additionalSubjects = [];
 let editingRecordId = null;
@@ -80,6 +82,37 @@ function formatGpa(gpa, scale = termScale){
   return Scales.formatGpa(scale, gpa);
 }
 
+// Records saved before per-term scales have no scaleId and are on the original scale
+function scaleOf(record){
+  return Scales.getScale(record && record.scaleId) || Scales.getScale(Scales.DEFAULT_SCALE_ID);
+}
+
+function scaleOptionsHtml(selectedId){
+  return Scales.listScales()
+    .map(s => `<option value="${escapeHtml(s.id)}" ${s.id === selectedId ? 'selected' : ''}>${escapeHtml(s.name)}</option>`)
+    .join('');
+}
+
+// Groups neighbouring grades with the same label, e.g. "1.25–1.50 Very good"
+function scaleRows(scale){
+  const rows = [];
+  for (const g of scale.grades) {
+    const last = rows[rows.length - 1];
+    if (last && last.label === g.label && g.points !== null && last.points !== null) {
+      last.to = g.value;
+    } else {
+      rows.push({ from: g.value, to: null, label: g.label, points: g.points });
+    }
+  }
+  return rows.map(r => ({ grade: r.to ? `${r.from}–${r.to}` : r.from, label: r.label }));
+}
+
+function renderScalePanel(scale){
+  $('scaleList').innerHTML = scaleRows(scale)
+    .map(r => `<div><span>${escapeHtml(r.grade)}</span><span>${escapeHtml(r.label)}</span></div>`)
+    .join('');
+}
+
 async function api(path, opts={}){
   const res = await fetch(path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts));
   if (res.status === 401) {
@@ -104,6 +137,28 @@ async function loadMe(){
   $('settingsUsername').textContent = me.username || 'Not set';
   $('settingsEmail').textContent = me.email;
   $('pwUsername').value = me.username || me.email;
+  if (Scales.getScale(me.defaultScale)) defaultScaleId = me.defaultScale;
+  $('defaultScale').innerHTML = scaleOptionsHtml(defaultScaleId);
+  $('historyScale').innerHTML = scaleOptionsHtml(defaultScaleId);
+  renderScalePanel(Scales.getScale(defaultScaleId));
+  // A fresh form follows the account default; one the user already started is left alone
+  if (!editingRecordId && !readCourses().length && !$('termName').value.trim()) setTermScale(defaultScaleId);
+}
+
+async function saveDefaultScale(){
+  const select = $('defaultScale');
+  const previous = defaultScaleId;
+  select.disabled = true;
+  try {
+    const saved = await api('/api/auth/preferences', { method: 'PUT', body: JSON.stringify({ defaultScale: select.value }) });
+    defaultScaleId = saved.defaultScale;
+    toast(`New terms will use ${Scales.getScale(defaultScaleId).name}`);
+  } catch (err) {
+    select.value = previous;
+    toast(err.message, 'error');
+  } finally {
+    select.disabled = false;
+  }
 }
 
 function showView(name){
@@ -187,10 +242,33 @@ function updateTermSummary(){
   $('termCoursesDisplay').textContent = courses.length;
 }
 
+// Switching scales rebuilds each grade picker; grades the new scale doesn't have are cleared and flagged
+function setTermScale(id){
+  termScale = Scales.getScale(id) || Scales.getScale(defaultScaleId);
+  $('termScale').innerHTML = scaleOptionsHtml(termScale.id);
+  let cleared = 0;
+  for (const select of document.querySelectorAll('#coursesBody .course-grade')) {
+    const previous = select.value;
+    select.innerHTML = gradeSelectHtml(previous);
+    if (previous && !select.value) {
+      select.setAttribute('aria-invalid', 'true');
+      cleared++;
+    }
+  }
+  updateTermSummary();
+  return cleared;
+}
+
+function changeTermScale(){
+  const cleared = setTermScale($('termScale').value);
+  if (cleared) toast(`${cleared} grade${cleared === 1 ? '' : 's'} not on ${termScale.name} were cleared`, 'error');
+}
+
 function resetTermForm(){
   $('termName').value = '';
   $('coursesBody').innerHTML = '';
   setEditing(null);
+  setTermScale(defaultScaleId);
   $('calcMsg').textContent = '';
   addRow(); addRow(); addRow();
 }
@@ -206,6 +284,7 @@ function setEditing(record){
 function loadTermData(record, { edit = false } = {}){
   $('termName').value = record.termName;
   $('coursesBody').innerHTML = '';
+  setTermScale(scaleOf(record).id);
   for (const course of record.courses) addRow(course);
   if (!record.courses.length) addRow();
   setEditing(edit ? record : null);
@@ -227,7 +306,7 @@ async function saveTerm(){
   const btn = $('saveBtn');
   btn.disabled = true;
   try {
-    const body = JSON.stringify({ termName, courses });
+    const body = JSON.stringify({ termName, courses, scaleId: termScale.id });
     const saved = editingRecordId
       ? await api(`/api/gpa/${editingRecordId}`, { method: 'PUT', body })
       : await api('/api/gpa/save', { method: 'POST', body });
@@ -249,10 +328,19 @@ function handleTermPaste(event){
   if (!text || !window.MyiitPaste) return;
   const { termName, courses, moreTerms } = window.MyiitPaste.parseMyiitGrades(text);
 
+  // MyIIT grades only exist on the MSU-IIT scale, so a paste switches the form to it
+  const switchScale = () => {
+    if (termScale.id === MYIIT_SCALE_ID) return '';
+    setTermScale(MYIIT_SCALE_ID);
+    return ` Switched to ${termScale.name}.`;
+  };
+
   // One course line pasted into a row fills just that row
   const row = target.closest('#coursesBody tr');
   if (!termName && courses.length === 1 && row) {
     event.preventDefault();
+    const note = switchScale();
+    if (note) toast(note.trim());
     fillRow(row, courses[0]);
     markMissingUnits([row]);
     updateTermSummary();
@@ -265,11 +353,12 @@ function handleTermPaste(event){
   event.preventDefault();
   if (termName) $('termName').value = termName;
   $('coursesBody').innerHTML = '';
+  const note = switchScale();
   const rows = courses.map(course => addRow(course));
   $('calcMsg').textContent = '';
   const missing = markMissingUnits(rows);
   if (missing.length) missing[0].focus();
-  toast(`Pasted ${courses.length} course${courses.length === 1 ? '' : 's'} from MyIIT.` +
+  toast(`Pasted ${courses.length} course${courses.length === 1 ? '' : 's'} from MyIIT.` + note +
     (missing.length ? ' Fill in the units to compute your GPA.' : '') +
     (moreTerms ? ' Only the first term was used.' : ''));
 }
@@ -319,7 +408,10 @@ function renderHistory(){
 
   const grid = document.createElement('div');
   grid.className = 'history-grid';
+  // The scale is only worth a chip when the history mixes grading systems
+  const mixed = new Set(allHistory.map(r => scaleOf(r).id)).size > 1;
   for (const r of allHistory) {
+    const scale = scaleOf(r);
     const units = r.courses.reduce((sum, c) => sum + (Number(c.units ?? c.credits) || 0), 0);
     const card = document.createElement('article');
     card.className = 'card term-card';
@@ -329,12 +421,13 @@ function renderHistory(){
           <h3>${escapeHtml(r.termName)}</h3>
           <div class="date">${escapeHtml(new Date(r.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }))}</div>
         </div>
-        <span class="${gradeChipClass(r.gpa)}">${escapeHtml(standing(r.gpa) || 'No GPA')}</span>
+        <span class="${gradeChipClass(r.gpa, scale)}">${escapeHtml(standing(r.gpa, scale) || 'No GPA')}</span>
       </div>
-      <div class="gpa-pill">${formatGpa(r.gpa)}</div>
+      <div class="gpa-pill">${formatGpa(r.gpa, scale)}</div>
       <div class="meta">
         <span class="chip">${r.courses.length} course${r.courses.length === 1 ? '' : 's'}</span>
         <span class="chip">${units} units</span>
+        ${mixed ? `<span class="chip">${escapeHtml(scale.name)}</span>` : ''}
       </div>
       <div class="actions">
         <button class="btn btn-ghost btn-sm" type="button" data-action="edit" aria-label="Edit ${escapeHtml(r.termName)}">${icons.edit} Edit</button>
@@ -366,6 +459,23 @@ async function deleteRecord(id){
 
 /* ---------- Cumulative ---------- */
 
+function cumulativeScale(){
+  return Scales.getScale(cumulativeScaleId) || Scales.getScale(defaultScaleId);
+}
+
+// A CGPA only averages terms on one grading system, so the list shows that system's terms
+function setCumulativeScale(id){
+  cumulativeScaleId = (Scales.getScale(id) || Scales.getScale(defaultScaleId)).id;
+  const scale = cumulativeScale();
+  $('cumulativeScale').innerHTML = scaleOptionsHtml(scale.id);
+  $('additionalSubjectGrade').innerHTML = gradeSelectHtml('', scale);
+  const before = additionalSubjects.length;
+  additionalSubjects = additionalSubjects.filter(s => Scales.normalizeGrade(scale, s.grade));
+  if (additionalSubjects.length < before) toast(`Removed additional subjects with grades not on ${scale.name}`, 'error');
+  displayAdditionalSubjects();
+  updateCumulativeTermsList();
+}
+
 function updateCumulativeTermsList(){
   const list = $('termsCheckList');
   list.innerHTML = '';
@@ -374,7 +484,18 @@ function updateCumulativeTermsList(){
     updateCumulativeGpa();
     return;
   }
-  for (const record of allHistory) {
+  // First load: use the account default when it has terms, otherwise the newest term's scale
+  if (!cumulativeScaleId) {
+    const usesDefault = allHistory.some(r => scaleOf(r).id === defaultScaleId);
+    setCumulativeScale(usesDefault ? defaultScaleId : scaleOf(allHistory[0]).id);
+    return;
+  }
+  const scale = cumulativeScale();
+  const terms = allHistory.filter(r => scaleOf(r).id === scale.id);
+  if (!terms.length) {
+    list.innerHTML = `<p class="muted" style="font-size: 14px;">No saved terms on ${escapeHtml(scale.name)}. Pick another grading system or add subjects.</p>`;
+  }
+  for (const record of terms) {
     const label = document.createElement('label');
     label.className = 'term-pick';
     label.innerHTML = `
@@ -382,7 +503,7 @@ function updateCumulativeTermsList(){
       <span class="check">${icons.check}</span>
       <span>
         <span class="term-pick-name">${escapeHtml(record.termName)}</span><br/>
-        <span class="term-pick-meta">GPA ${formatGpa(record.gpa)} · ${record.courses.length} courses</span>
+        <span class="term-pick-meta">GPA ${formatGpa(record.gpa, scale)} · ${record.courses.length} courses</span>
       </span>`;
     label.querySelector('input').addEventListener('change', updateCumulativeGpa);
     list.appendChild(label);
@@ -402,6 +523,7 @@ function addAdditionalSubject(){
   if (!name) return toast('Subject name is required', 'error');
   if (!units || units <= 0) return toast('Units must be a positive number', 'error');
   if (!grade) return toast('Grade is required', 'error');
+  if (!Scales.normalizeGrade(cumulativeScale(), grade)) return toast(`Enter a grade on ${cumulativeScale().name}`, 'error');
 
   additionalSubjects.push({ name, units, grade });
   nameInput.value = '';
@@ -471,16 +593,17 @@ async function calculateCumulativeGpaServer(termIds, additionalSubjects = []){
   try {
     const response = await api('/api/gpa/calculate-cumulative', {
       method: 'POST',
-      body: JSON.stringify({ termIds, additionalSubjects })
+      body: JSON.stringify({ scaleId: cumulativeScale().id, termIds, additionalSubjects })
     });
     if (requestId !== cumulativeRequestId) return;
 
+    const scale = Scales.getScale(response.scaleId) || cumulativeScale();
     $('totalUnitsDisplay').textContent = response.totalUnits;
     $('gradePointsDisplay').textContent = response.totalGradePoints;
-    $('cumulativeGpaDisplay').textContent = formatGpa(response.cumulativeGpa);
+    $('cumulativeGpaDisplay').textContent = formatGpa(response.cumulativeGpa, scale);
 
     // The server recomputes the CGPA from these inputs when it is saved
-    window.currentCGPA = response.cumulativeGpa > 0 ? { termIds, additionalSubjects: [...additionalSubjects] } : null;
+    window.currentCGPA = response.cumulativeGpa > 0 ? { scaleId: scale.id, termIds, additionalSubjects: [...additionalSubjects] } : null;
     updateSaveRow();
   } catch (err) {
     if (requestId === cumulativeRequestId) resetCumulativeDisplay('Error');
@@ -498,7 +621,7 @@ async function loadCgpaRecords(){
   const rows = records.map(r => `
     <tr data-id="${r.id}">
       <td><strong>${escapeHtml(r.recordName)}</strong><br/><span class="muted" style="font-size: 12px;">${escapeHtml(new Date(r.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }))} · ${r.totalUnits} units</span></td>
-      <td class="num">${formatGpa(r.cumulativeGpa)}</td>
+      <td class="num">${formatGpa(r.cumulativeGpa, scaleOf(r))}</td>
       <td><button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Delete CGPA record" title="Delete">${icons.trash}</button></td>
     </tr>`).join('');
   container.innerHTML = `
@@ -530,7 +653,7 @@ async function saveCgpa(){
   btn.disabled = true;
   try {
     const saved = await api('/api/gpa/save-cgpa', { method: 'POST', body: JSON.stringify({ recordName, ...window.currentCGPA }) });
-    toast(`Saved “${saved.recordName}” · CGPA ${formatGpa(saved.cumulativeGpa)}`);
+    toast(`Saved “${saved.recordName}” · CGPA ${formatGpa(saved.cumulativeGpa, scaleOf(saved))}`);
     $('cgpaRecordName').value = '';
     await loadCgpaRecords();
   } catch (e) {
@@ -607,7 +730,15 @@ function initializeEventListeners(){
   });
   $('accountBtn').addEventListener('click', () => goTo('settings'));
   $('passwordForm').addEventListener('submit', changePassword);
-  $('additionalSubjectGrade').innerHTML = gradeSelectHtml();
+  $('additionalSubjectGrade').innerHTML = gradeSelectHtml('', cumulativeScale());
+  $('cumulativeScale').innerHTML = scaleOptionsHtml(cumulativeScale().id);
+  $('defaultScale').innerHTML = scaleOptionsHtml(defaultScaleId);
+  $('historyScale').innerHTML = scaleOptionsHtml(defaultScaleId);
+  renderScalePanel(Scales.getScale(defaultScaleId));
+  $('termScale').addEventListener('change', changeTermScale);
+  $('cumulativeScale').addEventListener('change', e => setCumulativeScale(e.target.value));
+  $('historyScale').addEventListener('change', e => renderScalePanel(Scales.getScale(e.target.value)));
+  $('defaultScale').addEventListener('change', saveDefaultScale);
   $('addSubjectBtn').addEventListener('click', addAdditionalSubject);
   $('additionalSubjectName').addEventListener('keydown', e => { if (e.key === 'Enter') addAdditionalSubject(); });
   $('addRowBtn').addEventListener('click', () => { addRow(); document.querySelector('#coursesBody tr:last-child .course-name').focus(); });

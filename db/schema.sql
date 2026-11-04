@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS users (
   google_sub VARCHAR(64) NULL UNIQUE,
   github_id BIGINT UNSIGNED NULL UNIQUE,
   password_hash VARCHAR(191) NULL,
+  -- Grading system preselected for new terms (an id from public/grading-scales.js)
+  default_scale VARCHAR(40) NOT NULL DEFAULT 'msu-iit',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
@@ -33,7 +35,9 @@ CREATE TABLE IF NOT EXISTS gpa_records (
   user_id INT NOT NULL,
   term_name VARCHAR(100) NOT NULL,
   courses_json JSON NOT NULL,
-  gpa DECIMAL(6,5) NOT NULL,
+  -- DECIMAL(8,5) fits percentage averages such as 92.45000
+  gpa DECIMAL(8,5) NOT NULL,
+  scale_id VARCHAR(40) NOT NULL DEFAULT 'msu-iit',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_gpa_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -42,7 +46,8 @@ CREATE TABLE IF NOT EXISTS cgpa_records (
   user_id INT NOT NULL,
   record_name VARCHAR(100) NOT NULL,
   cgpa_data JSON NOT NULL,
-  cgpa DECIMAL(6,5) NOT NULL,
+  cgpa DECIMAL(8,5) NOT NULL,
+  scale_id VARCHAR(40) NOT NULL DEFAULT 'msu-iit',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_cgpa_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;

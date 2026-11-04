@@ -5,6 +5,8 @@ const pool = require('../db/db');
 const { hashPassword, verifyPassword } = require('../lib/password');
 const rateLimit = require('../lib/rate-limit');
 const APP_URL = require('../lib/app-url');
+const { resolveScale, getDefaultScaleId } = require('../lib/scales');
+const requireAuth = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -444,10 +446,23 @@ router.get('/me', async (req, res) => {
     }
     const [rows] = await pool.query('SELECT id, name, email, username FROM users WHERE id = ?', [req.session.userId]);
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
-    res.json(rows[0]);
+    res.json({ ...rows[0], defaultScale: await getDefaultScaleId(req.session.userId) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Save account preferences; today only the default grading system for new terms
+router.put('/preferences', requireAuth, async (req, res) => {
+  try {
+    const scale = await resolveScale(req.session.userId, req.body && req.body.defaultScale);
+    if (!scale) return res.status(400).json({ error: 'Unknown grading system' });
+    await pool.query('UPDATE users SET default_scale = ? WHERE id = ?', [scale.id, req.session.userId]);
+    res.json({ defaultScale: scale.id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to save preferences' });
   }
 });
 

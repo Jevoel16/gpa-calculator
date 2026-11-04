@@ -66,6 +66,10 @@
             <label for="termName" class="sr-only">Term name</label>
             <input id="termName" type="text" maxlength="100" placeholder="Term name, e.g. 1st Sem 2025–2026" />
           </div>
+          <div class="scale-field">
+            <label for="termScale" class="sr-only">Grading system</label>
+            <select id="termScale" title="Grading system for this term"></select>
+          </div>
         </div>
         <div class="card-body panel-scroll" id="coursesScroll">
           <div id="editingBanner" class="editing-banner hidden"></div>
@@ -131,6 +135,10 @@
             <button type="button" class="seg" id="cgpaTab" role="tab" aria-selected="false" aria-controls="cgpaPane" data-pane="cgpaPane" tabindex="-1">Saved CGPA</button>
           </div>
           <p id="paneHint">Choose which terms to include.</p>
+          <div class="scale-field">
+            <label for="cumulativeScale" class="sr-only">Grading system</label>
+            <select id="cumulativeScale" title="Only terms on one grading system can be combined"></select>
+          </div>
         </div>
         <div class="card-body panel-scroll">
           <div id="termsPane" role="tabpanel" aria-labelledby="termsTab">
@@ -167,17 +175,9 @@
       <aside class="card scale-panel" aria-labelledby="scaleTitle">
         <div class="card-head"><h2 class="h-sm" id="scaleTitle">Grading scale</h2></div>
         <div class="card-body">
-          <div class="scale-list">
-            <div><span>1.00</span><span>Excellent</span></div>
-            <div><span>1.25–1.50</span><span>Very good</span></div>
-            <div><span>1.75–2.00</span><span>Good</span></div>
-            <div><span>2.25–2.50</span><span>Satisfactory</span></div>
-            <div><span>2.75–3.00</span><span>Passing</span></div>
-            <div><span>5.00</span><span>Failed</span></div>
-            <div><span>P</span><span>Passed · units credited</span></div>
-            <div><span>INC</span><span>Not counted</span></div>
-            <div><span>DROP</span><span>Not counted</span></div>
-          </div>
+          <label for="historyScale" class="sr-only">Show grading system</label>
+          <select id="historyScale" class="scale-panel-select"></select>
+          <div class="scale-list" id="scaleList"></div>
         </div>
       </aside>
       <div class="history-main">
@@ -209,6 +209,19 @@
               <div><dt>Email</dt><dd id="settingsEmail">—</dd></div>
               <div><dt>Sign in with</dt><dd>Username or email and password, Google or GitHub</dd></div>
             </dl>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h2>Grading system</h2>
+              <p>Used for new terms. Each saved term keeps its own system.</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <label for="defaultScale">Default grading system</label>
+            <select id="defaultScale"></select>
           </div>
         </div>
 

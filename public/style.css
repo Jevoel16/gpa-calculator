@@ -253,6 +253,8 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 .stack { display: grid; gap: 20px; }
 .view-cumulative { display: grid; gap: 20px; }
 .term-name-field { flex: 1; min-width: 200px; max-width: 320px; }
+.scale-field { flex: none; width: 220px; }
+.scale-panel-select { margin-bottom: 8px; height: 38px; }
 .stat.stat-accent { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; border-color: transparent; }
 .stat.stat-accent .stat-label { color: rgba(255, 255, 255, .8); }
 .save-row { flex-wrap: nowrap; }
@@ -468,6 +470,7 @@ input[aria-invalid="true"] { border-color: var(--danger); }
   .stat-grid { grid-template-columns: 1fr 1fr; }
   .stat-accent { grid-column: 1 / -1; }
   .term-name-field { max-width: none; min-width: 0; flex-basis: 100%; }
+  .scale-field { width: 100%; }
   .segmented { width: 100%; }
   .seg { flex: 1; }
   .inline-form { grid-template-columns: 1fr 1fr; }

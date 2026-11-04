@@ -38,6 +38,8 @@ npm run db:setup
 
 It prints `Database is ready.` Afterwards, switch `.env` back to your local database.
 
+> **Upgrading an existing deployment:** run `npm run db:setup` against the online database **before** deploying a new version that adds columns (for example v1.7.0 adds the grading-system columns). The new code reads those columns, so deploying first would make saving and loading terms fail until the setup script has run. The script is safe to run more than once.
+
 > Optional: to move your existing local data, export it with `mysqldump --no-create-info gpa_app users gpa_records cgpa_records > data.sql` and import `data.sql` in the TiDB SQL editor or with the `mysql` CLI.
 
 ## 3. Push the code to GitHub

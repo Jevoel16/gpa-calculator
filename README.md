@@ -14,7 +14,7 @@
 ![google-auth-library](https://img.shields.io/badge/google--auth--library-11.3.2-blue?style=flat)
 ![dotenv](https://img.shields.io/badge/dotenv-16.6.1-blue?style=flat)
 
-![Version](https://img.shields.io/badge/version-1.6.3-green?style=flat)
+![Version](https://img.shields.io/badge/version-1.7.0-green?style=flat)
 ![Tests](https://img.shields.io/badge/tests-26%20passing-brightgreen?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
 ![Platform](https://img.shields.io/badge/platform-web%20%7C%20vercel-informational?style=flat)
@@ -48,11 +48,12 @@
 - **Google and GitHub sign-in for everyone.** School accounts (for example `@g.msuiit.edu.ph`), personal Google accounts and GitHub accounts can all sign in. Signing in with a different provider that has the same verified email opens the same account. Set `ALLOW_EXTERNAL_EMAILS=false` to allow school accounts only.
 - **Username and password sign-in.** New accounts are created through Google or GitHub. On the first sign-in the app asks for a username and password. After that you can sign in with your username (or email) and password, or keep using Google or GitHub.
 - **Settings.** See your name, username and email, and change your password. Changing it signs out every other device.
+- **Grading systems.** Pick a default grading system in **Settings**; every saved term remembers its own, so you can switch for a single term (for example after transferring schools). The scale list on **History** shows any system. A CGPA only combines terms on one system, because there is no official conversion between schools.
 - **Live term GPA.** GPA, total units and course count update as you type.
 - **Paste from MyIIT.** Copy a semester's grades from MyIIT and paste them into any New Term field: the `SY: … SEM: …` line becomes the term name and each line becomes a course with its code, title and grade. MyIIT doesn't show units, so the units fields are highlighted for you to fill in.
 - **Course codes.** An optional Code column (e.g. `CCC100`) is saved with each course.
 - **Cumulative GPA (CGPA).** Combine any saved terms, add extra subjects that aren't part of a term, and save the result as a named CGPA record. One panel with three tabs: **Saved terms** (pick terms, then name and save the CGPA), **Additional subjects** and **Saved CGPA** (your saved records, with a count).
-- **History.** Saved terms appear as cards with GPA, an academic standing badge, course count and units. **Edit** a term, **Copy** it into a new one, or **Delete** it (with a confirmation dialog). The grading scale stays open on the left, sticky and full height.
+- **History.** Saved terms appear as cards with GPA, an academic standing badge, course count and units. **Edit** a term, **Copy** it into a new one, or **Delete** it (with a confirmation dialog). The grading scale stays open on the left, sticky and full height, with a picker to view any grading system. When your terms use more than one system, each card shows which.
 - **Fits the screen on desktop.** The sections (New Term, Cumulative, History, Settings) live in the header. On windows at least 700 px tall each view fits without page scrolling; long lists scroll inside their own panel. Shorter windows scroll normally.
 - **Linkable views.** Each section has its own URL (`/dashboard#history`), so back/forward, bookmarks and "open in new tab" work.
 - **Phone friendly.** On phones the sections move to a bottom tab bar, the page scrolls normally, and fields use 16 px text so iOS doesn't zoom in.
@@ -176,7 +177,15 @@ ALTER TABLE users ADD COLUMN github_id BIGINT UNSIGNED NULL UNIQUE AFTER google_
 -- Username and password sign-in
 ALTER TABLE users ADD COLUMN username VARCHAR(30) NULL AFTER email;
 ALTER TABLE users ADD UNIQUE INDEX username (username);
+-- Grading systems (percentage averages need DECIMAL(8,5))
+ALTER TABLE users ADD COLUMN default_scale VARCHAR(40) NOT NULL DEFAULT 'msu-iit' AFTER password_hash;
+ALTER TABLE gpa_records ADD COLUMN scale_id VARCHAR(40) NOT NULL DEFAULT 'msu-iit' AFTER gpa;
+ALTER TABLE cgpa_records ADD COLUMN scale_id VARCHAR(40) NOT NULL DEFAULT 'msu-iit' AFTER cgpa;
+ALTER TABLE gpa_records MODIFY COLUMN gpa DECIMAL(8,5) NOT NULL;
+ALTER TABLE cgpa_records MODIFY COLUMN cgpa DECIMAL(8,5) NOT NULL;
 ```
+
+Existing terms and CGPA records keep the MSU-IIT scale they were made with.
 
 Existing users who sign in with a provider that has the same email are linked automatically and keep their history. Existing OAuth users are asked to choose a username and password on their next sign-in.
 
@@ -299,13 +308,14 @@ Every `/api/gpa/*` endpoint requires a signed-in session. After a first OAuth si
 | `POST` | `/api/auth/password` | Change password `{ currentPassword, newPassword }`; signs out other sessions |
 | `GET` | `/api/auth/config` | Sign-in policy (`allowedDomains`, `allowExternal`) |
 | `GET` | `/api/auth/status` | `{ signedIn, pendingSetup }`, always `200` (used by public pages) |
-| `GET` | `/api/auth/me` | Current user (`id`, `name`, `email`, `username`) |
+| `GET` | `/api/auth/me` | Current user (`id`, `name`, `email`, `username`, `defaultScale`) |
+| `PUT` | `/api/auth/preferences` | Set the default grading system `{ defaultScale }` |
 | `POST` | `/api/auth/logout` | Sign out |
-| `GET` | `/api/gpa/history` | List saved terms |
-| `POST` | `/api/gpa/save` | Save a term `{ termName, courses[] }` |
-| `PUT` | `/api/gpa/:id` | Update a term |
+| `GET` | `/api/gpa/history` | List saved terms (each with its `scaleId`) |
+| `POST` | `/api/gpa/save` | Save a term `{ termName, courses[], scaleId? }`; without `scaleId` the account default is used |
+| `PUT` | `/api/gpa/:id` | Update a term; without `scaleId` it keeps its own scale |
 | `DELETE` | `/api/gpa/:id` | Delete a term |
-| `POST` | `/api/gpa/calculate-cumulative` | Compute CGPA `{ termIds[], additionalSubjects[] }` |
+| `POST` | `/api/gpa/calculate-cumulative` | Compute CGPA `{ scaleId?, termIds[], additionalSubjects[] }`; `400` if the terms use different grading systems |
 | `GET` | `/api/gpa/cgpa` | List saved CGPA records |
 | `POST` | `/api/gpa/save-cgpa` | Save a CGPA record (recomputed on the server) |
 | `DELETE` | `/api/gpa/cgpa/:id` | Delete a CGPA record |
@@ -339,6 +349,7 @@ gpa-calculator/
 │   └── schema.sql         # Database schema
 ├── docs/screenshots/      # README images
 ├── lib/
+│   ├── scales.js          # Resolves grading-system ids for routes (hook for custom scales)
 │   ├── app-url.js         # Public site address (APP_URL) shared by OAuth, robots.txt and sitemap.xml
 │   ├── password.js        # scrypt password hashing
 │   └── rate-limit.js      # Failed-attempt counter stored in MySQL (memory fallback)
@@ -407,6 +418,7 @@ The tests use Node's built-in test runner and need **no database** (they point a
 | File | Covers |
 | --- | --- |
 | `test/grading-scales.test.js` | Scale lookup, grade normalising (`1` → `1.00`, `drp` → `DROP`), weighted GPA, credit-only grades, standings |
+| `test/scales-api.test.js` | Routes with a stubbed database: account-default scale, unknown scale ids, grades off the scale, edits keeping their scale, refusing mixed-scale CGPAs, the preferences endpoint |
 | `test/gpa.test.js` | Weighted GPA, `P` / `INC` / `DROP` rules, input validation limits, optional course code |
 | `test/myiit-paste.test.js` | Parsing MyIIT copies: term name, courses, grade normalising, spaced copies, ignoring ordinary text |
 | `test/password.test.js` | scrypt hashing, salts, verification, rejecting non-scrypt values |
