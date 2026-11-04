@@ -96,6 +96,13 @@ function scaleOptionsHtml(selectedId){
 // Groups neighbouring grades with the same label, e.g. "1.25–1.50 Very good"
 function scaleRows(scale){
   const rows = [];
+  // Percentage-style scales have no grade list, so their bands come from the standings
+  if (scale.input === 'number') {
+    scale.standings.forEach((b, i) => {
+      const grade = b.limit === null ? `Below ${scale.standings[i - 1].limit}` : `${b.limit}+`;
+      rows.push({ from: grade, to: null, label: b.label.replace(/ standing$/, ''), points: null });
+    });
+  }
   for (const g of scale.grades) {
     const last = rows[rows.length - 1];
     if (last && last.label === g.label && g.points !== null && last.points !== null) {
@@ -188,10 +195,26 @@ function goTo(name){
 
 /* ---------- New term ---------- */
 
-function gradeSelectHtml(selected = '', scale = termScale){
-  const current = Scales.normalizeGrade(scale, selected);
-  return `<option value="">Grade</option>` +
-    scale.grades.map(g => `<option value="${escapeHtml(g.value)}" ${current === g.value ? 'selected' : ''}>${escapeHtml(g.value)}</option>`).join('');
+// A dropdown for scales with a fixed list of grades, a text field for percentage-style scales
+function gradeControlHtml(selected = '', scale = termScale, attrs = 'class="course-grade" aria-label="Grade"'){
+  const current = Scales.normalizeGrade(scale, selected) || '';
+  if (scale.input === 'number') {
+    const marks = scale.grades.map(g => g.value).join(', ');
+    return `<input type="text" inputmode="decimal" autocomplete="off" maxlength="6" ${attrs} placeholder="e.g. 92" title="${scale.range.min}–${scale.range.max}, or ${escapeHtml(marks)}" value="${escapeHtml(current)}"/>`;
+  }
+  return `<select ${attrs}><option value="">Grade</option>` +
+    scale.grades.map(g => `<option value="${escapeHtml(g.value)}" ${current === g.value ? 'selected' : ''}>${escapeHtml(g.value)}</option>`).join('') +
+    '</select>';
+}
+
+// Typed grades are flagged as soon as they aren't on the scale; other fields just clear their flag
+function bindCourseField(el){
+  el.addEventListener('input', () => {
+    const typedGrade = el.classList.contains('course-grade') && el.tagName === 'INPUT' && el.value.trim();
+    if (typedGrade && !Scales.normalizeGrade(termScale, el.value)) el.setAttribute('aria-invalid', 'true');
+    else el.removeAttribute('aria-invalid');
+    updateTermSummary();
+  });
 }
 
 function renumberRows(){
@@ -208,14 +231,11 @@ function addRow(values={}){
     <td class="col-code"><input type="text" maxlength="20" placeholder="Code" class="course-code" aria-label="Course code" value="${escapeHtml(values.code)}"/></td>
     <td><input type="text" placeholder="e.g. Calculus I" class="course-name" aria-label="Course name" value="${escapeHtml(values.name)}"/></td>
     <td><input type="number" min="0" step="0.5" inputmode="decimal" placeholder="Units" class="course-units" aria-label="Units" value="${escapeHtml(values.units)}"/></td>
-    <td><select class="course-grade" aria-label="Grade">${gradeSelectHtml(values.grade)}</select></td>
+    <td>${gradeControlHtml(values.grade)}</td>
     <td><button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Remove course" title="Remove">${icons.trash}</button></td>
   `;
   tr.querySelector('button').addEventListener('click', () => { tr.remove(); renumberRows(); updateTermSummary(); });
-  tr.querySelectorAll('input, select').forEach(el => el.addEventListener('input', () => {
-    el.removeAttribute('aria-invalid');
-    updateTermSummary();
-  }));
+  tr.querySelectorAll('input, select').forEach(bindCourseField);
   tbody.appendChild(tr);
   renumberRows();
   updateTermSummary();
@@ -228,30 +248,37 @@ function readCourses(){
     code: r.querySelector('.course-code').value.trim(),
     name: r.querySelector('.course-name').value.trim(),
     units: Number(r.querySelector('.course-units').value) || 0,
-    grade: r.querySelector('.course-grade').value
+    grade: r.querySelector('.course-grade').value.trim()
   })).filter(c => c.name && c.units > 0 && c.grade);
 }
 
 function updateTermSummary(){
   const courses = readCourses();
   const gpa = Scales.computeGpa(courses, termScale);
-  const units = Scales.sumCourses(courses, termScale).creditedUnits;
-  $('termGpaDisplay').textContent = gpa ? formatGpa(gpa) : '—';
-  $('termGpaSub').textContent = gpa ? standing(gpa) : 'Add courses to compute';
+  const sum = Scales.sumCourses(courses, termScale);
+  const units = sum.creditedUnits;
+  // On higher-is-better scales an all-failing term really is 0, so "no GPA" means no graded units
+  const hasGpa = sum.units > 0;
+  $('termGpaDisplay').textContent = hasGpa ? formatGpa(gpa) : '—';
+  $('termGpaSub').textContent = hasGpa ? (standing(gpa) || 'Below passing') : 'Add courses to compute';
   $('termUnitsDisplay').textContent = units;
   $('termCoursesDisplay').textContent = courses.length;
 }
 
 // Switching scales rebuilds each grade picker; grades the new scale doesn't have are cleared and flagged
 function setTermScale(id){
+  const from = termScale;
   termScale = Scales.getScale(id) || Scales.getScale(defaultScaleId);
   $('termScale').innerHTML = scaleOptionsHtml(termScale.id);
   let cleared = 0;
-  for (const select of document.querySelectorAll('#coursesBody .course-grade')) {
-    const previous = select.value;
-    select.innerHTML = gradeSelectHtml(previous);
-    if (previous && !select.value) {
-      select.setAttribute('aria-invalid', 'true');
+  for (const control of document.querySelectorAll('#coursesBody .course-grade')) {
+    const previous = control.value.trim();
+    const cell = control.parentElement;
+    cell.innerHTML = gradeControlHtml(Scales.carryGrade(from, termScale, previous) || '');
+    const next = cell.querySelector('.course-grade');
+    bindCourseField(next);
+    if (previous && !next.value) {
+      next.setAttribute('aria-invalid', 'true');
       cleared++;
     }
   }
@@ -261,7 +288,7 @@ function setTermScale(id){
 
 function changeTermScale(){
   const cleared = setTermScale($('termScale').value);
-  if (cleared) toast(`${cleared} grade${cleared === 1 ? '' : 's'} not on ${termScale.name} were cleared`, 'error');
+  if (cleared) toast(`Cleared ${cleared} grade${cleared === 1 ? "" : "s"} that don’t carry over to ${termScale.name}. Re-enter them on the new scale.`, "error");
 }
 
 function resetTermForm(){
@@ -367,7 +394,7 @@ function fillRow(row, course){
   row.querySelector('.course-code').value = course.code;
   row.querySelector('.course-name').value = course.name;
   if (course.units) row.querySelector('.course-units').value = course.units;
-  if (course.grade) row.querySelector('.course-grade').value = course.grade;
+  if (course.grade) row.querySelector('.course-grade').value = Scales.normalizeGrade(termScale, course.grade) || '';
 }
 
 // Units aren't in the MyIIT copy, so empty ones are flagged until the user fills them in
@@ -465,13 +492,14 @@ function cumulativeScale(){
 
 // A CGPA only averages terms on one grading system, so the list shows that system's terms
 function setCumulativeScale(id){
+  const previousScale = cumulativeScale();
   cumulativeScaleId = (Scales.getScale(id) || Scales.getScale(defaultScaleId)).id;
   const scale = cumulativeScale();
   $('cumulativeScale').innerHTML = scaleOptionsHtml(scale.id);
-  $('additionalSubjectGrade').innerHTML = gradeSelectHtml('', scale);
+  $('additionalSubjectGrade').outerHTML = gradeControlHtml('', scale, 'id="additionalSubjectGrade" aria-label="Grade"');
   const before = additionalSubjects.length;
-  additionalSubjects = additionalSubjects.filter(s => Scales.normalizeGrade(scale, s.grade));
-  if (additionalSubjects.length < before) toast(`Removed additional subjects with grades not on ${scale.name}`, 'error');
+  additionalSubjects = additionalSubjects.filter(s => Scales.carryGrade(previousScale, scale, s.grade));
+  if (additionalSubjects.length < before) toast(`Removed additional subjects whose grades don’t carry over to ${scale.name}`, "error");
   displayAdditionalSubjects();
   updateCumulativeTermsList();
 }
@@ -525,7 +553,7 @@ function addAdditionalSubject(){
   if (!grade) return toast('Grade is required', 'error');
   if (!Scales.normalizeGrade(cumulativeScale(), grade)) return toast(`Enter a grade on ${cumulativeScale().name}`, 'error');
 
-  additionalSubjects.push({ name, units, grade });
+  additionalSubjects.push({ name, units, grade: Scales.normalizeGrade(cumulativeScale(), grade) });
   nameInput.value = '';
   unitsInput.value = '';
   gradeInput.value = '';
@@ -603,7 +631,7 @@ async function calculateCumulativeGpaServer(termIds, additionalSubjects = []){
     $('cumulativeGpaDisplay').textContent = formatGpa(response.cumulativeGpa, scale);
 
     // The server recomputes the CGPA from these inputs when it is saved
-    window.currentCGPA = response.cumulativeGpa > 0 ? { scaleId: scale.id, termIds, additionalSubjects: [...additionalSubjects] } : null;
+    window.currentCGPA = response.gpaUnits > 0 ? { scaleId: scale.id, termIds, additionalSubjects: [...additionalSubjects] } : null;
     updateSaveRow();
   } catch (err) {
     if (requestId === cumulativeRequestId) resetCumulativeDisplay('Error');
@@ -730,7 +758,7 @@ function initializeEventListeners(){
   });
   $('accountBtn').addEventListener('click', () => goTo('settings'));
   $('passwordForm').addEventListener('submit', changePassword);
-  $('additionalSubjectGrade').innerHTML = gradeSelectHtml('', cumulativeScale());
+  $('additionalSubjectGrade').outerHTML = gradeControlHtml('', cumulativeScale(), 'id="additionalSubjectGrade" aria-label="Grade"');
   $('cumulativeScale').innerHTML = scaleOptionsHtml(cumulativeScale().id);
   $('defaultScale').innerHTML = scaleOptionsHtml(defaultScaleId);
   $('historyScale').innerHTML = scaleOptionsHtml(defaultScaleId);

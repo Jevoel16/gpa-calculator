@@ -232,7 +232,8 @@ router.post('/save-cgpa', requireAuth, async (req, res) => {
     const subjects = req.body.additionalSubjects ?? req.body.additionalSubjectsIncluded ?? [];
     const result = await computeCumulative(req.session.userId, req.body.scaleId, termIds, subjects);
 
-    if (result.cumulativeGpa <= 0) {
+    // Checked by graded units, not the GPA: on higher-is-better scales an all-failing CGPA is a real 0
+    if (result.gpaUnits <= 0) {
       return res.status(400).json({ error: 'Select at least one term or subject with a counted grade' });
     }
 

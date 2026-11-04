@@ -119,3 +119,37 @@ test('the default grading system preference is validated', async () => {
   assert.deepEqual(await ok.json(), { defaultScale: 'msu-iit' });
   assert.deepEqual(queries[0].params, ['msu-iit', 7]);
 });
+
+test('a term on another preset is validated and stored on that preset', async () => {
+  db = () => [{ insertId: 3 }];
+  const res = await send('POST', '/api/gpa/save', {
+    termName: 'Fall', scaleId: 'ph-percent',
+    courses: [{ name: 'Math', units: 3, grade: '91.5' }, { name: 'PE', units: 2, grade: 'p' }]
+  });
+  assert.equal(res.status, 201);
+  const body = await res.json();
+  assert.equal(body.gpa, 91.5);
+  assert.deepEqual(body.courses.map(c => c.grade), ['91.5', 'P']);
+  assert.equal(insertOf('gpa_records').params.at(-1), 'ph-percent');
+  assert.ok(!queries.some(q => q.sql.includes('default_scale')), 'an explicit scale skips the account default');
+
+  const bad = await send('POST', '/api/gpa/save', { termName: 'Fall', scaleId: 'ph-percent', courses: [{ name: 'Math', units: 3, grade: '1.00' }, { name: 'X', units: 3, grade: '120' }] });
+  assert.equal(bad.status, 400);
+});
+
+test('an all-failing CGPA on a higher-is-better scale can be saved', async () => {
+  const courses = JSON.stringify([{ name: 'X', units: 3, grade: 'F' }]);
+  db = sql => sql.startsWith('SELECT id, term_name')
+    ? [[{ id: 1, termName: 'A', coursesJson: courses, gpa: 0, scaleId: 'us-4pt' }]]
+    : [{ insertId: 4 }];
+  const res = await send('POST', '/api/gpa/save-cgpa', { recordName: 'Rough year', scaleId: 'us-4pt', termIds: [1] });
+  assert.equal(res.status, 201);
+  assert.equal((await res.json()).cumulativeGpa, 0);
+});
+
+test('the default grading system can be set to any preset', async () => {
+  db = () => [{ affectedRows: 1 }];
+  const res = await send('PUT', '/api/auth/preferences', { defaultScale: 'us-4pt' });
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), { defaultScale: 'us-4pt' });
+});
