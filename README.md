@@ -14,8 +14,8 @@
 ![google-auth-library](https://img.shields.io/badge/google--auth--library-11.3.3-blue?style=flat)
 ![dotenv](https://img.shields.io/badge/dotenv-18.0.9-blue?style=flat)
 
-![Version](https://img.shields.io/badge/version-1.9.1-green?style=flat)
-![CI](https://github.com/Jevoel16/gpa-calculator/actions/workflows/ci.yml/badge.svg)
+![Version](https://img.shields.io/badge/version-1.9.2-green?style=flat)
+[![CI](https://img.shields.io/github/actions/workflow/status/Jevoel16/gpa-calculator/ci.yml?branch=main&label=CI&style=flat)](https://github.com/Jevoel16/gpa-calculator/actions/workflows/ci.yml)
 ![Tests](https://img.shields.io/badge/tests-54%20passing-brightgreen?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
 ![Platform](https://img.shields.io/badge/platform-web%20%7C%20vercel-informational?style=flat)
