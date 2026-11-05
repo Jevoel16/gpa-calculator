@@ -73,6 +73,7 @@ Do **not** add `GOOGLE_REDIRECT_URI`, `GITHUB_REDIRECT_URI` or the `DB_HOST`-sty
 
 4. Click **Deploy**, then open `https://<project>.vercel.app/api/health`. It should show `{"ok":true,"db":true}`.
 5. Under **Settings → Functions → Function Region**, choose the region of your database (for example `sin1` for Singapore). This makes every request much faster.
+6. Open the **Analytics** tab and click **Enable** to turn on Vercel Web Analytics, then redeploy. The pages already load `/_vercel/insights/script.js`; page views appear in the dashboard after a visit.
 
 ## 5. Add your domain
 

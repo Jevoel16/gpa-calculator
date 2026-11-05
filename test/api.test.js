@@ -131,3 +131,12 @@ test('static assets and the web manifest are served', async () => {
   const manifest = await (await get('/manifest.webmanifest')).json();
   assert.ok(manifest.icons.some(i => i.purpose === 'maskable'));
 });
+
+test('every page loads Vercel Web Analytics from the same origin', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  for (const page of ['login', 'dashboard', 'setup', '404']) {
+    const html = fs.readFileSync(path.join(__dirname, '..', 'public', `${page}.html`), 'utf8');
+    assert.match(html, /<script defer src="\/_vercel\/insights\/script\.js"><\/script>/, page);
+  }
+});

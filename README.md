@@ -14,7 +14,7 @@
 ![google-auth-library](https://img.shields.io/badge/google--auth--library-11.3.3-blue?style=flat)
 ![dotenv](https://img.shields.io/badge/dotenv-18.0.9-blue?style=flat)
 
-![Version](https://img.shields.io/badge/version-1.8.6-green?style=flat)
+![Version](https://img.shields.io/badge/version-1.9.0-green?style=flat)
 ![CI](https://github.com/Jevoel16/gpa-calculator/actions/workflows/ci.yml/badge.svg)
 ![Tests](https://img.shields.io/badge/tests-54%20passing-brightgreen?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
@@ -64,6 +64,7 @@
 - **Fast first paint.** The Inter font is self-hosted and preloaded (no third-party font request).
 - **Precise.** GPA values are computed and stored to 5 decimal places.
 - **Persistent sessions.** Sessions are stored in MySQL, so you stay signed in after the server restarts.
+- **Privacy-friendly analytics.** Vercel Web Analytics counts page views on every page (no cookies). The script is served from the app's own domain, so the strict CSP stays `'self'` only.
 - **Search-ready sign-in page.** `robots.txt` and `sitemap.xml` are built from `APP_URL`, plus an absolute canonical tag, JSON-LD, Open Graph and Twitter share cards with a preview image, and `llms.txt`.
 
 <details>
@@ -100,6 +101,7 @@ Common spellings are accepted and stored in the system's own form: `1` → `1.00
 | Auth | Username / password (Node `crypto.scrypt`), Google OAuth 2.0 (`google-auth-library`), GitHub OAuth (built-in `fetch`), `express-session` |
 | Sessions | `express-mysql-session` |
 | Frontend | Vanilla HTML, CSS and JavaScript, self-hosted Inter variable font (SIL OFL) |
+| Analytics | Vercel Web Analytics (`/_vercel/insights/script.js`) |
 | Testing | Node's built-in test runner (`node:test`), GitHub Actions CI |
 | Hosting | Vercel (see [DEPLOY.md](DEPLOY.md)) |
 
@@ -458,6 +460,7 @@ Run these with `npm run dev`:
 | Database connection errors | Check `DATABASE_URL` or `DB_*`; hosted databases need `DB_SSL=true`. `GET /api/health` shows whether the database is reachable. |
 | "Too many failed attempts" | Wait 15 minutes; the limit is per account guess and per IP. To clear it early, delete the rows in the `auth_attempts` table. |
 | Sitemap shows `localhost` | Set `APP_URL` to your public domain in production. |
+| `/_vercel/insights/script.js` 404 in the console | Expected when running locally; the script only exists on Vercel. On Vercel, enable **Analytics** in the project dashboard and redeploy. |
 
 <p align="right"><a href="#top">back to top ↑</a></p>
 
