@@ -14,13 +14,13 @@
 ![google-auth-library](https://img.shields.io/badge/google--auth--library-11.3.3-blue?style=flat)
 ![dotenv](https://img.shields.io/badge/dotenv-18.0.9-blue?style=flat)
 
-![Version](https://img.shields.io/badge/version-1.9.2-green?style=flat)
+![Version](https://img.shields.io/badge/version-1.9.3-green?style=flat)
 [![CI](https://img.shields.io/github/actions/workflow/status/Jevoel16/gpa-calculator/ci.yml?branch=main&label=CI&style=flat)](https://github.com/Jevoel16/gpa-calculator/actions/workflows/ci.yml)
-![Tests](https://img.shields.io/badge/tests-54%20passing-brightgreen?style=flat)
+![Tests](https://img.shields.io/badge/tests-55%20passing-brightgreen?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
 ![Platform](https://img.shields.io/badge/platform-web%20%7C%20vercel-informational?style=flat)
 
-![Dashboard](docs/screenshots/new-term.png)
+![New Term view with courses, grades and a live GPA card](docs/images/new-term.png)
 
 </div>
 
@@ -34,10 +34,9 @@
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
+- [Documentation](#documentation)
 - [Project Structure](#project-structure)
 - [Scripts](#scripts)
-- [Testing](#testing)
-- [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [License](#license)
 - [Author](#author)
@@ -240,22 +239,7 @@ If `ALLOWED_EMAIL_DOMAINS` is empty, external accounts are always allowed.
 
 ## Usage
 
-<details open>
-<summary><strong>Screenshots</strong></summary>
-
-| Sign in | Settings |
-| :---: | :---: |
-| ![Sign in](docs/screenshots/login.png) | ![Settings](docs/screenshots/settings.png) |
-
-| Cumulative GPA | History |
-| :---: | :---: |
-| ![Cumulative GPA](docs/screenshots/cumulative.png) | ![History](docs/screenshots/history.png) |
-
-| Dark mode | Phone (bottom tab bar) |
-| :---: | :---: |
-| ![Dark mode](docs/screenshots/new-term-dark.png) | ![Phone layout](docs/screenshots/mobile.png) |
-
-</details>
+Screenshots of each step are in [Documentation](#documentation).
 
 ### New student
 
@@ -343,6 +327,34 @@ npm run db:import -- path/to/gpa_app_gpa_records.sql --from-user 3 --to-email yo
 
 ---
 
+## Documentation
+
+Screenshots live in [`docs/images/`](docs/images/).
+
+| Sign in | New Term |
+| :---: | :---: |
+| ![Sign-in page with Google, GitHub and username/password options](docs/images/login.png) | ![New Term view with courses, grades and the live GPA card](docs/images/new-term.png) |
+| Sign in with Google, GitHub, or your username and password. | Enter a term's courses and watch the GPA update as you type. |
+
+| Cumulative GPA | History |
+| :---: | :---: |
+| ![Cumulative view with saved terms ticked and the combined CGPA](docs/images/cumulative.png) | ![History view with term cards and the grading scale on the left](docs/images/history.png) |
+| Combine saved terms and extra subjects into a named CGPA. | Saved terms as cards, with Edit, Copy and Delete, beside the grading scale. |
+
+| Settings | Dark mode |
+| :---: | :---: |
+| ![Settings view with account details and the change-password form](docs/images/settings.png) | ![New Term view in the dark theme](docs/images/new-term-dark.png) |
+| Account details, default grading system and password change. | The dark theme, which follows your system until you pick one. |
+
+| Phone |
+| :---: |
+| ![Phone layout with the bottom tab bar](docs/images/mobile.png) |
+| On phones the sections move to a bottom tab bar. |
+
+<p align="right"><a href="#top">back to top ↑</a></p>
+
+---
+
 ## Project Structure
 
 ```
@@ -352,7 +364,7 @@ gpa-calculator/
 ├── db/
 │   ├── db.js              # MySQL connection pool
 │   └── schema.sql         # Database schema
-├── docs/screenshots/      # README images
+├── docs/images/           # README screenshots
 ├── lib/
 │   ├── scales.js          # Resolves grading-system ids for routes (hook for custom scales)
 │   ├── app-url.js         # Public site address (APP_URL) shared by OAuth, robots.txt and sitemap.xml
@@ -406,19 +418,10 @@ gpa-calculator/
 | `npm run db:setup` | Create or upgrade the tables in the configured database |
 | `npm run db:import` | Import terms from an old `mysqldump` (see [Usage](#usage)) |
 
-<p align="right"><a href="#top">back to top ↑</a></p>
+`npm test` uses Node's built-in test runner and needs **no database** (it points at an address that refuses connections and keeps sessions in memory). GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs it, plus `npm audit`, on Node 20 and 22 for every push and pull request to `main`; a newer push cancels the older run.
 
----
-
-## Testing
-
-### Automated tests
-
-```bash
-npm test
-```
-
-The tests use Node's built-in test runner and need **no database** (they point at an address that refuses connections and keep sessions in memory). GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs them, plus `npm audit`, on Node 20 and 22 for every push and pull request to `main`; a newer push cancels the older run.
+<details>
+<summary><strong>What the tests cover</strong></summary>
 
 | File | Covers |
 | --- | --- |
@@ -430,7 +433,23 @@ The tests use Node's built-in test runner and need **no database** (they point a
 | `test/rate-limit.test.js` | Failure counting, windows, clearing, memory fallback |
 | `test/api.test.js` | 401 on private routes, `no-store`, security headers, cross-origin block, bad JSON / missing / too-large bodies, OAuth `state` and short session, robots/sitemap, redirects, 404s, static assets |
 
-### Manual checks
+</details>
+
+<p align="right"><a href="#top">back to top ↑</a></p>
+
+---
+
+## Contributing
+
+1. Branch from `main` with a matching prefix: `feat/short-description`, `fix/short-description`, `docs/…`, `chore/…`.
+2. Use [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `style:`, `perf:`, `test:`, `ci:`; an imperative subject of 72 characters or less, a blank line, then one bullet per change.
+3. **Bump the version in every commit** and end the subject with it, e.g. `feat: add CSV export (v1.4.0)`. Breaking change → major, `feat` → minor, anything else → patch. Update `package.json`, `package-lock.json` and the version badge at the top of this README in the same commit.
+4. Run `npm test`, `npm audit` and the manual checks below.
+5. **Update this README with every change** (features, configuration, structure, version badges when dependencies change). Retake the matching screenshot in `docs/images/` when a screen changes.
+6. Never commit `.env` or downloaded `client_secret_*.json` files.
+
+<details>
+<summary><strong>Manual checks</strong></summary>
 
 Run these with `npm run dev`:
 
@@ -446,34 +465,7 @@ Run these with `npm run dev`:
 10. **Keyboard:** Tab from the top shows "Skip to content"; every control has a visible focus ring.
 11. **SEO files:** `/robots.txt`, `/sitemap.xml` and `/llms.txt` load and use your `APP_URL`.
 
-<p align="right"><a href="#top">back to top ↑</a></p>
-
----
-
-## Troubleshooting
-
-| Problem | Fix |
-| --- | --- |
-| `Missing required environment variables` on start | Fill in `SESSION_SECRET` and the Google/GitHub client IDs and secrets in `.env`. |
-| OAuth redirects to `/login?error=oauth` | The callback URL in Google/GitHub must match `APP_URL` exactly. |
-| `/login?error=domain` | `ALLOW_EXTERNAL_EMAILS=false` and the account is not in `ALLOWED_EMAIL_DOMAINS`. |
-| Database connection errors | Check `DATABASE_URL` or `DB_*`; hosted databases need `DB_SSL=true`. `GET /api/health` shows whether the database is reachable. |
-| "Too many failed attempts" | Wait 15 minutes; the limit is per account guess and per IP. To clear it early, delete the rows in the `auth_attempts` table. |
-| Sitemap shows `localhost` | Set `APP_URL` to your public domain in production. |
-| `/_vercel/insights/script.js` 404 in the console | Expected when running locally; the script only exists on Vercel. On Vercel, enable **Analytics** in the project dashboard and redeploy. |
-
-<p align="right"><a href="#top">back to top ↑</a></p>
-
----
-
-## Contributing
-
-1. Branch from `main` with a matching prefix: `feat/short-description`, `fix/short-description`, `docs/…`, `chore/…`.
-2. Use [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `style:`, `perf:`, `test:`, `ci:`; an imperative subject of 72 characters or less, a blank line, then one bullet per change.
-3. **Bump the version in every commit** and end the subject with it, e.g. `feat: add CSV export (v1.4.0)`. Breaking change → major, `feat` → minor, anything else → patch. Update `package.json`, `package-lock.json` and the version badge at the top of this README in the same commit.
-4. Run `npm test`, the [manual checks](#testing) and `npm audit`.
-5. **Update this README with every change** (features, configuration, structure, version badges when dependencies change).
-6. Never commit `.env` or downloaded `client_secret_*.json` files.
+</details>
 
 <details>
 <summary><strong>Security notes</strong></summary>
