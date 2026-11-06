@@ -6,21 +6,10 @@
 
 **Compute, save and track your term GPA and cumulative GPA, on the MSU-IIT scale or another grading system.**
 
-![Node.js](https://img.shields.io/badge/node.js-%E2%89%A520-blue?style=flat)
-![Express](https://img.shields.io/badge/express-5.3.0-blue?style=flat)
-![mysql2](https://img.shields.io/badge/mysql2-3.24.6-blue?style=flat)
-![express-session](https://img.shields.io/badge/express--session-1.19.0-blue?style=flat)
-![express-mysql-session](https://img.shields.io/badge/express--mysql--session-3.0.3-blue?style=flat)
-![google-auth-library](https://img.shields.io/badge/google--auth--library-11.3.3-blue?style=flat)
-![dotenv](https://img.shields.io/badge/dotenv-18.0.9-blue?style=flat)
-
-![Version](https://img.shields.io/badge/version-1.9.3-green?style=flat)
-[![CI](https://img.shields.io/github/actions/workflow/status/Jevoel16/gpa-calculator/ci.yml?branch=main&label=CI&style=flat)](https://github.com/Jevoel16/gpa-calculator/actions/workflows/ci.yml)
-![Tests](https://img.shields.io/badge/tests-55%20passing-brightgreen?style=flat)
+![Version](https://img.shields.io/badge/version-1.9.4-green?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
+[![CI](https://img.shields.io/github/actions/workflow/status/Jevoel16/gpa-calculator/ci.yml?branch=main&label=CI&style=flat)](https://github.com/Jevoel16/gpa-calculator/actions/workflows/ci.yml)
 ![Platform](https://img.shields.io/badge/platform-web%20%7C%20vercel-informational?style=flat)
-
-![New Term view with courses, grades and a live GPA card](docs/images/new-term.png)
 
 </div>
 
@@ -28,64 +17,68 @@
 
 ## Table of Contents
 
+- [About](#about)
+- [Screenshots](#screenshots)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
+- [Getting Started](#getting-started)
 - [Configuration](#configuration)
 - [Usage](#usage)
-- [Documentation](#documentation)
-- [Project Structure](#project-structure)
-- [Scripts](#scripts)
+- [More](#more)
 - [Contributing](#contributing)
 - [License](#license)
 - [Author](#author)
 
 ---
 
-## Features
+## About
 
-- **Google and GitHub sign-in for everyone.** School accounts (for example `@g.msuiit.edu.ph`), personal Google accounts and GitHub accounts can all sign in. Signing in with a different provider that has the same verified email opens the same account. Set `ALLOW_EXTERNAL_EMAILS=false` to allow school accounts only.
-- **Username and password sign-in.** New accounts are created through Google or GitHub. On the first sign-in the app asks for a username and password. After that you can sign in with your username (or email) and password, or keep using Google or GitHub.
-- **Settings.** See your name, username and email, and change your password. Changing it signs out every other device.
-- **Grading systems.** Five built in: MSU-IIT (1.00–5.00), PH 1.00–5.00 with a 4.00 conditional, PH percentage, PH 4.0 and US letter grades (see the table below). Percentage grades are typed; the others use a dropdown. Pick a default grading system in **Settings**; every saved term remembers its own, so you can switch for a single term (for example after transferring schools). Switching a term keeps only the grades that mean the same on both systems. The scale list on **History** shows any system. A CGPA only combines terms on one system, because there is no official conversion between schools.
-- **Live term GPA.** GPA, total units and course count update as you type.
-- **Paste from MyIIT.** Copy a semester's grades from MyIIT and paste them into any New Term field: the `SY: … SEM: …` line becomes the term name and each line becomes a course with its code, title and grade. MyIIT doesn't show units, so the units fields are highlighted for you to fill in.
-- **Course codes.** An optional Code column (e.g. `CCC100`) is saved with each course.
-- **Cumulative GPA (CGPA).** Combine any saved terms, add extra subjects that aren't part of a term, and save the result as a named CGPA record. One panel with three tabs: **Saved terms** (pick terms, then name and save the CGPA), **Additional subjects** and **Saved CGPA** (your saved records, with a count).
-- **History.** Saved terms appear as cards with GPA, an academic standing badge, course count and units. **Edit** a term, **Copy** it into a new one, or **Delete** it (with a confirmation dialog). The grading scale stays open on the left, sticky and full height, with a picker to view any grading system. When your terms use more than one system, each card shows which.
-- **Fits the screen on desktop.** The sections (New Term, Cumulative, History, Settings) live in the header. On windows at least 700 px tall each view fits without page scrolling; long lists scroll inside their own panel. Shorter windows scroll normally.
-- **Linkable views.** Each section has its own URL (`/dashboard#history`), so back/forward, bookmarks and "open in new tab" work.
-- **Phone friendly.** On phones the sections move to a bottom tab bar, the page scrolls normally, and fields use 16 px text so iOS doesn't zoom in.
-- **Light and dark themes.** Follows your system theme live until you pick one; picking your system's theme goes back to following it. Native scrollbars and menus match the theme.
-- **Accessible.** WCAG 2.2 AA checked with axe-core on every view: skip link, visible focus rings, labelled controls, keyboard-friendly dialogs and tabs, announced errors, and reduced motion when the system asks for it.
-- **Installable.** A web app manifest, maskable icons and an Apple touch icon let you add it to your home screen.
-- **Fast first paint.** The Inter font is self-hosted and preloaded (no third-party font request).
-- **Precise.** GPA values are computed and stored to 5 decimal places.
-- **Persistent sessions.** Sessions are stored in MySQL, so you stay signed in after the server restarts.
-- **Privacy-friendly analytics.** Vercel Web Analytics counts page views on every page (no cookies). The script is served from the app's own domain, so the strict CSP stays `'self'` only.
-- **Search-ready sign-in page.** `robots.txt` and `sitemap.xml` are built from `APP_URL`, plus an absolute canonical tag, JSON-LD, Open Graph and Twitter share cards with a preview image, and `llms.txt`.
+GPA Calculator lets students enter their grades each term, see their GPA update as they type, and keep every term and cumulative GPA saved in one place. It was built for MSU-IIT students, whose 1.00–5.00 scale most online calculators get wrong, and also supports other Philippine and US grading systems.
+
+<p align="right"><a href="#top">back to top ↑</a></p>
+
+---
+
+## Screenshots
 
 <details>
-<summary><strong>Grading systems</strong></summary>
+<summary><b>Screenshots</b></summary>
 
-GPA is the unit-weighted average **Σ(grade points × units) / Σ units** over graded courses only. Credit-only grades (`P`) are left out of the GPA, but their units count toward the unit totals. Marks such as `INC`, `DROP`/`DRP`/`W` and `NP` are saved with the term but left out of both.
-
-| System | Better | Grades | Not counted in GPA |
-| --- | :---: | --- | --- |
-| **MSU-IIT (1.00–5.00)** | lower | `1.00` Excellent · `1.25`–`1.50` Very good · `1.75`–`2.00` Good · `2.25`–`2.50` Satisfactory · `2.75`–`3.00` Passing · `5.00` Failed | `P` (units credited), `INC`, `DROP` |
-| **PH 1.00–5.00 (with 4.00 conditional)** | lower | `1.00`–`1.25` Excellent · `1.50`–`1.75` Very good · `2.00`–`2.25` Good · `2.50`–`2.75` Satisfactory · `3.00` Passing · `5.00` Failed | `4.00` conditional (until resolved), `P` (units credited), `INC`, `DRP` |
-| **PH percentage (75 passing)** | higher | Any number from 0 to 100, counted at its own value (kept to 2 decimals). Standing: 95+ Excellent · 90+ Very good · 85+ Good · 80+ Satisfactory · 75+ Passing | `P` (units credited), `INC`, `DROP` |
-| **PH 4.0 (0.0–4.0)** | higher | `4.0` Excellent · `3.5` Superior · `3.0` Very good · `2.5` Good · `2.0` Satisfactory · `1.5` Fair · `1.0` Passing · `0.0` Failed | `P` (units credited), `INC`, `W` |
-| **US letter grades (A–F, 4.0)** | higher | `A+`/`A` 4.0 · `A-` 3.7 · `B+` 3.3 · `B` 3.0 · `B-` 2.7 · `C+` 2.3 · `C` 2.0 · `C-` 1.7 · `D+` 1.3 · `D` 1.0 · `D-` 0.7 · `F` 0.0 | `P` (units credited), `NP`, `I`, `W` |
-
-Common spellings are accepted and stored in the system's own form: `1` → `1.00`, `drp` → `DROP`, `inc` → `I` on the US scale.
-
-**Check your school's handbook.** The presets other than MSU-IIT follow common Philippine and US conventions, not one school's official rules. Labels and cut-offs differ between schools.
-
-**Adding or fixing a system.** Systems are plain data in [`public/grading-scales.js`](public/grading-scales.js), shared by the server and the dashboard. Never change the points of a system that has shipped, because saved terms are recomputed from it: add a new id (for example `ph-1to5-v2`) instead. User-defined systems can later plug in through `resolveScale` in [`lib/scales.js`](lib/scales.js).
+<table>
+<tr>
+<td width="50%" align="center"><b>Sign in</b><br><a href="docs/images/login.png"><img src="docs/images/login.png" width="100%" alt="Sign-in page with Google, GitHub and username/password options"></a></td>
+<td width="50%" align="center"><b>New Term</b><br><a href="docs/images/new-term.png"><img src="docs/images/new-term.png" width="100%" alt="New Term view with courses, grades and the live GPA card"></a></td>
+</tr>
+<tr>
+<td width="50%" align="center"><b>Cumulative GPA</b><br><a href="docs/images/cumulative.png"><img src="docs/images/cumulative.png" width="100%" alt="Cumulative view with saved terms ticked and the combined CGPA"></a></td>
+<td width="50%" align="center"><b>History</b><br><a href="docs/images/history.png"><img src="docs/images/history.png" width="100%" alt="History view with term cards and the grading scale on the left"></a></td>
+</tr>
+<tr>
+<td width="50%" align="center"><b>Settings</b><br><a href="docs/images/settings.png"><img src="docs/images/settings.png" width="100%" alt="Settings view with account details and the change-password form"></a></td>
+<td width="50%" align="center"><b>Dark mode</b><br><a href="docs/images/new-term-dark.png"><img src="docs/images/new-term-dark.png" width="100%" alt="New Term view in the dark theme"></a></td>
+</tr>
+<tr>
+<td width="50%" align="center"><b>Phone (bottom tab bar)</b><br><a href="docs/images/mobile.png"><img src="docs/images/mobile.png" width="100%" alt="Phone layout with the bottom tab bar"></a></td>
+<td width="50%"></td>
+</tr>
+</table>
 
 </details>
+
+<p align="right"><a href="#top">back to top ↑</a></p>
+
+---
+
+## Features
+
+- Sign in with Google, GitHub, or a username and password.
+- Live term GPA, units and course count as you type.
+- Paste a semester straight from MyIIT to fill in the term and courses.
+- Cumulative GPA from any saved terms plus extra subjects, saved as named records.
+- Five grading systems, with a default per account and a choice per term ([details](docs/grading-systems.md)).
+- History of saved terms with academic standing, edit, copy and delete.
+- Works on phones, in light and dark themes, and installs to your home screen.
+- Accessible: keyboard friendly and checked against WCAG 2.2 AA.
 
 <p align="right"><a href="#top">back to top ↑</a></p>
 
@@ -93,107 +86,30 @@ Common spellings are accepted and stored in the system's own form: `1` → `1.00
 
 ## Tech Stack
 
-| Layer | Technology |
+| Layer | Tools |
 | --- | --- |
-| Backend | Node.js 20+, Express 5 |
-| Database | MySQL 8 or TiDB Cloud (`mysql2`) |
-| Auth | Username / password (Node `crypto.scrypt`), Google OAuth 2.0 (`google-auth-library`), GitHub OAuth (built-in `fetch`), `express-session` |
-| Sessions | `express-mysql-session` |
-| Frontend | Vanilla HTML, CSS and JavaScript, self-hosted Inter variable font (SIL OFL) |
-| Analytics | Vercel Web Analytics (`/_vercel/insights/script.js`) |
-| Testing | Node's built-in test runner (`node:test`), GitHub Actions CI |
-| Hosting | Vercel (see [DEPLOY.md](DEPLOY.md)) |
+| Backend | Node.js 22.14.0, Express 5.3.0, express-session 1.19.0, dotenv 18.0.9 |
+| Database | MySQL 8 or TiDB Cloud via mysql2 3.24.6, sessions in express-mysql-session 3.0.3 |
+| Auth | google-auth-library 11.3.3, GitHub OAuth, scrypt passwords |
+| Frontend | Vanilla HTML, CSS and JavaScript, self-hosted Inter font |
+| Hosting | Vercel with Web Analytics ([DEPLOY.md](DEPLOY.md)) |
 
 <p align="right"><a href="#top">back to top ↑</a></p>
 
 ---
 
-## Prerequisites
+## Getting Started
 
-- [Node.js](https://nodejs.org/) 20 or newer
-- [MySQL](https://dev.mysql.com/downloads/) 8 or newer, or a hosted MySQL-compatible database (TiDB Cloud, Aiven, Railway)
-- A Google Cloud project with OAuth credentials
-- A GitHub OAuth App
-
-<p align="right"><a href="#top">back to top ↑</a></p>
-
----
-
-## Installation
-
-### 1. Install dependencies and create `.env`
+Needs Node.js 20+, a MySQL 8 database, and Google and GitHub OAuth apps ([setup guide](docs/setup.md)).
 
 ```bash
 npm install
-```
-
-```bash
 copy .env.example .env
-```
-
-Fill in `.env` (see [Configuration](#configuration)).
-
-### 2. Create the database
-
-```bash
 npm run db:setup
-```
-
-This creates (or upgrades) the tables in the database from `.env`. You can also run `db/schema.sql` yourself in the MySQL client.
-
-### 3. Create Google OAuth credentials
-
-1. Open the [Google Cloud Console](https://console.cloud.google.com/), create a project and go to **APIs & Services → OAuth consent screen**.
-2. Choose **External** so personal Google accounts can sign in, then publish the app. The `openid email profile` scopes need no verification.
-3. Go to **Credentials → Create credentials → OAuth client ID → Web application**.
-4. Add the redirect URI `http://localhost:3000/api/auth/google/callback`, plus your production URL when you deploy.
-5. Copy the client ID and secret into `.env`.
-
-### 4. Create a GitHub OAuth App
-
-1. Go to **GitHub → Settings → Developer settings → OAuth Apps → New OAuth App**.
-2. Set the homepage URL to `http://localhost:3000` and the callback URL to `http://localhost:3000/api/auth/github/callback`.
-3. Register the app and generate a client secret.
-4. Copy the client ID and secret into `.env`.
-
-### 5. Run
-
-```bash
 npm run dev
 ```
 
-Open **http://localhost:3000**.
-
-<details>
-<summary><strong>Upgrading an existing database</strong></summary>
-
-`npm run db:setup` adds missing columns automatically. To do it by hand:
-
-```sql
--- 5-decimal precision
-ALTER TABLE gpa_records MODIFY COLUMN gpa DECIMAL(6,5) NOT NULL;
-ALTER TABLE cgpa_records MODIFY COLUMN cgpa DECIMAL(6,5) NOT NULL;
--- Google sign-in
-ALTER TABLE users ADD COLUMN google_sub VARCHAR(64) NULL UNIQUE AFTER email;
-ALTER TABLE users MODIFY COLUMN password_hash VARCHAR(191) NULL;
--- GitHub sign-in
-ALTER TABLE users ADD COLUMN github_id BIGINT UNSIGNED NULL UNIQUE AFTER google_sub;
--- Username and password sign-in
-ALTER TABLE users ADD COLUMN username VARCHAR(30) NULL AFTER email;
-ALTER TABLE users ADD UNIQUE INDEX username (username);
--- Grading systems (percentage averages need DECIMAL(8,5))
-ALTER TABLE users ADD COLUMN default_scale VARCHAR(40) NOT NULL DEFAULT 'msu-iit' AFTER password_hash;
-ALTER TABLE gpa_records ADD COLUMN scale_id VARCHAR(40) NOT NULL DEFAULT 'msu-iit' AFTER gpa;
-ALTER TABLE cgpa_records ADD COLUMN scale_id VARCHAR(40) NOT NULL DEFAULT 'msu-iit' AFTER cgpa;
-ALTER TABLE gpa_records MODIFY COLUMN gpa DECIMAL(8,5) NOT NULL;
-ALTER TABLE cgpa_records MODIFY COLUMN cgpa DECIMAL(8,5) NOT NULL;
-```
-
-Existing terms and CGPA records keep the MSU-IIT scale they were made with.
-
-Existing users who sign in with a provider that has the same email are linked automatically and keep their history. Existing OAuth users are asked to choose a username and password on their next sign-in.
-
-</details>
+Fill in `.env` before `db:setup`, then open **http://localhost:3000**.
 
 <p align="right"><a href="#top">back to top ↑</a></p>
 
@@ -201,14 +117,14 @@ Existing users who sign in with a provider that has the same email are linked au
 
 ## Configuration
 
-All settings come from `.env` locally, and from **Project Settings → Environment Variables** on Vercel. See [DEPLOY.md](DEPLOY.md) for deploying with an online database and a custom domain.
+Settings come from `.env` (see [`.env.example`](.env.example)), or from **Project Settings → Environment Variables** on Vercel.
 
 <details>
-<summary><strong>Environment variables</strong></summary>
+<summary><b>Environment variables</b></summary>
 
 | Variable | Required | Default | Description |
 | --- | :---: | --- | --- |
-| `APP_URL` | | `http://localhost:3000` | Public address of the site. OAuth callbacks, `robots.txt` and `sitemap.xml` are built from it, so set it to your real domain in production. |
+| `APP_URL` | | `http://localhost:3000` | Public address of the site. OAuth callbacks, `robots.txt` and `sitemap.xml` are built from it. |
 | `DATABASE_URL` | | | Single MySQL connection URL (hosted databases). Overrides the `DB_*` values. |
 | `DB_SSL` | | `false` | `true` for hosted databases that require TLS (TiDB Cloud, Aiven) |
 | `DB_SSL_CA` | | | CA certificate (PEM contents or a file path), if your provider gives one |
@@ -225,11 +141,9 @@ All settings come from `.env` locally, and from **Project Settings → Environme
 | `GITHUB_CLIENT_ID` | ✅ | | GitHub OAuth App client ID |
 | `GITHUB_CLIENT_SECRET` | ✅ | | GitHub OAuth App client secret |
 | `GITHUB_REDIRECT_URI` | | `<APP_URL>/api/auth/github/callback` | Override for the GitHub callback URL |
-| `ALLOWED_EMAIL_DOMAINS` | | *(empty)* | Comma-separated school domains, e.g. `g.msuiit.edu.ph`. Shown on the login page; enforced when external emails are off. |
-| `ALLOW_EXTERNAL_EMAILS` | | `true` | `true`: any verified Google or GitHub account can sign in. `false`: only `ALLOWED_EMAIL_DOMAINS`. |
+| `ALLOWED_EMAIL_DOMAINS` | | *(empty)* | Comma-separated school domains, e.g. `g.msuiit.edu.ph`. Enforced when external emails are off. |
+| `ALLOW_EXTERNAL_EMAILS` | | `true` | `false` allows only `ALLOWED_EMAIL_DOMAINS` (always allowed when that list is empty) |
 | `NODE_ENV` | | | `production` enables secure cookies and trusts the first proxy |
-
-If `ALLOWED_EMAIL_DOMAINS` is empty, external accounts are always allowed.
 
 </details>
 
@@ -239,199 +153,48 @@ If `ALLOWED_EMAIL_DOMAINS` is empty, external accounts are always allowed.
 
 ## Usage
 
-Screenshots of each step are in [Documentation](#documentation).
+1. Sign in with Google or GitHub. The first time, choose a username and password.
+2. On **New Term**, type a term name and add courses with units and grades, or paste a semester copied from MyIIT and fill in the highlighted units. Click **Save record**.
+3. On **Cumulative**, tick the saved terms to include, add extra subjects if needed, then name and save the CGPA.
+4. On **History**, edit, copy or delete saved terms beside the grading scale. **Settings** holds your default grading system and password.
 
-### New student
+The API is described in [docs/api.md](docs/api.md), and importing terms from an old database dump in [docs/setup.md](docs/setup.md#importing-terms-from-an-old-database-dump).
 
-1. Open the site and choose **Google** or **GitHub**.
-2. On first sign-in, pick a username and password on the setup page.
-3. You land on **New Term**: type a term name, add courses with units and grades, and watch the GPA card update. Click **Save record**.
+<p align="right"><a href="#top">back to top ↑</a></p>
 
-### Pasting grades from MyIIT
+---
 
-1. In MyIIT, select a semester's block (the `SY:` line and its course lines) and copy it, for example:
-   ```text
-   SY: 2023-2024 SEM: 1 (BSIT:BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY)
-   CCC100	Fundamentals of Computing	1.00
-   CCC101	Computer Programming 1	1.25
-   ```
-2. Click any field on **New Term** and paste (Ctrl+V / Cmd+V). The term name and every course fill in; the rows replace whatever was there.
-3. Fill in the highlighted **Units** fields, then click **Save record**.
-
-Pasting a single course line into a row fills just that row. If you copy several semesters at once, only the first is used. Ordinary text pastes normally.
-
-### Returning student
-
-1. Sign in with your username (or email) and password, or Google/GitHub.
-2. Use the header tabs (bottom bar on phones):
-   - **New Term**: enter a new term, or paste your grades from MyIIT.
-   - **Cumulative**: tick the saved terms to include, switch to **Additional subjects** to add extra subjects, then name and save the CGPA at the bottom of the **Saved terms** tab. Open **Saved CGPA** to see or delete saved records.
-   - **History**: check the **Grading scale** on the left. **Edit** a term to update it, **Copy** it to start a new term from it, or **Delete** it.
-   - **Settings** (or click your avatar): check your username and email, and change your password.
-
-### Changing your password
-
-In **Settings → Change password**, enter your current password and the new one twice (8–128 characters), then **Update password**. You stay signed in on this device; other devices are signed out.
-
-```http
-POST /api/auth/password
-Content-Type: application/json
-
-{ "currentPassword": "old-password", "newPassword": "new-password" }
-```
+## More
 
 <details>
-<summary><strong>API reference</strong></summary>
+<summary><b>Project structure</b></summary>
 
-Every `/api/gpa/*` endpoint requires a signed-in session. After a first OAuth sign-in the session is *pending* (redirected to `/setup`) until a username and password are chosen.
+```
+db/           Connection pool and schema
+docs/         Guides and README screenshots
+lib/          Grading-scale lookup, APP_URL, password hashing, rate limiting
+middleware/   Session guard
+public/       Pages, styles, client scripts, icons and fonts
+routes/       Auth and GPA API routes
+scripts/      Database setup and import
+test/         Automated tests (no database needed)
+server.js     Express app and security headers
+```
 
-| Method | Endpoint | Description |
-| --- | --- | --- |
-| `GET` | `/api/auth/google` | Start Google sign-in |
-| `GET` | `/api/auth/google/callback` | Google OAuth callback |
-| `GET` | `/api/auth/github` | Start GitHub sign-in |
-| `GET` | `/api/auth/github/callback` | GitHub OAuth callback |
-| `POST` | `/api/auth/login` | Sign in `{ identifier, password }` (username or email) |
-| `GET` | `/api/auth/setup` | Name and email of the account waiting for setup |
-| `POST` | `/api/auth/setup` | Finish setup `{ username, password }` |
-| `POST` | `/api/auth/password` | Change password `{ currentPassword, newPassword }`; signs out other sessions |
-| `GET` | `/api/auth/config` | Sign-in policy (`allowedDomains`, `allowExternal`) |
-| `GET` | `/api/auth/status` | `{ signedIn, pendingSetup }`, always `200` (used by public pages) |
-| `GET` | `/api/auth/me` | Current user (`id`, `name`, `email`, `username`, `defaultScale`) |
-| `PUT` | `/api/auth/preferences` | Set the default grading system `{ defaultScale }` |
-| `POST` | `/api/auth/logout` | Sign out |
-| `GET` | `/api/gpa/history` | List saved terms (each with its `scaleId`) |
-| `POST` | `/api/gpa/save` | Save a term `{ termName, courses[], scaleId? }`; without `scaleId` the account default is used |
-| `PUT` | `/api/gpa/:id` | Update a term; without `scaleId` it keeps its own scale |
-| `DELETE` | `/api/gpa/:id` | Delete a term |
-| `POST` | `/api/gpa/calculate-cumulative` | Compute CGPA `{ scaleId?, termIds[], additionalSubjects[] }`; `400` if the terms use different grading systems |
-| `GET` | `/api/gpa/cgpa` | List saved CGPA records |
-| `POST` | `/api/gpa/save-cgpa` | Save a CGPA record (recomputed on the server) |
-| `DELETE` | `/api/gpa/cgpa/:id` | Delete a CGPA record |
-| `GET` | `/api/health` | Health check, including the database (result cached for 30 seconds) |
-| `GET` | `/robots.txt`, `/sitemap.xml` | Built from `APP_URL` |
-
-Every `/api/*` response is sent with `Cache-Control: no-store`. Pages use clean URLs: `/login`, `/setup`, `/dashboard`. Old `.html` links get a `301` to the clean URL. Unknown `/api/*` routes return `404` JSON; other unknown URLs show `public/404.html`.
+The full tree, tests and manual checks are in [docs/development.md](docs/development.md). Security and SEO notes are in [docs/security.md](docs/security.md) and [docs/seo.md](docs/seo.md).
 
 </details>
 
-### Importing terms from an old database dump
-
-`scripts/import-terms.js` copies one user's terms from an old `mysqldump` of `gpa_records` into an existing account. GPAs are recomputed and already-imported terms are skipped. Preview with `--dry-run`:
-
-```bash
-npm run db:import -- path/to/gpa_app_gpa_records.sql --from-user 3 --to-email you@g.msuiit.edu.ph --dry-run
-```
-
-<p align="right"><a href="#top">back to top ↑</a></p>
-
----
-
-## Documentation
-
-Screenshots live in [`docs/images/`](docs/images/).
-
-| Sign in | New Term |
-| :---: | :---: |
-| ![Sign-in page with Google, GitHub and username/password options](docs/images/login.png) | ![New Term view with courses, grades and the live GPA card](docs/images/new-term.png) |
-| Sign in with Google, GitHub, or your username and password. | Enter a term's courses and watch the GPA update as you type. |
-
-| Cumulative GPA | History |
-| :---: | :---: |
-| ![Cumulative view with saved terms ticked and the combined CGPA](docs/images/cumulative.png) | ![History view with term cards and the grading scale on the left](docs/images/history.png) |
-| Combine saved terms and extra subjects into a named CGPA. | Saved terms as cards, with Edit, Copy and Delete, beside the grading scale. |
-
-| Settings | Dark mode |
-| :---: | :---: |
-| ![Settings view with account details and the change-password form](docs/images/settings.png) | ![New Term view in the dark theme](docs/images/new-term-dark.png) |
-| Account details, default grading system and password change. | The dark theme, which follows your system until you pick one. |
-
-| Phone |
-| :---: |
-| ![Phone layout with the bottom tab bar](docs/images/mobile.png) |
-| On phones the sections move to a bottom tab bar. |
-
-<p align="right"><a href="#top">back to top ↑</a></p>
-
----
-
-## Project Structure
-
-```
-gpa-calculator/
-├── .github/workflows/
-│   └── ci.yml             # Runs the tests and npm audit on Node 20 and 22
-├── db/
-│   ├── db.js              # MySQL connection pool
-│   └── schema.sql         # Database schema
-├── docs/images/           # README screenshots
-├── lib/
-│   ├── scales.js          # Resolves grading-system ids for routes (hook for custom scales)
-│   ├── app-url.js         # Public site address (APP_URL) shared by OAuth, robots.txt and sitemap.xml
-│   ├── password.js        # scrypt password hashing
-│   └── rate-limit.js      # Failed-attempt counter stored in MySQL (memory fallback)
-├── middleware/
-│   └── auth.js            # Session guard for protected routes
-├── public/
-│   ├── login.html         # Sign-in page (the only indexed page)
-│   ├── login.js           # Sign-in form and OAuth error messages
-│   ├── setup.html         # Choose a username and password after the first OAuth sign-in
-│   ├── setup.js           # Setup form logic
-│   ├── 404.html           # Not-found page
-│   ├── dashboard.html     # Main app: header tabs, New Term, Cumulative, History, Settings
-│   ├── dashboard.js       # Dashboard logic
-│   ├── grading-scales.js  # Grading systems as data + GPA math, shared by the server and dashboard
-│   ├── myiit-paste.js     # Parses grades copied from MyIIT (also used by the tests)
-│   ├── darkmode.js        # Theme handling (follows the system until you choose)
-│   ├── fonts/             # Self-hosted Inter variable font and its OFL license
-│   ├── icons/             # App icons (192, 512, maskable, Apple touch icon)
-│   ├── favicon.ico        # Legacy favicon for crawlers and old browsers
-│   ├── logo.svg           # Vector logo and modern favicon
-│   ├── manifest.webmanifest # Install-to-home-screen metadata
-│   ├── og-image.png       # 1200×630 social share image
-│   ├── llms.txt           # Plain-language summary for AI crawlers
-│   └── style.css          # Design system, no-scroll desktop layout, mobile bottom bar
-├── routes/
-│   ├── auth.js            # OAuth, password sign-in, setup, change password, session routes
-│   └── gpa.js             # GPA and CGPA routes
-├── scripts/
-│   ├── setup-db.js        # Creates/upgrades the tables (npm run db:setup)
-│   └── import-terms.js    # Copies terms from an old mysqldump (npm run db:import)
-├── test/                  # Automated tests (npm test), no database needed
-├── server.js              # Express app, security headers, robots.txt and sitemap.xml
-├── LICENSE                # Sprucetrap Source-Available License 1.0
-├── vercel.json            # Clean URLs and security headers on Vercel
-└── .env.example           # Environment template
-```
-
-<p align="right"><a href="#top">back to top ↑</a></p>
-
----
-
-## Scripts
+<details>
+<summary><b>Scripts</b></summary>
 
 | Script | Description |
 | --- | --- |
 | `npm start` | Start the server |
-| `npm run dev` | Start with auto-reload (Node's built-in `--watch`) and `.env` |
+| `npm run dev` | Start with auto-reload and `.env` |
 | `npm test` | Run the automated tests |
-| `npm run db:setup` | Create or upgrade the tables in the configured database |
-| `npm run db:import` | Import terms from an old `mysqldump` (see [Usage](#usage)) |
-
-`npm test` uses Node's built-in test runner and needs **no database** (it points at an address that refuses connections and keeps sessions in memory). GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs it, plus `npm audit`, on Node 20 and 22 for every push and pull request to `main`; a newer push cancels the older run.
-
-<details>
-<summary><strong>What the tests cover</strong></summary>
-
-| File | Covers |
-| --- | --- |
-| `test/grading-scales.test.js` | Scale lookup, grade normalising (`1` → `1.00`, `drp` → `DROP`), weighted GPA, credit-only grades, standings, every preset (well-formed data, points, percentage range, conditional and NP grades) and which grades carry over when a term switches systems |
-| `test/scales-api.test.js` | Routes with a stubbed database: account-default scale, saving on a percentage preset, an all-failing CGPA on a 4.0 scale, unknown scale ids, grades off the scale, edits keeping their scale, refusing mixed-scale CGPAs, the preferences endpoint |
-| `test/gpa.test.js` | Weighted GPA, `P` / `INC` / `DROP` rules, input validation limits, optional course code |
-| `test/myiit-paste.test.js` | Parsing MyIIT copies: term name, courses, grade normalising, spaced copies, ignoring ordinary text |
-| `test/password.test.js` | scrypt hashing, salts, verification, rejecting non-scrypt values |
-| `test/rate-limit.test.js` | Failure counting, windows, clearing, memory fallback |
-| `test/api.test.js` | 401 on private routes, `no-store`, security headers, cross-origin block, bad JSON / missing / too-large bodies, OAuth `state` and short session, robots/sitemap, redirects, 404s, static assets |
+| `npm run db:setup` | Create or upgrade the tables |
+| `npm run db:import` | Import terms from an old `mysqldump` |
 
 </details>
 
@@ -441,59 +204,7 @@ gpa-calculator/
 
 ## Contributing
 
-1. Branch from `main` with a matching prefix: `feat/short-description`, `fix/short-description`, `docs/…`, `chore/…`.
-2. Use [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `style:`, `perf:`, `test:`, `ci:`; an imperative subject of 72 characters or less, a blank line, then one bullet per change.
-3. **Bump the version in every commit** and end the subject with it, e.g. `feat: add CSV export (v1.4.0)`. Breaking change → major, `feat` → minor, anything else → patch. Update `package.json`, `package-lock.json` and the version badge at the top of this README in the same commit.
-4. Run `npm test`, `npm audit` and the manual checks below.
-5. **Update this README with every change** (features, configuration, structure, version badges when dependencies change). Retake the matching screenshot in `docs/images/` when a screen changes.
-6. Never commit `.env` or downloaded `client_secret_*.json` files.
-
-<details>
-<summary><strong>Manual checks</strong></summary>
-
-Run these with `npm run dev`:
-
-1. **Sign-in:** Google, GitHub, and username/password all reach the dashboard; a wrong password shows one generic error; an empty submit focuses the empty field.
-2. **Desktop layout (1440×900):** every tab fits the window with no page scrollbar; add 15+ courses and the course list scrolls inside its panel.
-3. **New Term:** the GPA updates while typing; **Save record** adds a History card. Pasting a MyIIT copy fills the term name and courses and highlights the units.
-4. **Cumulative:** ticking terms updates the totals; extra subjects are included; the name-and-save row shows only on **Saved terms**; a named CGPA saves, appears under **Saved CGPA** and can be deleted.
-5. **History:** the grading scale fills the height on the left; **Edit**, **Copy** and **Delete** work; Delete asks first and Escape cancels.
-6. **Navigation:** switching sections changes the URL; browser back/forward moves between sections.
-7. **Settings:** your username and email show; a wrong current password, a mismatched confirmation and a short password are rejected; a valid change shows a success toast, the new password signs in, and another browser's session is signed out.
-8. **Phone (375 px):** the bottom tab bar reaches every section, nothing hides behind it, no horizontal scroll.
-9. **Themes:** light and dark both look right, including scrollbars and dropdowns.
-10. **Keyboard:** Tab from the top shows "Skip to content"; every control has a visible focus ring.
-11. **SEO files:** `/robots.txt`, `/sitemap.xml` and `/llms.txt` load and use your `APP_URL`.
-
-</details>
-
-<details>
-<summary><strong>Security notes</strong></summary>
-
-- Only OAuth accounts with a **verified email** can sign in; the school domain is checked on the server when external emails are off.
-- GitHub sign-in uses only the account's primary verified email; the GitHub token is used once and never stored.
-- Passwords are hashed with **scrypt** and a per-user salt, compared in constant time. Sign-in and password changes are rate-limited: 10 failures per account guess and 50 per IP address every 15 minutes. Counts are stored in MySQL (`auth_attempts`, keys hashed), so every Vercel instance shares them.
-- Visitors who start an OAuth sign-in get a 10-minute session, and an unfinished account setup lasts 30 minutes, so abandoned attempts expire quickly.
-- Changing a password removes every other session of that account and rotates the current session ID.
-- OAuth `state` protects against CSRF; the session ID is regenerated after sign-in.
-- Session cookies are `httpOnly`, `sameSite=lax` and `secure` in production.
-- User text is HTML-escaped; a strict CSP (`'self'` only, no inline scripts, no third-party hosts), `nosniff`, `X-Frame-Options`, `Cross-Origin-Opener-Policy`, HSTS and Referrer-Policy are sent by Express and `vercel.json`.
-- API responses are `Cache-Control: no-store`, so per-user data is never stored by browsers or the CDN.
-- Cross-origin state-changing requests are rejected; bodies are capped at 100 KB; inputs are validated on the server; every GPA query is scoped to the signed-in user.
-- Only `public/` is served statically; `.env`, sources and `node_modules` return `404`.
-
-</details>
-
-<details>
-<summary><strong>Backlink ideas (do these yourself)</strong></summary>
-
-- Share the site in MSU-IIT student groups, org pages and college Discord/Messenger communities.
-- Add it to your GitHub profile README and portfolio site.
-- Write a short post (Dev.to, Medium, Facebook) on how the MSU-IIT GPA is computed, linking to the app.
-- Ask student councils or orgs to list it on their resources page.
-- Submit it to student-tool directories once it has a custom domain.
-
-</details>
+Branch from `main` as `feat/…` or `fix/…`. Use [Conventional Commits](https://www.conventionalcommits.org/) (including `ci:`) and end the subject with the bumped version, e.g. `feat: add CSV export (v1.4.0)`; see [docs/development.md](docs/development.md#commits). Update this README with every change.
 
 <p align="right"><a href="#top">back to top ↑</a></p>
 
@@ -501,11 +212,7 @@ Run these with `npm run dev`:
 
 ## License
 
-Released under the **Sprucetrap Source-Available License 1.0**. See [LICENSE](LICENSE).
-
-- ✅ View, run, study and modify the code for personal, educational or other non-commercial use, and share non-commercial forks.
-- 📝 Keep the copyright notice, credit **Sprucetrap** with a link to [github.com/Jevoel16](https://github.com/Jevoel16), and say what you changed.
-- ❌ No commercial use, resale, sublicensing or rebranding without written permission. Ask through [GitHub](https://github.com/Jevoel16).
+Sprucetrap Source-Available License 1.0. See [LICENSE](LICENSE).
 
 <p align="right"><a href="#top">back to top ↑</a></p>
 
