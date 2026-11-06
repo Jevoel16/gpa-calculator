@@ -152,7 +152,10 @@ app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 
 app.get('/', (req, res) => {
   if (req.session && req.session.userId) return res.redirect('/dashboard');
-  res.redirect(req.session && req.session.pendingUserId ? '/setup' : '/login');
+  if (req.session && req.session.pendingUserId) return res.redirect('/setup');
+  // Serve the sign-in page here instead of redirecting, so tools that read the
+  // home page (like Vercel's project icon) find the favicon links; its canonical is /login
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 // Anything left over is an unknown page; browsers get the 404 page, other clients a plain message

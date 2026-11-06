@@ -45,6 +45,15 @@ test('session status is reported without a 401', async () => {
   assert.deepEqual(await res.json(), { signedIn: false, pendingSetup: false });
 });
 
+test('the site root serves the sign-in page with its icons to signed-out visitors', async () => {
+  const res = await get('/');
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get('content-type'), /text\/html/);
+  const html = await res.text();
+  assert.match(html, /rel="icon"/);
+  assert.match(html, /rel="canonical" href="[^"]*\/login"/);
+});
+
 test('security headers are set', async () => {
   const res = await get('/login');
   const csp = res.headers.get('content-security-policy');
