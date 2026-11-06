@@ -6,7 +6,7 @@
 
 **Compute, save and track your term GPA and cumulative GPA, on the MSU-IIT scale or another grading system.**
 
-![Version](https://img.shields.io/badge/version-1.9.4-green?style=flat)
+![Version](https://img.shields.io/badge/version-1.9.5-green?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
 [![CI](https://img.shields.io/github/actions/workflow/status/Jevoel16/gpa-calculator/ci.yml?branch=main&label=CI&style=flat)](https://github.com/Jevoel16/gpa-calculator/actions/workflows/ci.yml)
 ![Platform](https://img.shields.io/badge/platform-web%20%7C%20vercel-informational?style=flat)
@@ -33,7 +33,7 @@
 
 ## About
 
-GPA Calculator lets students enter their grades each term, see their GPA update as they type, and keep every term and cumulative GPA saved in one place. It was built for MSU-IIT students, whose 1.00–5.00 scale most online calculators get wrong, and also supports other Philippine and US grading systems.
+GPA Calculator lets students enter their grades each term, see their GPA update as they type, and keep every term and cumulative GPA saved in one place. It was built for MSU-IIT students, whose 1.00–5.00 scale most online calculators get wrong, and also supports other Philippine and US grading systems. Try it live at [gpa-calculator.jevoelorbilla.dev](https://gpa-calculator.jevoelorbilla.dev).
 
 <p align="right"><a href="#top">back to top ↑</a></p>
 
