@@ -13,6 +13,7 @@ const icons = {
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
   book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/></svg>',
   copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>',
+  alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>',
   close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>'
 };
 
@@ -26,7 +27,7 @@ const views = {
 const paneHints = {
   termsPane: 'Choose which terms to include.',
   subjectsPane: "Add subjects that aren't part of a saved term.",
-  cgpaPane: 'Your saved cumulative GPA records.'
+  cgpaPane: ''
 };
 
 const MIN_PASSWORD = 8;
@@ -424,7 +425,7 @@ function renderHistory(){
         <div class="icon">${icons.book}</div>
         <h3>No saved terms yet</h3>
         <p>Create your first term to start building your history.</p>
-        <button class="btn" type="button" style="margin-top: 16px;" id="emptyNewTerm">Create a term</button>
+        <button class="btn" type="button" id="emptyNewTerm">Create a term</button>
       </div>`;
     $('emptyNewTerm').addEventListener('click', () => goTo('term'));
     container.removeAttribute('aria-busy');
@@ -504,8 +505,9 @@ function setCumulativeScale(id){
 function updateCumulativeTermsList(){
   const list = $('termsCheckList');
   list.innerHTML = '';
+  list.removeAttribute('aria-busy');
   if (!allHistory.length) {
-    list.innerHTML = '<p class="muted" style="font-size: 14px;">No saved terms yet. Create and save a term first.</p>';
+    list.innerHTML = '<p class="note">No saved terms yet. Create and save a term first.</p>';
     updateCumulativeGpa();
     return;
   }
@@ -518,7 +520,7 @@ function updateCumulativeTermsList(){
   const scale = cumulativeScale();
   const terms = allHistory.filter(r => scaleOf(r).id === scale.id);
   if (!terms.length) {
-    list.innerHTML = `<p class="muted" style="font-size: 14px;">No saved terms on ${escapeHtml(scale.name)}. Pick another grading system or add subjects.</p>`;
+    list.innerHTML = `<p class="note">No saved terms on ${escapeHtml(scale.name)}. Pick another grading system or add subjects.</p>`;
   }
   for (const record of terms) {
     const label = document.createElement('label');
@@ -638,20 +640,21 @@ async function calculateCumulativeGpaServer(termIds, additionalSubjects = []){
 async function loadCgpaRecords(){
   const records = await api('/api/gpa/cgpa');
   const container = $('cgpaRecordsList');
+  container.removeAttribute('aria-busy');
   $('cgpaTab').textContent = records.length ? `Saved CGPA (${records.length})` : 'Saved CGPA';
   if (!records.length) {
-    container.innerHTML = '<p class="muted" style="font-size: 14px;">No saved CGPA records yet.</p>';
+    container.innerHTML = '<p class="note">No saved CGPA records yet.</p>';
     return;
   }
   const rows = records.map(r => `
     <tr data-id="${r.id}">
-      <td><strong>${escapeHtml(r.recordName)}</strong><br/><span class="muted" style="font-size: 12px;">${escapeHtml(new Date(r.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }))} · ${r.totalUnits} units</span></td>
+      <td><strong>${escapeHtml(r.recordName)}</strong><br/><span class="note-sm">${escapeHtml(new Date(r.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }))} · ${r.totalUnits} units</span></td>
       <td class="num">${formatGpa(r.cumulativeGpa, scaleOf(r))}</td>
       <td><button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Delete CGPA record" title="Delete">${icons.trash}</button></td>
     </tr>`).join('');
   container.innerHTML = `
     <div class="table-wrap"><table class="table">
-      <thead><tr><th>Record</th><th class="num">CGPA</th><th style="width: 48px"></th></tr></thead>
+      <thead><tr><th>Record</th><th class="num">CGPA</th><th class="col-action"><span class="sr-only">Delete</span></th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>`;
   container.querySelectorAll('tbody tr').forEach((tr, i) => {
@@ -777,7 +780,38 @@ function initializeEventListeners(){
   });
 }
 
+const loadingMarkup = {};
+
+function showLoadError(container, title, message, retry){
+  container.removeAttribute('aria-busy');
+  container.innerHTML = `
+    <div class="empty-state is-error" role="alert">
+      <div class="icon">${icons.alert}</div>
+      <h3>${escapeHtml(title)}</h3>
+      <p>${escapeHtml(message)}</p>
+      <button class="btn btn-ghost" type="button">Try again</button>
+    </div>`;
+  container.querySelector('button').addEventListener('click', retry);
+}
+
+// Shows the skeleton again, then reloads; on failure each container gets its own error and retry
+async function loadInto(ids, load, title){
+  for (const id of ids) {
+    $(id).innerHTML = loadingMarkup[id];
+    $(id).setAttribute('aria-busy', 'true');
+  }
+  try {
+    await load();
+  } catch (err) {
+    if (err.message === 'Signed out') return;
+    // fetch() rejects with a TypeError when the network is down
+    const message = err instanceof TypeError ? 'Check your connection and try again.' : err.message;
+    for (const id of ids) showLoadError($(id), title, message, () => loadInto(ids, load, title));
+  }
+}
+
 async function initializePage(){
+  for (const id of ['historyList', 'termsCheckList', 'cgpaRecordsList']) loadingMarkup[id] = $(id).innerHTML;
   showView(location.hash.slice(1));
   showPane('termsPane');
   displayAdditionalSubjects();
@@ -785,11 +819,10 @@ async function initializePage(){
   try {
     await loadMe();
   } catch {}
-  try {
-    await Promise.all([loadHistory(), loadCgpaRecords()]);
-  } catch (err) {
-    if (err.message !== 'Signed out') toast('Could not load your records: ' + err.message, 'error');
-  }
+  await Promise.all([
+    loadInto(['historyList', 'termsCheckList'], loadHistory, "Couldn't load your saved terms"),
+    loadInto(['cgpaRecordsList'], loadCgpaRecords, "Couldn't load your saved CGPA records")
+  ]);
 }
 
 document.addEventListener('DOMContentLoaded', () => {

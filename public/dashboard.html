@@ -48,7 +48,7 @@
           <strong class="user-name" id="welcome">Loading…</strong>
         </button>
         <button id="logoutBtn" class="btn btn-ghost btn-icon" type="button" aria-label="Log out" title="Log out">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
         </button>
       </div>
     </div>
@@ -79,25 +79,25 @@
             <table class="table course-table" id="coursesTable">
               <thead>
                 <tr>
-                  <th style="width: 28px">#</th>
+                  <th class="col-index">#</th>
                   <th class="col-code">Code</th>
                   <th>Course</th>
-                  <th style="width: 120px">Units</th>
-                  <th style="width: 150px">Grade</th>
+                  <th class="col-units">Units</th>
+                  <th class="col-grade">Grade</th>
                   <th><span class="sr-only">Remove</span></th>
                 </tr>
               </thead>
               <tbody id="coursesBody"></tbody>
             </table>
           </div>
-          <button id="addRowBtn" type="button" class="btn btn-soft btn-sm" style="margin-top: 14px;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          <button id="addRowBtn" type="button" class="btn btn-soft btn-sm add-row-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
             Add course
           </button>
         </div>
         <div class="card-foot">
-          <span class="muted" id="calcMsg" style="font-size: 13px;"></span>
-          <div style="display: flex; gap: 8px;">
+          <span class="calc-msg" id="calcMsg"></span>
+          <div class="btn-row">
             <button id="clearBtn" type="button" class="btn btn-ghost">Clear</button>
             <button id="saveBtn" type="button" class="btn">Save record</button>
           </div>
@@ -144,7 +144,7 @@
         </div>
         <div class="card-body panel-scroll">
           <div id="termsPane" role="tabpanel" aria-labelledby="termsTab">
-            <div id="termsCheckList" class="term-picks"><p class="muted" style="font-size: 14px;">Loading…</p></div>
+            <div id="termsCheckList" class="term-picks" aria-busy="true"><span class="sr-only">Loading your saved terms…</span><span class="skeleton skeleton-pick" aria-hidden="true"></span><span class="skeleton skeleton-pick" aria-hidden="true"></span><span class="skeleton skeleton-pick" aria-hidden="true"></span></div>
           </div>
           <div id="subjectsPane" role="tabpanel" aria-labelledby="subjectsTab" class="hidden">
             <div class="inline-form">
@@ -153,15 +153,15 @@
               <select id="additionalSubjectGrade" aria-label="Grade"></select>
               <button id="addSubjectBtn" type="button" class="btn">Add</button>
             </div>
-            <div class="table-wrap" style="margin-top: 16px;">
+            <div class="table-wrap spaced">
               <table class="table" id="additionalSubjectsTable">
-                <thead><tr><th>Subject</th><th class="num">Units</th><th class="num">Grade</th><th style="width: 48px"><span class="sr-only">Remove</span></th></tr></thead>
+                <thead><tr><th>Subject</th><th class="num">Units</th><th class="num">Grade</th><th class="col-action"><span class="sr-only">Remove</span></th></tr></thead>
                 <tbody id="additionalSubjectsBody"></tbody>
               </table>
             </div>
           </div>
           <div id="cgpaPane" role="tabpanel" aria-labelledby="cgpaTab" class="hidden">
-            <div id="cgpaRecordsList"><p class="muted" style="font-size: 14px;">Loading…</p></div>
+            <div id="cgpaRecordsList" aria-busy="true"><span class="sr-only">Loading your saved CGPA records…</span><span class="skeleton skeleton-row" aria-hidden="true"></span><span class="skeleton skeleton-row" aria-hidden="true"></span><span class="skeleton skeleton-row" aria-hidden="true"></span></div>
           </div>
         </div>
         <!-- Naming and saving belongs to the Saved terms tab; showPane() hides it elsewhere -->
@@ -184,7 +184,7 @@
       </aside>
       <div class="history-main">
         <h2 class="sr-only">Saved terms</h2>
-        <div id="historyList" class="history-scroll" aria-busy="true"><p class="muted" style="font-size: 14px;">Loading your saved terms…</p></div>
+        <div id="historyList" class="history-scroll" aria-busy="true"><span class="sr-only">Loading your saved terms…</span><div class="history-grid" aria-hidden="true"><div class="card term-card skeleton-card"><span class="skeleton-line w-70"></span><span class="skeleton-line lg w-30"></span><span class="skeleton-line w-50"></span></div><div class="card term-card skeleton-card"><span class="skeleton-line w-70"></span><span class="skeleton-line lg w-30"></span><span class="skeleton-line w-50"></span></div><div class="card term-card skeleton-card"><span class="skeleton-line w-70"></span><span class="skeleton-line lg w-30"></span><span class="skeleton-line w-50"></span></div></div></div>
       </div>
     </section>
 
@@ -193,10 +193,7 @@
       <div class="settings-grid">
         <div class="card">
           <div class="card-head">
-            <div>
-              <h2>Account</h2>
-              <p>Your profile and sign-in details.</p>
-            </div>
+            <h2>Account</h2>
           </div>
           <div class="card-body">
             <div class="account-head">
@@ -209,7 +206,6 @@
             <dl class="account-list">
               <div><dt>Username</dt><dd id="settingsUsername">—</dd></div>
               <div><dt>Email</dt><dd id="settingsEmail">—</dd></div>
-              <div><dt>Sign in with</dt><dd>Username or email and password, Google or GitHub</dd></div>
             </dl>
           </div>
         </div>
