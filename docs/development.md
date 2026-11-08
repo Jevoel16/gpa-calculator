@@ -5,7 +5,7 @@
 ```
 gpa-calculator/
 ├── .github/workflows/
-│   └── ci.yml             # Runs the tests and npm audit on Node 20 and 22
+│   └── ci.yml             # Runs the tests and npm audit on the .nvmrc Node version
 ├── db/
 │   ├── db.js              # MySQL connection pool
 │   └── schema.sql         # Database schema
@@ -55,7 +55,7 @@ gpa-calculator/
 npm test
 ```
 
-The tests use Node's built-in test runner and need **no database** (they point at an address that refuses connections and keep sessions in memory). GitHub Actions ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)) runs them, plus `npm audit`, on Node 20 and 22 for every push and pull request to `main`; a newer push cancels the older run.
+The tests use Node's built-in test runner and need **no database** (they point at an address that refuses connections and keep sessions in memory). GitHub Actions ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)) runs them, plus `npm audit`, on the Node version in `.nvmrc` for every push and pull request to `main`; a newer push cancels the older run.
 
 | File | Covers |
 | --- | --- |

@@ -4,7 +4,7 @@ Full local setup for GPA Calculator. The short version is in the [README](../REA
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) 20 or newer
+- [Node.js](https://nodejs.org/) 22 (the version in `.nvmrc`)
 - [MySQL](https://dev.mysql.com/downloads/) 8 or newer, or a hosted MySQL-compatible database (TiDB Cloud, Aiven, Railway)
 - A Google Cloud project with OAuth credentials
 - A GitHub OAuth App

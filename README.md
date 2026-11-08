@@ -6,7 +6,7 @@
 
 **Compute, save and track your term GPA and cumulative GPA, on the MSU-IIT scale or another grading system.**
 
-![Version](https://img.shields.io/badge/version-1.9.6-green?style=flat)
+![Version](https://img.shields.io/badge/version-1.9.7-green?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
 [![CI](https://img.shields.io/github/actions/workflow/status/Jevoel16/gpa-calculator/ci.yml?branch=main&label=CI&style=flat)](https://github.com/Jevoel16/gpa-calculator/actions/workflows/ci.yml)
 ![Platform](https://img.shields.io/badge/platform-web%20%7C%20vercel-informational?style=flat)
@@ -100,7 +100,7 @@ GPA Calculator lets students enter their grades each term, see their GPA update 
 
 ## Getting Started
 
-Needs Node.js 20+, a MySQL 8 database, and Google and GitHub OAuth apps ([setup guide](docs/setup.md)).
+Needs Node.js 22 (see `.nvmrc`), a MySQL 8 database, and Google and GitHub OAuth apps ([setup guide](docs/setup.md)).
 
 ```bash
 npm install
