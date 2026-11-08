@@ -1,6 +1,6 @@
 {
   "name": "gpa-calculator",
-  "version": "1.10.0",
+  "version": "1.10.1",
   "private": true,
   "description": "GPA Calculator with username/password and Google/GitHub sign-in using Node.js, Express, MySQL, HTML/CSS",
   "type": "commonjs",

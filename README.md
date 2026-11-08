@@ -1,4 +1,6 @@
-<div align="center" id="top">
+<a id="top"></a>
+
+<div align="center">
 
 <img src="public/logo.svg" alt="GPA Calculator logo" width="72" />
 
@@ -6,38 +8,22 @@
 
 **Compute, save and track your term GPA and cumulative GPA, on the MSU-IIT scale or another grading system.**
 
-![Version](https://img.shields.io/badge/version-1.10.0-green?style=flat)
+![Version](https://img.shields.io/badge/version-1.10.1-green?style=flat)
 ![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
 [![CI](https://img.shields.io/github/actions/workflow/status/Jevoel16/gpa-calculator/ci.yml?branch=main&label=CI&style=flat)](https://github.com/Jevoel16/gpa-calculator/actions/workflows/ci.yml)
 ![Platform](https://img.shields.io/badge/platform-web%20%7C%20vercel-informational?style=flat)
 
 </div>
 
----
-
-## Table of Contents
-
-- [About](#about)
-- [Screenshots](#screenshots)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-- [Configuration](#configuration)
-- [Usage](#usage)
-- [More](#more)
-- [Contributing](#contributing)
-- [License](#license)
-- [Author](#author)
+<p align="center">
+  <a href="#about">About</a> · <a href="#screenshots">Screenshots</a> · <a href="#features">Features</a> · <a href="#tech-stack">Tech Stack</a> · <a href="#getting-started">Getting Started</a> · <a href="#configuration">Configuration</a> · <a href="#usage">Usage</a> · <a href="#more">More</a> · <a href="#contributing">Contributing</a> · <a href="#license">License</a> · <a href="#author">Author</a>
+</p>
 
 ---
 
 ## About
 
 GPA Calculator lets students enter their grades each term, see their GPA update as they type, and keep every term and cumulative GPA saved in one place. It was built for MSU-IIT students, whose 1.00–5.00 scale most online calculators get wrong, and also supports other Philippine and US grading systems. Try it live at [gpa-calculator.jevoelorbilla.dev](https://gpa-calculator.jevoelorbilla.dev).
-
-<p align="right"><a href="#top">back to top ↑</a></p>
-
----
 
 ## Screenshots
 
@@ -58,16 +44,12 @@ GPA Calculator lets students enter their grades each term, see their GPA update 
 <td width="50%" align="center"><b>Dark mode</b><br><a href="docs/images/new-term-dark.png"><img src="docs/images/new-term-dark.png" width="100%" alt="New Term view in the dark theme"></a></td>
 </tr>
 <tr>
-<td width="50%" align="center"><b>Phone (bottom tab bar)</b><br><a href="docs/images/mobile.png"><img src="docs/images/mobile.png" width="100%" alt="Phone layout with the bottom tab bar"></a></td>
+<td width="50%" align="center"><b>Phone (bottom tab bar)</b><br><a href="docs/images/mobile.png"><img src="docs/images/mobile.png" width="100%" alt="Phone layout in light and dark mode with the bottom tab bar"></a></td>
 <td width="50%"></td>
 </tr>
 </table>
 
 </details>
-
-<p align="right"><a href="#top">back to top ↑</a></p>
-
----
 
 ## Features
 
@@ -80,10 +62,6 @@ GPA Calculator lets students enter their grades each term, see their GPA update 
 - Works on phones, in light and dark themes, and installs to your home screen.
 - Accessible: keyboard friendly and checked against WCAG 2.2 AA.
 
-<p align="right"><a href="#top">back to top ↑</a></p>
-
----
-
 ## Tech Stack
 
 | Layer | Tools |
@@ -93,10 +71,6 @@ GPA Calculator lets students enter their grades each term, see their GPA update 
 | Auth | google-auth-library 11.3.3, GitHub OAuth, scrypt passwords |
 | Frontend | Vanilla HTML, CSS and JavaScript, self-hosted Inter font |
 | Hosting | Vercel with Web Analytics ([DEPLOY.md](DEPLOY.md)) |
-
-<p align="right"><a href="#top">back to top ↑</a></p>
-
----
 
 ## Getting Started
 
@@ -110,10 +84,6 @@ npm run dev
 ```
 
 Keep only the Local block in `.env` and fill it in before `db:setup`, then open **http://localhost:3000**.
-
-<p align="right"><a href="#top">back to top ↑</a></p>
-
----
 
 ## Configuration
 
@@ -147,10 +117,6 @@ Settings come from `.env` (see [`.env.example`](.env.example)), or from **Projec
 
 </details>
 
-<p align="right"><a href="#top">back to top ↑</a></p>
-
----
-
 ## Usage
 
 1. Sign in with Google or GitHub. The first time, choose a username and password.
@@ -159,10 +125,6 @@ Settings come from `.env` (see [`.env.example`](.env.example)), or from **Projec
 4. On **History**, edit, copy or delete saved terms beside the grading scale. **Settings** holds your default grading system and password.
 
 The API is described in [docs/api.md](docs/api.md), and importing terms from an old database dump in [docs/setup.md](docs/setup.md#importing-terms-from-an-old-database-dump).
-
-<p align="right"><a href="#top">back to top ↑</a></p>
-
----
 
 ## More
 
@@ -198,28 +160,16 @@ The full tree, tests and manual checks are in [docs/development.md](docs/develop
 
 </details>
 
-<p align="right"><a href="#top">back to top ↑</a></p>
-
----
-
 ## Contributing
 
 Branch from `main` as `feat/…` or `fix/…`. Use [Conventional Commits](https://www.conventionalcommits.org/) (including `ci:`) and end the subject with the bumped version, e.g. `feat: add CSV export (v1.4.0)`; see [docs/development.md](docs/development.md#commits). Update this README with every change.
-
-<p align="right"><a href="#top">back to top ↑</a></p>
-
----
 
 ## License
 
 Sprucetrap Source-Available License 1.0. See [LICENSE](LICENSE).
 
-<p align="right"><a href="#top">back to top ↑</a></p>
-
----
-
 ## Author
 
 **Sprucetrap** ([github.com/Jevoel16](https://github.com/Jevoel16)), built for MSU-IIT students.
 
-<p align="right"><a href="#top">back to top ↑</a></p>
+<p align="right"><a href="#top">Back to top</a></p>
