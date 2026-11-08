@@ -1,8 +1,4 @@
-// Grading systems as data, plus the GPA math that reads them.
-// Shared by the dashboard (browser global) and the server (CommonJS) so both always agree.
-//
-// A shipped scale's grade -> points mapping must never change: saved terms are recomputed from it.
-// Fix a scale by shipping a new id instead.
+// Never change a shipped scale's points (saved terms are recomputed); add a new id instead
 (function (root) {
   const DEFAULT_SCALE_ID = 'msu-iit';
 
@@ -224,9 +220,7 @@
     return grade ? grade.value : null;
   }
 
-  // The grade to keep when a term moves from one scale to another, or null to clear it.
-  // A number only carries over between scales of the same kind ("1.50" on MSU-IIT is not 1.5% or a 4.0-scale 1.5);
-  // marks such as P or INC carry over when the new scale has the same mark.
+  // Numbers carry over only between scales of the same kind; marks only if the new scale has them
   function carryGrade(from, to, raw) {
     const before = normalizeGrade(from, raw);
     const after = normalizeGrade(to, raw);

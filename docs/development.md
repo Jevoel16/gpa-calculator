@@ -83,6 +83,18 @@ Run these with `npm run dev` before each commit that changes the UI:
 10. **Keyboard:** Tab from the top shows "Skip to content"; every control has a visible focus ring.
 11. **SEO files:** `/robots.txt`, `/sitemap.xml` and `/llms.txt` load and use your `APP_URL`.
 
+## Code notes
+
+Background that used to live in long code comments.
+
+- **Grading scales** (`public/grading-scales.js`): the systems are plain data shared by the dashboard (browser global) and the server (CommonJS), so both compute the same GPA. A shipped scale's grade → points mapping must never change, because saved terms are recomputed from it; fix a scale by shipping a new id. When a term switches scales, a numeric grade carries over only between scales of the same kind ("1.50" on MSU-IIT is not 1.5% or a 4.0-scale 1.5), and marks such as `P` or `INC` carry over only if the new scale has them.
+- **Scale lookup** (`lib/scales.js`): every route resolves scale ids here, so user-defined scales (a future `grading_scales` table with ids like `custom:12`) can plug in in one place.
+- **MyIIT paste** (`public/myiit-paste.js`): parses a block like `SY: 2023-2024 SEM: 1 (BSIT:…)` followed by `CODE<TAB>Title<TAB>Grade` lines. Shared by the dashboard and the tests.
+- **Rate limiting** (`lib/rate-limit.js`): failure counts live in MySQL (`auth_attempts`) so every serverless instance shares them. If the database is unreachable it falls back to an in-memory map, so a database hiccup never disables the guard.
+- **Sessions** (`server.js`): the session store reuses the app's MySQL pool so a serverless instance doesn't open a second set of connections; the tests run without a database and keep sessions in memory.
+- **Theme** (`public/darkmode.js`): runs in `<head>` to apply the saved or system theme before the first paint. With no saved choice the page follows the system theme live; picking the system's own theme clears the saved choice.
+- **Schema upgrades** (`scripts/setup-db.js`): `CREATE TABLE IF NOT EXISTS` leaves old tables alone, so later columns are added with `ALTER TABLE`. The column and its unique index are added separately because TiDB can't do both in one statement.
+
 ## Commits
 
 Use [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `style:`, `perf:`, `test:`, `ci:`) with an imperative subject of 72 characters or less, a blank line, then one bullet per change. Bump the version in every commit (breaking → major, `feat` → minor, anything else → patch), end the subject with it (e.g. `feat: add CSV export (v1.4.0)`), and keep `package.json`, `package-lock.json` and the README version badge in sync. Never commit `.env` or downloaded `client_secret_*.json` files.

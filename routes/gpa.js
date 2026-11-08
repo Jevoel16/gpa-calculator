@@ -57,8 +57,7 @@ function parseId(value) {
 // Thrown for requests that can't be computed; routes turn it into a 400
 class CumulativeError extends Error {}
 
-// Combines the user's chosen terms with extra subjects; both GPA endpoints share this so a saved CGPA is always recomputed on the server.
-// All terms must share one grading system: there is no official conversion between schools' scales.
+// Shared by both CGPA endpoints so saved CGPAs are recomputed server-side; terms must share one scale
 async function computeCumulative(userId, requestedScaleId, termIds, additionalSubjects) {
   const ids = Array.isArray(termIds) ? [...new Set(termIds.map(parseId).filter(Boolean))].slice(0, 200) : [];
 

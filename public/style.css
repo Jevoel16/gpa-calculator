@@ -1,4 +1,4 @@
-/* Self-hosted Inter (variable weight, SIL OFL, see /fonts/OFL.txt): no third-party request and no render-blocking stylesheet */
+/* Self-hosted Inter (SIL OFL, see /fonts/OFL.txt) */
 @font-face {
   font-family: 'Inter';
   font-style: normal;
@@ -103,7 +103,6 @@ p { margin: 0; }
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 [tabindex="-1"]:focus { outline: none; }
 
-/* ---------- Form controls ---------- */
 label { display: block; margin: 0 0 6px; font-weight: 600; font-size: 13px; color: var(--text-muted); }
 input, select, button { font: inherit; color: var(--text); }
 input, select {
@@ -145,7 +144,6 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 .btn-icon.btn-sm { width: 34px; }
 .btn-block { width: 100%; }
 
-/* ---------- Login ---------- */
 .auth-page { min-height: 100vh; }
 .auth-panel { display: flex; flex-direction: column; min-height: 100vh; padding: 24px 32px; }
 .auth-panel .topbar { display: flex; justify-content: flex-end; }
@@ -190,7 +188,6 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 }
 .brand-mark svg { width: 22px; height: 22px; }
 
-/* ---------- Not found ---------- */
 .notfound-page { display: flex; flex-direction: column; min-height: 100vh; padding: 24px 32px; }
 .notfound-top { display: flex; align-items: center; justify-content: space-between; }
 .notfound-top .brand { color: var(--text); text-decoration: none; }
@@ -203,7 +200,6 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 .notfound-card .lead { color: var(--text-muted); margin: 10px 0 28px; }
 .notfound-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 
-/* ---------- App shell ---------- */
 .app-header {
   position: sticky; top: 0; z-index: 20;
   background: color-mix(in srgb, var(--surface) 80%, transparent);
@@ -262,8 +258,7 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 
 .panel-scroll:focus-visible { outline: none; box-shadow: inset var(--ring); }
 
-/* ---------- No-scroll desktop: the page fits the window and long lists scroll inside their panel ---------- */
-/* Short windows (small laptops, zoomed-in pages) scroll normally instead, so panels never get squeezed */
+/* Desktop fits the window, lists scroll in their panel; short windows scroll normally */
 @media (min-width: 961px) and (min-height: 700px) {
   .app-body { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
   .app-body .app-main { flex: 1; min-height: 0; display: flex; flex-direction: column; padding-bottom: 24px; }
@@ -282,7 +277,6 @@ input[aria-invalid="true"] { border-color: var(--danger); }
   .view-settings { overflow-y: auto; }
 }
 
-/* ---------- Stats ---------- */
 .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .stat { padding: 16px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); }
 .stat-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
@@ -308,7 +302,6 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 .scale-list div { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--border); }
 .scale-list span:last-child { color: var(--text-muted); }
 
-/* ---------- Tables ---------- */
 .table-wrap { overflow-x: auto; }
 .table { width: 100%; border-collapse: separate; border-spacing: 0; }
 .table th { text-align: left; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--surface-2); }
@@ -327,7 +320,6 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 
 .course-row-index { color: var(--text-muted); font-size: 12px; font-weight: 600; width: 28px; text-align: center; }
 
-/* ---------- Cumulative ---------- */
 .term-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
 .term-pick {
   position: relative; display: flex; margin: 0; align-items: center; gap: 12px; padding: 12px 14px;
@@ -360,7 +352,6 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 
 .inline-form { display: grid; grid-template-columns: minmax(0, 1fr) 100px 140px auto; gap: 10px; }
 
-/* ---------- History ---------- */
 .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
 .term-card { display: flex; flex-direction: column; padding: 18px; gap: 14px; transition: box-shadow .15s, border-color .15s; }
 .term-card:hover { box-shadow: var(--shadow-lg); border-color: var(--border-strong); }
@@ -385,7 +376,6 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 
 .editing-banner { display: flex; align-items: center; gap: 10px; padding: 10px 14px; margin-bottom: 16px; border-radius: 12px; background: color-mix(in srgb, var(--warning) 12%, transparent); color: var(--warning); font-size: 14px; font-weight: 600; }
 
-/* ---------- Settings ---------- */
 .settings-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; max-width: 960px; margin: 0 auto; align-items: start; }
 /* Password sits in the right column so Grading system lands directly under Account */
 .settings-grid > #passwordForm { grid-column: 2; grid-row: 1 / span 2; }
@@ -398,7 +388,6 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 .account-list dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
 .auth-form .alert { margin-top: 0; }
 
-/* ---------- Toast ---------- */
 .toast-stack { position: fixed; right: 20px; bottom: 20px; display: grid; gap: 10px; z-index: 100; }
 .toast {
   display: flex; align-items: center; gap: 10px; min-width: 240px; max-width: 360px;
@@ -418,7 +407,6 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 .toast-close svg { width: 16px; height: 16px; }
 @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-/* ---------- Confirm dialog ---------- */
 .dialog {
   width: min(400px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--border); border-radius: var(--radius);
   background: var(--surface); color: var(--text); box-shadow: var(--shadow-lg);
@@ -428,12 +416,11 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 .dialog-body { padding: 22px 22px 8px; }
 .dialog-body p { margin-top: 6px; font-size: 14px; color: var(--text-muted); overflow-wrap: anywhere; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 16px 22px 20px; }
-/* primary-text is white in light mode and near-black in dark mode, so the label keeps its contrast on either red */
+/* primary-text flips per theme, so the label keeps contrast on either red */
 .btn-danger-solid { background: var(--danger); color: var(--primary-text); }
 .btn-danger-solid:hover { background: var(--danger); filter: brightness(.92); }
 @keyframes dialog-in { from { opacity: 0; transform: translateY(6px) scale(.98); } to { opacity: 1; transform: none; } }
 
-/* ---------- Responsive ---------- */
 @media (max-width: 1100px) {
   .user-name { display: none; }
   .user-chip { padding: 4px; }

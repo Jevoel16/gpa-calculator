@@ -82,7 +82,7 @@ Existing users who sign in with a provider that has the same email are linked au
 
 ## Importing terms from an old database dump
 
-`scripts/import-terms.js` copies one user's terms from an old `mysqldump` of `gpa_records` into an existing account. GPAs are recomputed and already-imported terms are skipped. Preview with `--dry-run`:
+`scripts/import-terms.js` copies one user's terms from an old `mysqldump` of `gpa_records` into an existing account. GPAs are recomputed and already-imported terms are skipped. The target account must already exist (sign in to the app with it once). Preview with `--dry-run`:
 
 ```bash
 npm run db:import -- path/to/gpa_app_gpa_records.sql --from-user 3 --to-email you@g.msuiit.edu.ph --dry-run

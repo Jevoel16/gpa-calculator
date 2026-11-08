@@ -62,8 +62,7 @@ app.use('/api', (req, res, next) => {
   next();
 });
 
-// Shares the app's pool so a serverless instance doesn't open a second set of connections.
-// The automated tests run without a database, so they keep sessions in memory.
+// Reuse the app's pool on serverless; tests have no database, so they keep sessions in memory
 const sessionStore = NODE_ENV === 'test'
   ? new session.MemoryStore()
   : new MySQLStore({ createDatabaseTable: true }, pool);
@@ -93,8 +92,7 @@ app.use('/api', (req, res, next) => {
   next();
 });
 
-// Pages live at /login and /dashboard; old .html links redirect there (Vercel does the same via cleanUrls).
-// The strict pattern keeps paths like //evil.com.html from turning into an open redirect.
+// Old .html links redirect to clean URLs; the strict pattern blocks //evil.com.html open redirects
 app.use((req, res, next) => {
   if (!['GET', 'HEAD'].includes(req.method) || !/^\/[\w-]+\.html$/.test(req.path)) return next();
   res.redirect(301, req.path.slice(0, -'.html'.length) + req.originalUrl.slice(req.path.length));
@@ -153,8 +151,7 @@ app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 app.get('/', (req, res) => {
   if (req.session && req.session.userId) return res.redirect('/dashboard');
   if (req.session && req.session.pendingUserId) return res.redirect('/setup');
-  // Serve the sign-in page here instead of redirecting, so tools that read the
-  // home page (like Vercel's project icon) find the favicon links; its canonical is /login
+  // Serve the sign-in page (not a redirect) so tools reading / find the favicon links
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 

@@ -1,7 +1,4 @@
-// Parses grades copied from the MyIIT portal, e.g.
-//   SY: 2023-2024 SEM: 1 (BSIT:BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY)
-//   CCC100<TAB>Fundamentals of Computing<TAB>1.00
-// Shared by the dashboard (browser global) and the tests (CommonJS).
+// Parses grades copied from MyIIT (format in docs/development.md)
 (function (root) {
   const Scales = typeof module !== 'undefined' && module.exports ? require('./grading-scales') : root.GradingScales;
   // MyIIT copies are always on the MSU-IIT scale, whatever the user's default is

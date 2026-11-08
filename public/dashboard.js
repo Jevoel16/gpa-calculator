@@ -193,7 +193,6 @@ function goTo(name){
   else location.hash = name;
 }
 
-/* ---------- New term ---------- */
 
 // A dropdown for scales with a fixed list of grades, a text field for percentage-style scales
 function gradeControlHtml(selected = '', scale = termScale, attrs = 'class="course-grade" aria-label="Grade"'){
@@ -410,7 +409,6 @@ function markMissingUnits(rows){
   return missing;
 }
 
-/* ---------- History ---------- */
 
 async function loadHistory(){
   allHistory = await api('/api/gpa/history');
@@ -484,7 +482,6 @@ async function deleteRecord(id){
   }
 }
 
-/* ---------- Cumulative ---------- */
 
 function cumulativeScale(){
   return Scales.getScale(cumulativeScaleId) || Scales.getScale(defaultScaleId);
@@ -703,7 +700,6 @@ function showPane(paneId){
   updateSaveRow();
 }
 
-/* ---------- Settings ---------- */
 
 async function changePassword(event){
   event.preventDefault();
@@ -736,7 +732,6 @@ async function changePassword(event){
   }
 }
 
-/* ---------- Init ---------- */
 
 function initializeEventListeners(){
   window.addEventListener('hashchange', () => {

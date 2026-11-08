@@ -1,5 +1,4 @@
-// Applies the saved (or system) theme immediately to avoid a flash, then wires up the toggle button.
-// With no saved choice the page follows the system theme live; picking the system's own theme clears the saved choice.
+// Applies the theme before paint; with no saved choice it follows the system live
 (function () {
   const root = document.documentElement;
   const media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;

@@ -1,5 +1,4 @@
-// Creates the tables in the database configured in .env (DATABASE_URL or DB_*). Safe to run more than once.
-// Usage: npm run db:setup
+// Creates or upgrades the tables (npm run db:setup); safe to run more than once
 const fs = require('fs');
 const path = require('path');
 const pool = require('../db/db');
@@ -41,8 +40,7 @@ async function main() {
     console.log('OK  ', sql.split('\n')[0]);
   }
 
-  // CREATE TABLE IF NOT EXISTS leaves older tables alone, so add columns introduced later
-  // (column and unique index are added separately because TiDB can't do both in one ALTER)
+  // Add later columns to old tables; TiDB can't add a column and its unique index in one ALTER
   await ensureColumn('users', 'username', 'VARCHAR(30) NULL AFTER email');
   await ensureColumn('users', 'default_scale', "VARCHAR(40) NOT NULL DEFAULT 'msu-iit' AFTER password_hash");
   await ensureColumn('gpa_records', 'scale_id', "VARCHAR(40) NOT NULL DEFAULT 'msu-iit' AFTER gpa");

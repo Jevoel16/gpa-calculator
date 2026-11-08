@@ -89,8 +89,7 @@ async function findOrCreateGithubUser(ghUser, verifiedEmail) {
   return result.insertId;
 }
 
-// Starts a fresh session (prevents session fixation) holding the given values.
-// maxAge overrides the default lifetime for short-lived sessions.
+// Fresh session against fixation; maxAge shortens it for pending sign-ins
 function startSession(req, values, cb, maxAge) {
   req.session.regenerate(err => {
     if (err) return cb(err);
@@ -133,8 +132,7 @@ function isValidPassword(value) {
   return typeof value === 'string' && value.length >= MIN_PASSWORD && value.length <= MAX_PASSWORD;
 }
 
-// Brute-force guard shared by all instances (see lib/rate-limit.js).
-// One limit per account guess from an IP, and a wider one per IP so a single address can't spray many accounts.
+// Limit per account guess and a wider one per IP, so one address can't spray many accounts
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const MAX_FAILED_PER_ACCOUNT = 10;
 const MAX_FAILED_PER_IP = 50;

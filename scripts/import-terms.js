@@ -1,6 +1,4 @@
-// Copies saved terms from an old mysqldump of gpa_records into an account in the database configured in .env.
-// Usage: npm run db:import -- <gpa_records.sql> --from-user <old user id> --to-email <email> [--dry-run]
-// The target account must already exist (sign in to the app with it once). Safe to run more than once.
+// Imports terms from an old gpa_records dump; usage and caveats in docs/setup.md
 const fs = require('fs');
 const pool = require('../db/db');
 const { sanitizeCourses, computeGpa } = require('../routes/gpa').helpers;
