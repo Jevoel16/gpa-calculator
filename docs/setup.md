@@ -19,7 +19,7 @@ npm install
 copy .env.example .env
 ```
 
-Fill in `.env`. Every variable is described in the [README](../README.md#configuration).
+Keep only the `# ===== Local =====` block in `.env` and fill it in. Every variable is described in the [README](../README.md#configuration).
 
 ## 2. Create the database
 
