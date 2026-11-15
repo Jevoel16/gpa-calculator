@@ -66,7 +66,7 @@ GPA Calculator lets students enter their grades each term, see their GPA update 
 
 | Layer | Tools |
 | --- | --- |
-| Backend | Node.js 22.14.0, Express 5.3.0, express-session 1.19.0, dotenv 18.0.9 |
+| Backend | Node.js 26.13.1, Express 5.3.0, express-session 1.19.0, dotenv 18.0.9 |
 | Database | MySQL 8 or TiDB Cloud via mysql2 3.24.6, sessions in express-mysql-session 3.0.3 |
 | Auth | google-auth-library 11.3.3, GitHub OAuth, scrypt passwords |
 | Frontend | Vanilla HTML, CSS and JavaScript, self-hosted Inter font |
@@ -74,7 +74,7 @@ GPA Calculator lets students enter their grades each term, see their GPA update 
 
 ## Getting Started
 
-Needs Node.js 22 (see `.nvmrc`), a MySQL 8 database, and Google and GitHub OAuth apps ([setup guide](docs/setup.md)).
+Needs Node.js 26 (see `.nvmrc`), a MySQL 8 database, and Google and GitHub OAuth apps ([setup guide](docs/setup.md)).
 
 ```bash
 npm install
