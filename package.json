@@ -13,7 +13,10 @@
     "dev": "node --watch --env-file=.env server.js",
     "test": "node --test --test-force-exit",
     "db:setup": "node scripts/setup-db.js",
-    "db:import": "node scripts/import-terms.js"
+    "db:import": "node scripts/import-terms.js",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "dotenv": "^18.0.9",
@@ -27,5 +30,11 @@
     "express-mysql-session": {
       "mysql2": "$mysql2"
     }
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "prettier": "^3.10.1"
   }
 }
