@@ -6,6 +6,7 @@ const MySQLStore = require('express-mysql-session')(session);
 const pool = require('./db/db');
 const APP_URL = require('./lib/app-url');
 const sameOrigin = require('./middleware/same-origin');
+const logError = require('./lib/log-error');
 
 const { SESSION_SECRET, NODE_ENV, PORT = 3000 } = process.env;
 
@@ -169,7 +170,7 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Invalid JSON' });
   if (err.type === 'entity.too.large') return res.status(413).json({ error: 'Request too large' });
-  console.error(err);
+  logError(req, err);
   if (res.headersSent) return next(err);
   res.status(500).json({ error: 'Server error' });
 });

@@ -1,5 +1,6 @@
 const express = require('express');
 const pool = require('../db/db');
+const logError = require('../lib/log-error');
 const requireAuth = require('../middleware/auth');
 const scales = require('../public/grading-scales');
 const { resolveScale, scaleForRequest } = require('../lib/scales');
@@ -150,7 +151,7 @@ router.post('/save', requireAuth, async (req, res) => {
       createdAt: new Date().toISOString(),
     });
   } catch (err) {
-    console.error(err);
+    logError(req, err);
     res.status(500).json({ error: 'Failed to save term' });
   }
 });
@@ -174,7 +175,7 @@ router.get('/history', requireAuth, async (req, res) => {
       }))
     );
   } catch (err) {
-    console.error(err);
+    logError(req, err);
     res.status(500).json({ error: 'Failed to retrieve history' });
   }
 });
@@ -194,7 +195,7 @@ router.post('/calculate-cumulative', requireAuth, async (req, res) => {
     res.json(result);
   } catch (err) {
     if (err instanceof CumulativeError) return res.status(400).json({ error: err.message });
-    console.error(err);
+    logError(req, err);
     res.status(500).json({ error: 'Failed to calculate cumulative GPA' });
   }
 });
@@ -225,7 +226,7 @@ router.get('/cgpa', requireAuth, async (req, res) => {
       })
     );
   } catch (err) {
-    console.error(err);
+    logError(req, err);
     res.status(500).json({ error: 'Failed to retrieve CGPA records' });
   }
 });
@@ -266,7 +267,7 @@ router.post('/save-cgpa', requireAuth, async (req, res) => {
     });
   } catch (err) {
     if (err instanceof CumulativeError) return res.status(400).json({ error: err.message });
-    console.error(err);
+    logError(req, err);
     res.status(500).json({ error: 'Failed to save CGPA record' });
   }
 });
@@ -287,7 +288,7 @@ router.delete('/cgpa/:id', requireAuth, async (req, res) => {
 
     res.json({ success: true, message: 'CGPA record deleted' });
   } catch (err) {
-    console.error(err);
+    logError(req, err);
     res.status(500).json({ error: 'Failed to delete CGPA record' });
   }
 });
@@ -339,7 +340,7 @@ router.put('/:id', requireAuth, async (req, res) => {
       createdAt: new Date().toISOString(),
     });
   } catch (err) {
-    console.error(err);
+    logError(req, err);
     res.status(500).json({ error: 'Failed to update term' });
   }
 });
@@ -357,7 +358,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
 
     res.json({ success: true, message: 'Term deleted' });
   } catch (err) {
-    console.error(err);
+    logError(req, err);
     res.status(500).json({ error: 'Failed to delete term' });
   }
 });

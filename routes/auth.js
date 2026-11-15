@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const express = require('express');
 const { OAuth2Client } = require('google-auth-library');
 const pool = require('../db/db');
+const logError = require('../lib/log-error');
 const { hashPassword, verifyPassword } = require('../lib/password');
 const rateLimit = require('../lib/rate-limit');
 const APP_URL = require('../lib/app-url');
@@ -108,7 +109,7 @@ async function beginOAuth(req, res, authUrl) {
   if (!req.session.userId) req.session.cookie.maxAge = OAUTH_SESSION_MS;
   req.session.save(err => {
     if (err) {
-      console.error(err);
+      logError(req, err);
       return res.redirect('/login?error=oauth');
     }
     res.redirect(authUrl);
@@ -124,7 +125,7 @@ async function logIn(req, res, userId) {
     needsSetup ? { pendingUserId: userId } : { userId },
     err => {
       if (err) {
-        console.error(err);
+        logError(req, err);
         return res.redirect('/login?error=oauth');
       }
       res.redirect(needsSetup ? '/setup' : '/dashboard');
@@ -212,7 +213,7 @@ router.get('/google/callback', async (req, res) => {
     const userId = await findOrCreateUser(payload);
     await logIn(req, res, userId);
   } catch (err) {
-    console.error(err);
+    logError(req, err);
     res.redirect('/login?error=oauth');
   }
 });
@@ -282,7 +283,7 @@ router.get('/github/callback', async (req, res) => {
     const userId = await findOrCreateGithubUser(ghUser, primary.email);
     await logIn(req, res, userId);
   } catch (err) {
-    console.error(err);
+    logError(req, err);
     res.redirect('/login?error=oauth');
   }
 });
@@ -318,13 +319,13 @@ router.post('/login', async (req, res) => {
     await Promise.all([rateLimit.clear(limits[0].key), rateLimit.clear(limits[1].key)]);
     startSession(req, { userId: user.id }, err => {
       if (err) {
-        console.error(err);
+        logError(req, err);
         return res.status(500).json({ error: 'Server error' });
       }
       res.json({ ok: true });
     });
   } catch (err) {
-    console.error(err);
+    logError(req, err);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -339,7 +340,7 @@ router.get('/setup', async (req, res) => {
     if (!rows.length) return res.status(401).json({ error: 'Unauthorized' });
     res.json(rows[0]);
   } catch (err) {
-    console.error(err);
+    logError(req, err);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -384,13 +385,13 @@ router.post('/setup', async (req, res) => {
 
     startSession(req, { userId }, err => {
       if (err) {
-        console.error(err);
+        logError(req, err);
         return res.status(500).json({ error: 'Server error' });
       }
       res.json({ ok: true });
     });
   } catch (err) {
-    console.error(err);
+    logError(req, err);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -453,13 +454,13 @@ router.post('/password', async (req, res) => {
 
     startSession(req, { userId }, err => {
       if (err) {
-        console.error(err);
+        logError(req, err);
         return res.status(500).json({ error: 'Server error' });
       }
       res.json({ ok: true });
     });
   } catch (err) {
-    console.error(err);
+    logError(req, err);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -473,7 +474,7 @@ router.get('/me', async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
     res.json({ ...rows[0], defaultScale: await getDefaultScaleId(req.session.userId) });
   } catch (err) {
-    console.error(err);
+    logError(req, err);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -486,7 +487,7 @@ router.put('/preferences', requireAuth, async (req, res) => {
     await pool.query('UPDATE users SET default_scale = ? WHERE id = ?', [scale.id, req.session.userId]);
     res.json({ defaultScale: scale.id });
   } catch (err) {
-    console.error(err);
+    logError(req, err);
     res.status(500).json({ error: 'Failed to save preferences' });
   }
 });
