@@ -8,22 +8,24 @@
 
 **Compute, save and track your term GPA and cumulative GPA, on the MSU-IIT scale or another grading system.**
 
-![Version](https://img.shields.io/badge/version-1.10.1-green?style=flat)
-![License](https://img.shields.io/badge/license-source--available-orange?style=flat)
 [![CI](https://img.shields.io/github/actions/workflow/status/Jevoel16/gpa-calculator/ci.yml?branch=main&label=CI&style=flat)](https://github.com/Jevoel16/gpa-calculator/actions/workflows/ci.yml)
+![Version](https://img.shields.io/badge/version-1.10.1-green?style=flat)
 ![Platform](https://img.shields.io/badge/platform-web%20%7C%20vercel-informational?style=flat)
+![Node.js](https://img.shields.io/badge/Node.js-26-informational?style=flat)
 
 </div>
 
+<img src="docs/images/hero.png" width="100%" alt="New Term view with five MSU-IIT courses and a term GPA of 1.35000">
+
 <p align="center">
-  <a href="#about">About</a> · <a href="#screenshots">Screenshots</a> · <a href="#features">Features</a> · <a href="#tech-stack">Tech Stack</a> · <a href="#getting-started">Getting Started</a> · <a href="#configuration">Configuration</a> · <a href="#usage">Usage</a> · <a href="#more">More</a> · <a href="#contributing">Contributing</a> · <a href="#license">License</a> · <a href="#author">Author</a>
+  <a href="#about">About</a> · <a href="#screenshots">Screenshots</a> · <a href="#features">Features</a> · <a href="#tech-stack">Tech Stack</a> · <a href="#architecture">Architecture</a> · <a href="#getting-started">Getting Started</a> · <a href="#configuration">Configuration</a> · <a href="#usage">Usage</a> · <a href="#more">More</a>
 </p>
 
 ---
 
 ## About
 
-GPA Calculator lets students enter their grades each term, see their GPA update as they type, and keep every term and cumulative GPA saved in one place. It was built for MSU-IIT students, whose 1.00–5.00 scale most online calculators get wrong, and also supports other Philippine and US grading systems. Try it live at [gpa-calculator.jevoelorbilla.dev](https://gpa-calculator.jevoelorbilla.dev).
+GPA Calculator lets students enter their grades each term, see their GPA update as they type, and keep every term and cumulative GPA saved in one place. It was built for MSU-IIT students, whose 1.00–5.00 scale most online calculators get wrong, and also supports other Philippine and US grading systems.
 
 ## Screenshots
 
@@ -33,7 +35,7 @@ GPA Calculator lets students enter their grades each term, see their GPA update 
 <table>
 <tr>
 <td width="50%" align="center"><b>Sign in</b><br><a href="docs/images/login.png"><img src="docs/images/login.png" width="100%" alt="Sign-in page with Google, GitHub and username/password options"></a></td>
-<td width="50%" align="center"><b>New Term</b><br><a href="docs/images/new-term.png"><img src="docs/images/new-term.png" width="100%" alt="New Term view with courses, grades and the live GPA card"></a></td>
+<td width="50%" align="center"><b>New Term</b><br><a href="docs/images/hero.png"><img src="docs/images/hero.png" width="100%" alt="New Term view with courses, grades and the live GPA card"></a></td>
 </tr>
 <tr>
 <td width="50%" align="center"><b>Cumulative GPA</b><br><a href="docs/images/cumulative.png"><img src="docs/images/cumulative.png" width="100%" alt="Cumulative view with saved terms ticked and the combined CGPA"></a></td>
@@ -59,7 +61,7 @@ GPA Calculator lets students enter their grades each term, see their GPA update 
 - Cumulative GPA from any saved terms plus extra subjects, saved as named records.
 - Five grading systems, with a default per account and a choice per term ([details](docs/grading-systems.md)).
 - History of saved terms with academic standing, edit, copy and delete.
-- Works on phones, in light and dark themes, and installs to your home screen.
+- Works on phones, follows the device theme or a fixed light or dark one, and installs to your home screen.
 - Accessible: keyboard friendly and checked against WCAG 2.2 AA.
 
 ## Tech Stack
@@ -71,6 +73,19 @@ GPA Calculator lets students enter their grades each term, see their GPA update 
 | Auth | google-auth-library 11.3.3, GitHub OAuth, scrypt passwords |
 | Frontend | Vanilla HTML, CSS and JavaScript, self-hosted Inter font |
 | Hosting | Vercel with Web Analytics ([DEPLOY.md](DEPLOY.md)) |
+| Tooling | node:test, ESLint 10.15.0, Prettier 3.10.1 |
+
+## Architecture
+
+```mermaid
+flowchart LR
+  Browser[Browser: public/ pages] --> API[Express routes]
+  API --> DB[(MySQL / TiDB)]
+  API --> Google[Google OAuth]
+  API --> GitHub[GitHub OAuth]
+```
+
+Pages in `public/` call the JSON API in `routes/`; sessions, rate-limit counters and saved terms live in MySQL.
 
 ## Getting Started
 
@@ -155,21 +170,11 @@ The full tree, tests and manual checks are in [docs/development.md](docs/develop
 | `npm start` | Start the server |
 | `npm run dev` | Start with auto-reload and `.env` |
 | `npm test` | Run the automated tests |
+| `npm run lint` | Check the code with ESLint |
+| `npm run format` | Format the code with Prettier (`format:check` only checks) |
 | `npm run db:setup` | Create or upgrade the tables |
 | `npm run db:import` | Import terms from an old `mysqldump` |
 
 </details>
-
-## Contributing
-
-Branch from `main` as `feat/…` or `fix/…`. Use [Conventional Commits](https://www.conventionalcommits.org/) (including `ci:`) and end the subject with the bumped version, e.g. `feat: add CSV export (v1.4.0)`; see [docs/development.md](docs/development.md#commits). Update this README with every change.
-
-## License
-
-Sprucetrap Source-Available License 1.0. See [LICENSE](LICENSE).
-
-## Author
-
-**Sprucetrap** ([github.com/Jevoel16](https://github.com/Jevoel16)), built for MSU-IIT students.
 
 <p align="right"><a href="#top">Back to top</a></p>
