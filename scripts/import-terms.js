@@ -8,7 +8,10 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--from-user') args.fromUser = Number(argv[++i]);
-    else if (arg === '--to-email') args.toEmail = String(argv[++i] || '').trim().toLowerCase();
+    else if (arg === '--to-email')
+      args.toEmail = String(argv[++i] || '')
+        .trim()
+        .toLowerCase();
     else if (arg === '--dry-run') args.dryRun = true;
     else if (!args.file) args.file = arg;
   }
@@ -48,7 +51,7 @@ function parseInsertRows(sql, table) {
         for (i++; i < sql.length && sql[i] !== "'"; i++) {
           if (sql[i] === '\\') {
             const next = sql[++i];
-            value += { n: '\n', r: '\r', t: '\t', '0': '\0', Z: '\x1a' }[next] ?? next;
+            value += { n: '\n', r: '\r', t: '\t', 0: '\0', Z: '\x1a' }[next] ?? next;
           } else {
             value += sql[i];
           }
@@ -77,7 +80,13 @@ async function main() {
   // Columns as dumped: id, user_id, term_name, courses_json, gpa, created_at
   const terms = parseInsertRows(fs.readFileSync(file, 'utf8'), 'gpa_records')
     .filter(r => r[1] === fromUser)
-    .map(([oldId, , termName, coursesJson, oldGpa, createdAt]) => ({ oldId, termName, coursesJson, oldGpa, createdAt }));
+    .map(([oldId, , termName, coursesJson, oldGpa, createdAt]) => ({
+      oldId,
+      termName,
+      coursesJson,
+      oldGpa,
+      createdAt,
+    }));
   if (!terms.length) throw new Error(`No terms for user ${fromUser} in ${file}`);
 
   // mysqldump writes timestamps in UTC, so this connection reads and writes them in UTC too
@@ -99,7 +108,9 @@ async function importTerms(conn, terms, toEmail, dryRun) {
   let skipped = 0;
   for (const term of terms) {
     let courses = null;
-    try { courses = sanitizeCourses(JSON.parse(term.coursesJson)); } catch {}
+    try {
+      courses = sanitizeCourses(JSON.parse(term.coursesJson));
+    } catch {}
     if (!courses) {
       console.log(`SKIP  #${term.oldId} "${term.termName}" has invalid courses`);
       skipped++;
@@ -123,11 +134,15 @@ async function importTerms(conn, terms, toEmail, dryRun) {
         [userId, term.termName, JSON.stringify(courses), gpa, term.createdAt]
       );
     }
-    console.log(`${dryRun ? 'WOULD' : 'ADD  '} "${term.termName}" (${courses.length} courses, GPA ${gpa.toFixed(5)}, was ${term.oldGpa})`);
+    console.log(
+      `${dryRun ? 'WOULD' : 'ADD  '} "${term.termName}" (${courses.length} courses, GPA ${gpa.toFixed(5)}, was ${term.oldGpa})`
+    );
     inserted++;
   }
 
-  console.log(`${dryRun ? 'Dry run: ' : ''}${inserted} term(s) ${dryRun ? 'to import' : 'imported'} into ${toEmail}, ${skipped} skipped.`);
+  console.log(
+    `${dryRun ? 'Dry run: ' : ''}${inserted} term(s) ${dryRun ? 'to import' : 'imported'} into ${toEmail}, ${skipped} skipped.`
+  );
 }
 
 main()

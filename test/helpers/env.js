@@ -11,7 +11,7 @@ Object.assign(process.env, {
   DATABASE_URL: '',
   DB_HOST: '127.0.0.1',
   DB_PORT: '1',
-  DB_SSL: 'false'
+  DB_SSL: 'false',
 });
 
 // The database is unreachable on purpose; keep its expected errors out of the test output

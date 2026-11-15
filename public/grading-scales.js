@@ -23,7 +23,7 @@
         { value: '5.00', points: 5.0, label: 'Failed' },
         { value: 'P', points: null, credit: true, label: 'Passed · units credited' },
         { value: 'INC', points: null, label: 'Not counted' },
-        { value: 'DROP', points: null, label: 'Not counted' }
+        { value: 'DROP', points: null, label: 'Not counted' },
       ],
       aliases: { DRP: 'DROP', DROPPED: 'DROP' },
       standings: [
@@ -31,14 +31,14 @@
         { limit: 2.0, label: 'Very good standing' },
         { limit: 2.5, label: 'Good standing' },
         { limit: 3.0, label: 'Passing' },
-        { limit: null, label: 'Below passing' }
+        { limit: null, label: 'Below passing' },
       ],
       tones: [
         { limit: 1.75, tone: 'success' },
         { limit: 2.5, tone: 'primary' },
         { limit: 3.0, tone: 'warning' },
-        { limit: null, tone: 'danger' }
-      ]
+        { limit: null, tone: 'danger' },
+      ],
     },
     {
       id: 'ph-1to5',
@@ -61,7 +61,7 @@
         { value: '5.00', points: 5.0, label: 'Failed' },
         { value: 'P', points: null, credit: true, label: 'Passed · units credited' },
         { value: 'INC', points: null, label: 'Not counted' },
-        { value: 'DRP', points: null, label: 'Not counted' }
+        { value: 'DRP', points: null, label: 'Not counted' },
       ],
       aliases: { DROP: 'DRP', DROPPED: 'DRP' },
       standings: [
@@ -70,14 +70,14 @@
         { limit: 2.25, label: 'Good standing' },
         { limit: 2.75, label: 'Satisfactory standing' },
         { limit: 3.0, label: 'Passing' },
-        { limit: null, label: 'Below passing' }
+        { limit: null, label: 'Below passing' },
       ],
       tones: [
         { limit: 1.75, tone: 'success' },
         { limit: 2.5, tone: 'primary' },
         { limit: 3.0, tone: 'warning' },
-        { limit: null, tone: 'danger' }
-      ]
+        { limit: null, tone: 'danger' },
+      ],
     },
     {
       id: 'ph-percent',
@@ -90,7 +90,7 @@
       grades: [
         { value: 'P', points: null, credit: true, label: 'Passed · units credited' },
         { value: 'INC', points: null, label: 'Not counted' },
-        { value: 'DROP', points: null, label: 'Not counted' }
+        { value: 'DROP', points: null, label: 'Not counted' },
       ],
       aliases: { DRP: 'DROP', DROPPED: 'DROP' },
       standings: [
@@ -99,14 +99,14 @@
         { limit: 85, label: 'Good standing' },
         { limit: 80, label: 'Satisfactory standing' },
         { limit: 75, label: 'Passing' },
-        { limit: null, label: 'Below passing' }
+        { limit: null, label: 'Below passing' },
       ],
       tones: [
         { limit: 90, tone: 'success' },
         { limit: 80, tone: 'primary' },
         { limit: 75, tone: 'warning' },
-        { limit: null, tone: 'danger' }
-      ]
+        { limit: null, tone: 'danger' },
+      ],
     },
     {
       id: 'ph-4pt',
@@ -125,7 +125,7 @@
         { value: '0.0', points: 0.0, label: 'Failed' },
         { value: 'P', points: null, credit: true, label: 'Passed · units credited' },
         { value: 'INC', points: null, label: 'Not counted' },
-        { value: 'W', points: null, label: 'Withdrawn · not counted' }
+        { value: 'W', points: null, label: 'Withdrawn · not counted' },
       ],
       aliases: { DROP: 'W', DRP: 'W' },
       standings: [
@@ -134,14 +134,14 @@
         { limit: 2.5, label: 'Good standing' },
         { limit: 2.0, label: 'Satisfactory standing' },
         { limit: 1.0, label: 'Passing' },
-        { limit: null, label: 'Below passing' }
+        { limit: null, label: 'Below passing' },
       ],
       tones: [
         { limit: 3.0, tone: 'success' },
         { limit: 2.0, tone: 'primary' },
         { limit: 1.0, tone: 'warning' },
-        { limit: null, tone: 'danger' }
-      ]
+        { limit: null, tone: 'danger' },
+      ],
     },
     {
       id: 'us-4pt',
@@ -166,7 +166,7 @@
         { value: 'P', points: null, credit: true, label: 'Passed · units credited' },
         { value: 'NP', points: null, label: 'Not passed · not counted' },
         { value: 'I', points: null, label: 'Incomplete · not counted' },
-        { value: 'W', points: null, label: 'Withdrawn · not counted' }
+        { value: 'W', points: null, label: 'Withdrawn · not counted' },
       ],
       aliases: { INC: 'I', DROP: 'W', DRP: 'W' },
       standings: [
@@ -174,15 +174,15 @@
         { limit: 3.0, label: 'Very good standing' },
         { limit: 2.0, label: 'Good standing' },
         { limit: 1.0, label: 'Passing' },
-        { limit: null, label: 'Below passing' }
+        { limit: null, label: 'Below passing' },
       ],
       tones: [
         { limit: 3.5, tone: 'success' },
         { limit: 2.5, tone: 'primary' },
         { limit: 2.0, tone: 'warning' },
-        { limit: null, tone: 'danger' }
-      ]
-    }
+        { limit: null, tone: 'danger' },
+      ],
+    },
   ];
 
   const byId = new Map(SCALES.map(s => [s.id, s]));
@@ -198,7 +198,9 @@
   // Returns the scale's grade entry for a raw grade ("1", "1.5", "drop" ...), or null when it isn't on the scale
   function findGrade(scale, raw) {
     if (!scale) return null;
-    let key = String(raw ?? '').trim().toUpperCase();
+    let key = String(raw ?? '')
+      .trim()
+      .toUpperCase();
     if (!key) return null;
     if (scale.aliases && Object.hasOwn(scale.aliases, key)) key = scale.aliases[key];
     const exact = scale.grades.find(g => g.value === key);
@@ -275,8 +277,17 @@
   }
 
   const api = {
-    DEFAULT_SCALE_ID, getScale, listScales, findGrade, normalizeGrade, carryGrade,
-    sumCourses, computeGpa, standing, tone, formatGpa
+    DEFAULT_SCALE_ID,
+    getScale,
+    listScales,
+    findGrade,
+    normalizeGrade,
+    carryGrade,
+    sumCourses,
+    computeGpa,
+    standing,
+    tone,
+    formatGpa,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.GradingScales = api;

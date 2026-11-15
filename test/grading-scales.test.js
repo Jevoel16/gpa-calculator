@@ -28,7 +28,7 @@ test('GPA is units-weighted and credit-only grades only add credited units', () 
     { name: 'Calculus', units: 5, grade: '1.75' },
     { name: 'Programming', units: 3, grade: '1.25' },
     { name: 'PE', units: 2, grade: 'P' },
-    { name: 'Ethics', units: 3, grade: 'INC' }
+    { name: 'Ethics', units: 3, grade: 'INC' },
   ];
   assert.equal(Scales.computeGpa(courses, msu), 1.5625);
   assert.deepEqual(Scales.sumCourses(courses, msu), { gradePointsTotal: 12.5, units: 8, creditedUnits: 10 });
@@ -52,7 +52,10 @@ test('every built-in scale is well formed', () => {
     assert.equal(scale.tones.at(-1).limit, null, `${id} tones end with a catch-all`);
     assert.equal(new Set(scale.grades.map(g => g.value)).size, scale.grades.length, `${id} has unique grades`);
     for (const target of Object.values(scale.aliases || {})) {
-      assert.ok(scale.grades.some(g => g.value === target), `${id} alias points at a real grade`);
+      assert.ok(
+        scale.grades.some(g => g.value === target),
+        `${id} alias points at a real grade`
+      );
     }
     if (scale.input === 'number') assert.ok(scale.range.min < scale.range.max, id);
   }
@@ -60,7 +63,16 @@ test('every built-in scale is well formed', () => {
 
 test('PH 1.00–5.00: 4.00 conditional is not counted until resolved', () => {
   const s = Scales.getScale('ph-1to5');
-  assert.equal(Scales.computeGpa([{ units: 3, grade: '1.00' }, { units: 3, grade: '4.00' }], s), 1);
+  assert.equal(
+    Scales.computeGpa(
+      [
+        { units: 3, grade: '1.00' },
+        { units: 3, grade: '4.00' },
+      ],
+      s
+    ),
+    1
+  );
   assert.equal(Scales.sumCourses([{ units: 3, grade: '4' }], s).creditedUnits, 0);
   assert.equal(Scales.normalizeGrade(s, 'drop'), 'DRP');
   assert.equal(Scales.standing(s, 1.25), 'Excellent standing');
@@ -73,7 +85,11 @@ test('PH percentage: any number in range counts at its own value; higher is bett
   assert.equal(Scales.normalizeGrade(s, '100.5'), null);
   assert.equal(Scales.normalizeGrade(s, '-1'), null);
   assert.equal(Scales.normalizeGrade(s, 'inc'), 'INC');
-  const courses = [{ units: 3, grade: '90' }, { units: 3, grade: '80' }, { units: 2, grade: 'P' }];
+  const courses = [
+    { units: 3, grade: '90' },
+    { units: 3, grade: '80' },
+    { units: 2, grade: 'P' },
+  ];
   assert.equal(Scales.computeGpa(courses, s), 85);
   assert.equal(Scales.sumCourses(courses, s).creditedUnits, 8);
   assert.equal(Scales.standing(s, 85), 'Good standing');
@@ -88,7 +104,16 @@ test('PH 4.0: numeric grades match by value and DROP maps to W', () => {
   assert.equal(Scales.normalizeGrade(s, '3.50'), '3.5');
   assert.equal(Scales.normalizeGrade(s, '3.25'), null);
   assert.equal(Scales.normalizeGrade(s, 'drop'), 'W');
-  assert.equal(Scales.computeGpa([{ units: 3, grade: '4.0' }, { units: 3, grade: '0.0' }], s), 2);
+  assert.equal(
+    Scales.computeGpa(
+      [
+        { units: 3, grade: '4.0' },
+        { units: 3, grade: '0.0' },
+      ],
+      s
+    ),
+    2
+  );
   assert.equal(Scales.standing(s, 3.6), 'Excellent standing');
   assert.equal(Scales.tone(s, 0.5), 'danger');
 });
@@ -98,7 +123,12 @@ test('US letter grades: +/- points, NP and I not counted', () => {
   assert.equal(Scales.normalizeGrade(s, 'b+'), 'B+');
   assert.equal(Scales.normalizeGrade(s, 'inc'), 'I');
   assert.equal(Scales.normalizeGrade(s, 'E'), null);
-  const courses = [{ units: 3, grade: 'A' }, { units: 3, grade: 'B-' }, { units: 3, grade: 'NP' }, { units: 1, grade: 'P' }];
+  const courses = [
+    { units: 3, grade: 'A' },
+    { units: 3, grade: 'B-' },
+    { units: 3, grade: 'NP' },
+    { units: 1, grade: 'P' },
+  ];
   assert.equal(Scales.computeGpa(courses, s), 3.35);
   assert.equal(Scales.sumCourses(courses, s).creditedUnits, 7);
   assert.equal(Scales.standing(s, 3.35), 'Very good standing');

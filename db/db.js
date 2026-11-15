@@ -11,7 +11,7 @@ const {
   DB_NAME = 'gpa_app',
   DB_SSL = 'false',
   DB_SSL_CA,
-  DB_CONNECTION_LIMIT
+  DB_CONNECTION_LIMIT,
 } = process.env;
 
 // Hosted MySQL (TiDB Cloud, Aiven, Railway...) requires TLS. DB_SSL_CA may be a PEM string or a path to one.
@@ -34,7 +34,7 @@ const poolOptions = {
   enableKeepAlive: true,
   maxIdle: 3,
   idleTimeout: 60000,
-  ssl: sslOptions()
+  ssl: sslOptions(),
 };
 
 const pool = DATABASE_URL
@@ -45,7 +45,7 @@ const pool = DATABASE_URL
       user: DB_USER,
       password: DB_PASSWORD,
       database: DB_NAME,
-      ...poolOptions
+      ...poolOptions,
     });
 
 module.exports = pool;

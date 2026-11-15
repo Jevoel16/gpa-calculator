@@ -8,26 +8,30 @@ let additionalSubjects = [];
 let editingRecordId = null;
 
 const icons = {
-  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>',
+  trash:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>',
   edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
-  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  check:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
   book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/></svg>',
   copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>',
-  alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>',
-  close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>'
+  alert:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>',
+  close:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
 };
 
 const views = {
   term: { section: 'newTermSection', title: 'New Term' },
   cumulative: { section: 'cumulativeSection', title: 'Cumulative GPA' },
   history: { section: 'historySection', title: 'History' },
-  settings: { section: 'settingsSection', title: 'Settings' }
+  settings: { section: 'settingsSection', title: 'Settings' },
 };
 
 const paneHints = {
   termsPane: 'Choose which terms to include.',
   subjectsPane: "Add subjects that aren't part of a saved term.",
-  cgpaPane: ''
+  cgpaPane: '',
 };
 
 const MIN_PASSWORD = 8;
@@ -35,12 +39,15 @@ const MAX_PASSWORD = 128;
 
 const $ = id => document.getElementById(id);
 
-function escapeHtml(value){
-  return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
+function escapeHtml(value) {
+  return String(value ?? '').replace(
+    /[&<>"']/g,
+    ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]
+  );
 }
 
 // Errors are announced immediately and stay longer; every toast can be dismissed
-function toast(message, type = 'success'){
+function toast(message, type = 'success') {
   const el = document.createElement('div');
   el.className = `toast ${type}`;
   if (type === 'error') el.setAttribute('role', 'alert');
@@ -58,7 +65,7 @@ function toast(message, type = 'success'){
 }
 
 // Promise-based replacement for window.confirm() using the themed <dialog>
-function confirmAction(title, text, okLabel = 'Delete'){
+function confirmAction(title, text, okLabel = 'Delete') {
   const dialog = $('confirmDialog');
   $('confirmTitle').textContent = title;
   $('confirmText').textContent = text;
@@ -70,32 +77,34 @@ function confirmAction(title, text, okLabel = 'Delete'){
   });
 }
 
-function gradeChipClass(gpa, scale = termScale){
+function gradeChipClass(gpa, scale = termScale) {
   const tone = Scales.tone(scale, gpa);
   return tone ? `chip chip-${tone}` : 'chip';
 }
 
-function standing(gpa, scale = termScale){
+function standing(gpa, scale = termScale) {
   return Scales.standing(scale, gpa);
 }
 
-function formatGpa(gpa, scale = termScale){
+function formatGpa(gpa, scale = termScale) {
   return Scales.formatGpa(scale, gpa);
 }
 
 // Records saved before per-term scales have no scaleId and are on the original scale
-function scaleOf(record){
+function scaleOf(record) {
   return Scales.getScale(record && record.scaleId) || Scales.getScale(Scales.DEFAULT_SCALE_ID);
 }
 
-function scaleOptionsHtml(selectedId){
+function scaleOptionsHtml(selectedId) {
   return Scales.listScales()
-    .map(s => `<option value="${escapeHtml(s.id)}" ${s.id === selectedId ? 'selected' : ''}>${escapeHtml(s.name)}</option>`)
+    .map(
+      s => `<option value="${escapeHtml(s.id)}" ${s.id === selectedId ? 'selected' : ''}>${escapeHtml(s.name)}</option>`
+    )
     .join('');
 }
 
 // Groups neighbouring grades with the same label, e.g. "1.25–1.50 Very good"
-function scaleRows(scale){
+function scaleRows(scale) {
   const rows = [];
   // Percentage-style scales have no grade list, so their bands come from the standings
   if (scale.input === 'number') {
@@ -115,13 +124,13 @@ function scaleRows(scale){
   return rows.map(r => ({ grade: r.to ? `${r.from}–${r.to}` : r.from, label: r.label }));
 }
 
-function renderScalePanel(scale){
+function renderScalePanel(scale) {
   $('scaleList').innerHTML = scaleRows(scale)
     .map(r => `<div><span>${escapeHtml(r.grade)}</span><span>${escapeHtml(r.label)}</span></div>`)
     .join('');
 }
 
-async function api(path, opts={}){
+async function api(path, opts = {}) {
   const res = await fetch(path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts));
   if (res.status === 401) {
     window.location.href = '/login';
@@ -133,7 +142,7 @@ async function api(path, opts={}){
   return json;
 }
 
-async function loadMe(){
+async function loadMe() {
   const me = await api('/api/auth/me', { method: 'GET' });
   const initial = (me.name || '?').trim().charAt(0).toUpperCase();
   $('welcome').textContent = me.name;
@@ -153,12 +162,15 @@ async function loadMe(){
   if (!editingRecordId && !readCourses().length && !$('termName').value.trim()) setTermScale(defaultScaleId);
 }
 
-async function saveDefaultScale(){
+async function saveDefaultScale() {
   const select = $('defaultScale');
   const previous = defaultScaleId;
   select.disabled = true;
   try {
-    const saved = await api('/api/auth/preferences', { method: 'PUT', body: JSON.stringify({ defaultScale: select.value }) });
+    const saved = await api('/api/auth/preferences', {
+      method: 'PUT',
+      body: JSON.stringify({ defaultScale: select.value }),
+    });
     defaultScaleId = saved.defaultScale;
     toast(`New terms will use ${Scales.getScale(defaultScaleId).name}`);
   } catch (err) {
@@ -169,7 +181,7 @@ async function saveDefaultScale(){
   }
 }
 
-function showView(name){
+function showView(name) {
   // hasOwn so hashes like #constructor don't match inherited Object properties
   const key = Object.hasOwn(views, name) ? name : 'term';
   const view = views[key];
@@ -189,26 +201,32 @@ function showView(name){
 }
 
 // Views are addressed by the URL hash, so the nav links, back/forward and bookmarks all go through hashchange
-function goTo(name){
+function goTo(name) {
   if (location.hash === `#${name}`) showView(name);
   else location.hash = name;
 }
 
-
 // A dropdown for scales with a fixed list of grades, a text field for percentage-style scales
-function gradeControlHtml(selected = '', scale = termScale, attrs = 'class="course-grade" aria-label="Grade"'){
+function gradeControlHtml(selected = '', scale = termScale, attrs = 'class="course-grade" aria-label="Grade"') {
   const current = Scales.normalizeGrade(scale, selected) || '';
   if (scale.input === 'number') {
     const marks = scale.grades.map(g => g.value).join(', ');
     return `<input type="text" inputmode="decimal" autocomplete="off" maxlength="6" ${attrs} placeholder="e.g. 92" title="${scale.range.min}–${scale.range.max}, or ${escapeHtml(marks)}" value="${escapeHtml(current)}"/>`;
   }
-  return `<select ${attrs}><option value="">Grade</option>` +
-    scale.grades.map(g => `<option value="${escapeHtml(g.value)}" ${current === g.value ? 'selected' : ''}>${escapeHtml(g.value)}</option>`).join('') +
-    '</select>';
+  return (
+    `<select ${attrs}><option value="">Grade</option>` +
+    scale.grades
+      .map(
+        g =>
+          `<option value="${escapeHtml(g.value)}" ${current === g.value ? 'selected' : ''}>${escapeHtml(g.value)}</option>`
+      )
+      .join('') +
+    '</select>'
+  );
 }
 
 // Typed grades are flagged as soon as they aren't on the scale; other fields just clear their flag
-function bindCourseField(el){
+function bindCourseField(el) {
   el.addEventListener('input', () => {
     const typedGrade = el.classList.contains('course-grade') && el.tagName === 'INPUT' && el.value.trim();
     if (typedGrade && !Scales.normalizeGrade(termScale, el.value)) el.setAttribute('aria-invalid', 'true');
@@ -217,13 +235,13 @@ function bindCourseField(el){
   });
 }
 
-function renumberRows(){
+function renumberRows() {
   document.querySelectorAll('#coursesBody tr').forEach((tr, i) => {
     tr.querySelector('.course-row-index').textContent = i + 1;
   });
 }
 
-function addRow(values={}){
+function addRow(values = {}) {
   const tbody = $('coursesBody');
   const tr = document.createElement('tr');
   tr.innerHTML = `
@@ -234,7 +252,11 @@ function addRow(values={}){
     <td>${gradeControlHtml(values.grade)}</td>
     <td><button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Remove course" title="Remove">${icons.trash}</button></td>
   `;
-  tr.querySelector('button').addEventListener('click', () => { tr.remove(); renumberRows(); updateTermSummary(); });
+  tr.querySelector('button').addEventListener('click', () => {
+    tr.remove();
+    renumberRows();
+    updateTermSummary();
+  });
   tr.querySelectorAll('input, select').forEach(bindCourseField);
   tbody.appendChild(tr);
   renumberRows();
@@ -242,17 +264,19 @@ function addRow(values={}){
   return tr;
 }
 
-function readCourses(){
+function readCourses() {
   const rows = Array.from(document.querySelectorAll('#coursesBody tr'));
-  return rows.map(r => ({
-    code: r.querySelector('.course-code').value.trim(),
-    name: r.querySelector('.course-name').value.trim(),
-    units: Number(r.querySelector('.course-units').value) || 0,
-    grade: r.querySelector('.course-grade').value.trim()
-  })).filter(c => c.name && c.units > 0 && c.grade);
+  return rows
+    .map(r => ({
+      code: r.querySelector('.course-code').value.trim(),
+      name: r.querySelector('.course-name').value.trim(),
+      units: Number(r.querySelector('.course-units').value) || 0,
+      grade: r.querySelector('.course-grade').value.trim(),
+    }))
+    .filter(c => c.name && c.units > 0 && c.grade);
 }
 
-function updateTermSummary(){
+function updateTermSummary() {
   const courses = readCourses();
   const gpa = Scales.computeGpa(courses, termScale);
   const sum = Scales.sumCourses(courses, termScale);
@@ -260,13 +284,13 @@ function updateTermSummary(){
   // On higher-is-better scales an all-failing term really is 0, so "no GPA" means no graded units
   const hasGpa = sum.units > 0;
   $('termGpaDisplay').textContent = hasGpa ? formatGpa(gpa) : '—';
-  $('termGpaSub').textContent = hasGpa ? (standing(gpa) || 'Below passing') : 'Add courses to compute';
+  $('termGpaSub').textContent = hasGpa ? standing(gpa) || 'Below passing' : 'Add courses to compute';
   $('termUnitsDisplay').textContent = units;
   $('termCoursesDisplay').textContent = courses.length;
 }
 
 // Switching scales rebuilds each grade picker; grades the new scale doesn't have are cleared and flagged
-function setTermScale(id){
+function setTermScale(id) {
   const from = termScale;
   termScale = Scales.getScale(id) || Scales.getScale(defaultScaleId);
   $('termScale').innerHTML = scaleOptionsHtml(termScale.id);
@@ -286,21 +310,27 @@ function setTermScale(id){
   return cleared;
 }
 
-function changeTermScale(){
+function changeTermScale() {
   const cleared = setTermScale($('termScale').value);
-  if (cleared) toast(`Cleared ${cleared} grade${cleared === 1 ? "" : "s"} that don’t carry over to ${termScale.name}. Re-enter them on the new scale.`, "error");
+  if (cleared)
+    toast(
+      `Cleared ${cleared} grade${cleared === 1 ? '' : 's'} that don’t carry over to ${termScale.name}. Re-enter them on the new scale.`,
+      'error'
+    );
 }
 
-function resetTermForm(){
+function resetTermForm() {
   $('termName').value = '';
   $('coursesBody').innerHTML = '';
   setEditing(null);
   setTermScale(defaultScaleId);
   $('calcMsg').textContent = '';
-  addRow(); addRow(); addRow();
+  addRow();
+  addRow();
+  addRow();
 }
 
-function setEditing(record){
+function setEditing(record) {
   editingRecordId = record ? record.id : null;
   $('saveBtn').textContent = record ? 'Update record' : 'Save record';
   const banner = $('editingBanner');
@@ -308,7 +338,7 @@ function setEditing(record){
   banner.textContent = record ? `Editing “${record.termName}” — saving will update this record.` : '';
 }
 
-function loadTermData(record, { edit = false } = {}){
+function loadTermData(record, { edit = false } = {}) {
   $('termName').value = record.termName;
   $('coursesBody').innerHTML = '';
   setTermScale(scaleOf(record).id);
@@ -321,7 +351,7 @@ function loadTermData(record, { edit = false } = {}){
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-async function saveTerm(){
+async function saveTerm() {
   const termName = $('termName').value.trim();
   const courses = readCourses();
 
@@ -348,7 +378,7 @@ async function saveTerm(){
 }
 
 // Pasting grades copied from MyIIT into any New Term field fills the whole form
-function handleTermPaste(event){
+function handleTermPaste(event) {
   const target = event.target;
   if (!(target instanceof HTMLInputElement)) return;
   const text = event.clipboardData && event.clipboardData.getData('text/plain');
@@ -385,12 +415,15 @@ function handleTermPaste(event){
   $('calcMsg').textContent = '';
   const missing = markMissingUnits(rows);
   if (missing.length) missing[0].focus();
-  toast(`Pasted ${courses.length} course${courses.length === 1 ? '' : 's'} from MyIIT.` + note +
-    (missing.length ? ' Fill in the units to compute your GPA.' : '') +
-    (moreTerms ? ' Only the first term was used.' : ''));
+  toast(
+    `Pasted ${courses.length} course${courses.length === 1 ? '' : 's'} from MyIIT.` +
+      note +
+      (missing.length ? ' Fill in the units to compute your GPA.' : '') +
+      (moreTerms ? ' Only the first term was used.' : '')
+  );
 }
 
-function fillRow(row, course){
+function fillRow(row, course) {
   row.querySelector('.course-code').value = course.code;
   row.querySelector('.course-name').value = course.name;
   if (course.units) row.querySelector('.course-units').value = course.units;
@@ -398,7 +431,7 @@ function fillRow(row, course){
 }
 
 // Units aren't in the MyIIT copy, so empty ones are flagged until the user fills them in
-function markMissingUnits(rows){
+function markMissingUnits(rows) {
   const missing = [];
   for (const row of rows) {
     const input = row.querySelector('.course-units');
@@ -410,14 +443,13 @@ function markMissingUnits(rows){
   return missing;
 }
 
-
-async function loadHistory(){
+async function loadHistory() {
   allHistory = await api('/api/gpa/history');
   renderHistory();
   updateCumulativeTermsList();
 }
 
-function renderHistory(){
+function renderHistory() {
   const container = $('historyList');
   if (!allHistory.length) {
     container.innerHTML = `
@@ -463,7 +495,13 @@ function renderHistory(){
     card.querySelector('[data-action="edit"]').addEventListener('click', () => loadTermData(r, { edit: true }));
     card.querySelector('[data-action="copy"]').addEventListener('click', () => loadTermData(r));
     card.querySelector('[data-action="delete"]').addEventListener('click', async () => {
-      if (await confirmAction(`Delete “${r.termName}”?`, "This term will be removed from your history. This can't be undone.")) await deleteRecord(r.id);
+      if (
+        await confirmAction(
+          `Delete “${r.termName}”?`,
+          "This term will be removed from your history. This can't be undone."
+        )
+      )
+        await deleteRecord(r.id);
     });
     grid.appendChild(card);
   }
@@ -472,7 +510,7 @@ function renderHistory(){
   container.removeAttribute('aria-busy');
 }
 
-async function deleteRecord(id){
+async function deleteRecord(id) {
   try {
     await api(`/api/gpa/${id}`, { method: 'DELETE' });
     if (editingRecordId === id) resetTermForm();
@@ -483,13 +521,12 @@ async function deleteRecord(id){
   }
 }
 
-
-function cumulativeScale(){
+function cumulativeScale() {
   return Scales.getScale(cumulativeScaleId) || Scales.getScale(defaultScaleId);
 }
 
 // A CGPA only averages terms on one grading system, so the list shows that system's terms
-function setCumulativeScale(id){
+function setCumulativeScale(id) {
   const previousScale = cumulativeScale();
   cumulativeScaleId = (Scales.getScale(id) || Scales.getScale(defaultScaleId)).id;
   const scale = cumulativeScale();
@@ -497,12 +534,13 @@ function setCumulativeScale(id){
   $('additionalSubjectGrade').outerHTML = gradeControlHtml('', scale, 'id="additionalSubjectGrade" aria-label="Grade"');
   const before = additionalSubjects.length;
   additionalSubjects = additionalSubjects.filter(s => Scales.carryGrade(previousScale, scale, s.grade));
-  if (additionalSubjects.length < before) toast(`Removed additional subjects whose grades don’t carry over to ${scale.name}`, "error");
+  if (additionalSubjects.length < before)
+    toast(`Removed additional subjects whose grades don’t carry over to ${scale.name}`, 'error');
   displayAdditionalSubjects();
   updateCumulativeTermsList();
 }
 
-function updateCumulativeTermsList(){
+function updateCumulativeTermsList() {
   const list = $('termsCheckList');
   list.innerHTML = '';
   list.removeAttribute('aria-busy');
@@ -538,7 +576,7 @@ function updateCumulativeTermsList(){
   updateCumulativeGpa();
 }
 
-function addAdditionalSubject(){
+function addAdditionalSubject() {
   const nameInput = $('additionalSubjectName');
   const unitsInput = $('additionalSubjectUnits');
   const gradeInput = $('additionalSubjectGrade');
@@ -550,7 +588,8 @@ function addAdditionalSubject(){
   if (!name) return toast('Subject name is required', 'error');
   if (!units || units <= 0) return toast('Units must be a positive number', 'error');
   if (!grade) return toast('Grade is required', 'error');
-  if (!Scales.normalizeGrade(cumulativeScale(), grade)) return toast(`Enter a grade on ${cumulativeScale().name}`, 'error');
+  if (!Scales.normalizeGrade(cumulativeScale(), grade))
+    return toast(`Enter a grade on ${cumulativeScale().name}`, 'error');
 
   additionalSubjects.push({ name, units, grade: Scales.normalizeGrade(cumulativeScale(), grade) });
   nameInput.value = '';
@@ -562,13 +601,13 @@ function addAdditionalSubject(){
   updateCumulativeGpa();
 }
 
-function removeAdditionalSubject(index){
+function removeAdditionalSubject(index) {
   additionalSubjects.splice(index, 1);
   displayAdditionalSubjects();
   updateCumulativeGpa();
 }
 
-function displayAdditionalSubjects(){
+function displayAdditionalSubjects() {
   const tbody = $('additionalSubjectsBody');
   tbody.innerHTML = '';
 
@@ -589,7 +628,7 @@ function displayAdditionalSubjects(){
   });
 }
 
-function resetCumulativeDisplay(text = '0.00'){
+function resetCumulativeDisplay(text = '0.00') {
   $('totalUnitsDisplay').textContent = text === '0.00' ? '0' : text;
   $('gradePointsDisplay').textContent = text;
   $('cumulativeGpaDisplay').textContent = text;
@@ -598,13 +637,15 @@ function resetCumulativeDisplay(text = '0.00'){
 }
 
 // The "Name this CGPA" row only belongs on the Saved terms tab, and only once there is a CGPA to save
-function updateSaveRow(){
+function updateSaveRow() {
   const onTerms = !$('termsPane').classList.contains('hidden');
   $('cgpaSaveSection').classList.toggle('hidden', !(onTerms && window.currentCGPA));
 }
 
-function updateCumulativeGpa(){
-  const selectedTermIds = Array.from(document.querySelectorAll('.cumulative-term:checked')).map(el => Number(el.dataset.termId));
+function updateCumulativeGpa() {
+  const selectedTermIds = Array.from(document.querySelectorAll('.cumulative-term:checked')).map(el =>
+    Number(el.dataset.termId)
+  );
   if (selectedTermIds.length === 0 && additionalSubjects.length === 0) {
     resetCumulativeDisplay();
     return;
@@ -615,12 +656,12 @@ function updateCumulativeGpa(){
 // Ignores responses from earlier calculations that finish after a newer one
 let cumulativeRequestId = 0;
 
-async function calculateCumulativeGpaServer(termIds, additionalSubjects = []){
+async function calculateCumulativeGpaServer(termIds, additionalSubjects = []) {
   const requestId = ++cumulativeRequestId;
   try {
     const response = await api('/api/gpa/calculate-cumulative', {
       method: 'POST',
-      body: JSON.stringify({ scaleId: cumulativeScale().id, termIds, additionalSubjects })
+      body: JSON.stringify({ scaleId: cumulativeScale().id, termIds, additionalSubjects }),
     });
     if (requestId !== cumulativeRequestId) return;
 
@@ -630,14 +671,15 @@ async function calculateCumulativeGpaServer(termIds, additionalSubjects = []){
     $('cumulativeGpaDisplay').textContent = formatGpa(response.cumulativeGpa, scale);
 
     // The server recomputes the CGPA from these inputs when it is saved
-    window.currentCGPA = response.gpaUnits > 0 ? { scaleId: scale.id, termIds, additionalSubjects: [...additionalSubjects] } : null;
+    window.currentCGPA =
+      response.gpaUnits > 0 ? { scaleId: scale.id, termIds, additionalSubjects: [...additionalSubjects] } : null;
     updateSaveRow();
   } catch (err) {
     if (requestId === cumulativeRequestId) resetCumulativeDisplay('Error');
   }
 }
 
-async function loadCgpaRecords(){
+async function loadCgpaRecords() {
   const records = await api('/api/gpa/cgpa');
   const container = $('cgpaRecordsList');
   container.removeAttribute('aria-busy');
@@ -646,12 +688,16 @@ async function loadCgpaRecords(){
     container.innerHTML = '<p class="note">No saved CGPA records yet.</p>';
     return;
   }
-  const rows = records.map(r => `
+  const rows = records
+    .map(
+      r => `
     <tr data-id="${r.id}">
       <td><strong>${escapeHtml(r.recordName)}</strong><br/><span class="note-sm">${escapeHtml(new Date(r.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }))} · ${r.totalUnits} units</span></td>
       <td class="num">${formatGpa(r.cumulativeGpa, scaleOf(r))}</td>
       <td><button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Delete CGPA record" title="Delete">${icons.trash}</button></td>
-    </tr>`).join('');
+    </tr>`
+    )
+    .join('');
   container.innerHTML = `
     <div class="table-wrap"><table class="table">
       <thead><tr><th>Record</th><th class="num">CGPA</th><th class="col-action"><span class="sr-only">Delete</span></th></tr></thead>
@@ -660,7 +706,13 @@ async function loadCgpaRecords(){
   container.querySelectorAll('tbody tr').forEach((tr, i) => {
     tr.querySelector('button').addEventListener('click', async () => {
       const record = records[i];
-      if (!(await confirmAction(`Delete “${record.recordName}”?`, "This saved CGPA record will be removed. This can't be undone."))) return;
+      if (
+        !(await confirmAction(
+          `Delete “${record.recordName}”?`,
+          "This saved CGPA record will be removed. This can't be undone."
+        ))
+      )
+        return;
       try {
         await api(`/api/gpa/cgpa/${record.id}`, { method: 'DELETE' });
         toast('CGPA record deleted');
@@ -672,7 +724,7 @@ async function loadCgpaRecords(){
   });
 }
 
-async function saveCgpa(){
+async function saveCgpa() {
   const recordName = $('cgpaRecordName').value.trim();
   if (!recordName) return toast('Record name is required', 'error');
   if (!window.currentCGPA) return toast('No CGPA calculated. Select terms or add subjects.', 'error');
@@ -680,7 +732,10 @@ async function saveCgpa(){
   const btn = $('saveCgpaBtn');
   btn.disabled = true;
   try {
-    const saved = await api('/api/gpa/save-cgpa', { method: 'POST', body: JSON.stringify({ recordName, ...window.currentCGPA }) });
+    const saved = await api('/api/gpa/save-cgpa', {
+      method: 'POST',
+      body: JSON.stringify({ recordName, ...window.currentCGPA }),
+    });
     toast(`Saved “${saved.recordName}” · CGPA ${formatGpa(saved.cumulativeGpa, scaleOf(saved))}`);
     $('cgpaRecordName').value = '';
     await loadCgpaRecords();
@@ -691,7 +746,7 @@ async function saveCgpa(){
   }
 }
 
-function showPane(paneId){
+function showPane(paneId) {
   document.querySelectorAll('.seg').forEach(seg => {
     const active = seg.dataset.pane === paneId;
     seg.classList.toggle('active', active);
@@ -703,8 +758,7 @@ function showPane(paneId){
   updateSaveRow();
 }
 
-
-async function changePassword(event){
+async function changePassword(event) {
   event.preventDefault();
   const currentPassword = $('currentPassword').value;
   const newPassword = $('newPassword').value;
@@ -714,7 +768,8 @@ async function changePassword(event){
 
   let problem = '';
   if (!currentPassword) problem = 'Enter your current password';
-  else if (newPassword.length < MIN_PASSWORD || newPassword.length > MAX_PASSWORD) problem = `New password must be ${MIN_PASSWORD}–${MAX_PASSWORD} characters`;
+  else if (newPassword.length < MIN_PASSWORD || newPassword.length > MAX_PASSWORD)
+    problem = `New password must be ${MIN_PASSWORD}–${MAX_PASSWORD} characters`;
   else if (newPassword !== confirmPassword) problem = "New passwords don't match";
   else if (newPassword === currentPassword) problem = 'New password must be different from the current one';
   if (problem) {
@@ -735,8 +790,7 @@ async function changePassword(event){
   }
 }
 
-
-function initializeEventListeners(){
+function initializeEventListeners() {
   window.addEventListener('hashchange', () => {
     showView(location.hash.slice(1));
     // Moves screen readers and keyboard focus to the new view, like a page load would
@@ -756,7 +810,11 @@ function initializeEventListeners(){
   });
   $('accountBtn').addEventListener('click', () => goTo('settings'));
   $('passwordForm').addEventListener('submit', changePassword);
-  $('additionalSubjectGrade').outerHTML = gradeControlHtml('', cumulativeScale(), 'id="additionalSubjectGrade" aria-label="Grade"');
+  $('additionalSubjectGrade').outerHTML = gradeControlHtml(
+    '',
+    cumulativeScale(),
+    'id="additionalSubjectGrade" aria-label="Grade"'
+  );
   $('cumulativeScale').innerHTML = scaleOptionsHtml(cumulativeScale().id);
   $('defaultScale').innerHTML = scaleOptionsHtml(defaultScaleId);
   $('historyScale').innerHTML = scaleOptionsHtml(defaultScaleId);
@@ -766,8 +824,13 @@ function initializeEventListeners(){
   $('historyScale').addEventListener('change', e => renderScalePanel(Scales.getScale(e.target.value)));
   $('defaultScale').addEventListener('change', saveDefaultScale);
   $('addSubjectBtn').addEventListener('click', addAdditionalSubject);
-  $('additionalSubjectName').addEventListener('keydown', e => { if (e.key === 'Enter') addAdditionalSubject(); });
-  $('addRowBtn').addEventListener('click', () => { addRow(); document.querySelector('#coursesBody tr:last-child .course-name').focus(); });
+  $('additionalSubjectName').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addAdditionalSubject();
+  });
+  $('addRowBtn').addEventListener('click', () => {
+    addRow();
+    document.querySelector('#coursesBody tr:last-child .course-name').focus();
+  });
   $('clearBtn').addEventListener('click', resetTermForm);
   $('saveBtn').addEventListener('click', saveTerm);
   $('newTermSection').addEventListener('paste', handleTermPaste);
@@ -782,7 +845,7 @@ function initializeEventListeners(){
 
 const loadingMarkup = {};
 
-function showLoadError(container, title, message, retry){
+function showLoadError(container, title, message, retry) {
   container.removeAttribute('aria-busy');
   container.innerHTML = `
     <div class="empty-state is-error" role="alert">
@@ -795,7 +858,7 @@ function showLoadError(container, title, message, retry){
 }
 
 // Shows the skeleton again, then reloads; on failure each container gets its own error and retry
-async function loadInto(ids, load, title){
+async function loadInto(ids, load, title) {
   for (const id of ids) {
     $(id).innerHTML = loadingMarkup[id];
     $(id).setAttribute('aria-busy', 'true');
@@ -810,7 +873,7 @@ async function loadInto(ids, load, title){
   }
 }
 
-async function initializePage(){
+async function initializePage() {
   for (const id of ['historyList', 'termsCheckList', 'cgpaRecordsList']) loadingMarkup[id] = $(id).innerHTML;
   showView(location.hash.slice(1));
   showPane('termsPane');
@@ -821,7 +884,7 @@ async function initializePage(){
   } catch {}
   await Promise.all([
     loadInto(['historyList', 'termsCheckList'], loadHistory, "Couldn't load your saved terms"),
-    loadInto(['cgpaRecordsList'], loadCgpaRecords, "Couldn't load your saved CGPA records")
+    loadInto(['cgpaRecordsList'], loadCgpaRecords, "Couldn't load your saved CGPA records"),
   ]);
 }
 

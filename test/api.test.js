@@ -16,19 +16,25 @@ test.before(async () => {
 test.after(() => server.close());
 
 const get = (path, headers = {}) => fetch(base + path, { headers, redirect: 'manual' });
-const post = (path, body, headers = {}) => fetch(base + path, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json', ...headers },
-  body: typeof body === 'string' ? body : JSON.stringify(body),
-  redirect: 'manual'
-});
+const post = (path, body, headers = {}) =>
+  fetch(base + path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...headers },
+    body: typeof body === 'string' ? body : JSON.stringify(body),
+    redirect: 'manual',
+  });
 
 test('private API routes require a session', async () => {
   for (const path of ['/api/auth/me', '/api/gpa/history', '/api/gpa/cgpa']) {
     const res = await get(path);
     assert.equal(res.status, 401, path);
   }
-  for (const [method, path] of [['DELETE', '/api/gpa/1'], ['PUT', '/api/gpa/1'], ['POST', '/api/gpa/save'], ['POST', '/api/auth/password']]) {
+  for (const [method, path] of [
+    ['DELETE', '/api/gpa/1'],
+    ['PUT', '/api/gpa/1'],
+    ['POST', '/api/gpa/save'],
+    ['POST', '/api/auth/password'],
+  ]) {
     const res = await fetch(base + path, { method, headers: { 'Content-Type': 'application/json' }, body: '{}' });
     assert.equal(res.status, 401, `${method} ${path}`);
   }
@@ -82,7 +88,7 @@ test('bad input is rejected before touching the database', async () => {
   const formBody = await fetch(base + '/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: 'identifier=a&password=b'
+    body: 'identifier=a&password=b',
   });
   assert.equal(formBody.status, 400);
 });
@@ -133,7 +139,13 @@ test('unknown pages get a real 404', async () => {
 });
 
 test('static assets and the web manifest are served', async () => {
-  for (const path of ['/manifest.webmanifest', '/favicon.ico', '/fonts/inter-latin-var.woff2', '/og-image.png', '/icons/icon-192.png']) {
+  for (const path of [
+    '/manifest.webmanifest',
+    '/favicon.ico',
+    '/fonts/inter-latin-var.woff2',
+    '/og-image.png',
+    '/icons/icon-192.png',
+  ]) {
     const res = await get(path);
     assert.equal(res.status, 200, path);
   }

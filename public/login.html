@@ -1,93 +1,148 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sign in • GPA Calculator</title>
-  <meta name="description" content="Compute your term GPA and cumulative GPA, and keep a private history of your grades. Sign in with a username and password, Google or GitHub." />
-  <meta name="theme-color" content="#4f46e5" />
-  <meta property="og:site_name" content="GPA Calculator" />
-  <meta property="og:title" content="GPA Calculator" />
-  <meta property="og:description" content="Compute term and cumulative GPA, and keep a private history of your grades." />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://gpa-calculator.jevoelorbilla.dev/login" />
-  <meta property="og:image" content="https://gpa-calculator.jevoelorbilla.dev/og-image.png" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="GPA Calculator: compute your term and cumulative GPA" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <link rel="canonical" href="https://gpa-calculator.jevoelorbilla.dev/login" />
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "GPA Calculator",
-      "url": "https://gpa-calculator.jevoelorbilla.dev/login",
-      "image": "https://gpa-calculator.jevoelorbilla.dev/og-image.png",
-      "description": "Compute your term GPA and cumulative GPA on the MSU-IIT scale, other Philippine scales or US letter grades, and keep a private history of your grades.",
-      "applicationCategory": "EducationalApplication",
-      "operatingSystem": "Any",
-      "browserRequirements": "Requires a modern web browser",
-      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "PHP" }
-    }
-  </script>
-  <link rel="preload" href="/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="icon" href="/favicon.ico" sizes="32x32" />
-  <link rel="icon" type="image/svg+xml" href="/logo.svg" />
-  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-  <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="stylesheet" href="/style.css" />
-  <script src="/darkmode.js"></script>
-  <!-- Vercel Web Analytics: served same-origin by Vercel, so the strict CSP still holds -->
-  <script defer src="/_vercel/insights/script.js"></script>
-</head>
-<body>
-  <main class="auth-page">
-    <section class="auth-panel">
-      <div class="topbar">
-        <button id="themeToggleBtn" class="btn btn-ghost btn-icon" type="button" aria-label="Toggle theme"></button>
-      </div>
-
-      <div class="auth-card">
-        <span class="brand-mark">
-          <svg viewBox="11 8 48 48" fill="currentColor" aria-hidden="true"><rect x="14" y="38" width="9" height="12" rx="3" opacity=".55"/><rect x="27.5" y="30" width="9" height="20" rx="3" opacity=".8"/><rect x="41" y="25" width="9" height="25" rx="3"/><path d="M45.5 10.5 56 15.5 45.5 20.5 35 15.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M56 15.5v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="56" cy="22.5" r="1.6"/></svg>
-        </span>
-        <h1>Sign in to GPA Calculator</h1>
-
-        <div class="oauth-row">
-          <a class="google-btn" href="/api/auth/google">
-            <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.5z"/></svg>
-            Google
-          </a>
-          <a class="google-btn" href="/api/auth/github">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.7 1.7.3 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z"/></svg>
-            GitHub
-          </a>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sign in • GPA Calculator</title>
+    <meta
+      name="description"
+      content="Compute your term GPA and cumulative GPA, and keep a private history of your grades. Sign in with a username and password, Google or GitHub."
+    />
+    <meta name="theme-color" content="#4f46e5" />
+    <meta property="og:site_name" content="GPA Calculator" />
+    <meta property="og:title" content="GPA Calculator" />
+    <meta
+      property="og:description"
+      content="Compute term and cumulative GPA, and keep a private history of your grades."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://gpa-calculator.jevoelorbilla.dev/login" />
+    <meta property="og:image" content="https://gpa-calculator.jevoelorbilla.dev/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="GPA Calculator: compute your term and cumulative GPA" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href="https://gpa-calculator.jevoelorbilla.dev/login" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "GPA Calculator",
+        "url": "https://gpa-calculator.jevoelorbilla.dev/login",
+        "image": "https://gpa-calculator.jevoelorbilla.dev/og-image.png",
+        "description": "Compute your term GPA and cumulative GPA on the MSU-IIT scale, other Philippine scales or US letter grades, and keep a private history of your grades.",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires a modern web browser",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "PHP" }
+      }
+    </script>
+    <link rel="preload" href="/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/darkmode.js"></script>
+    <!-- Vercel Web Analytics: served same-origin by Vercel, so the strict CSP still holds -->
+    <script defer src="/_vercel/insights/script.js"></script>
+  </head>
+  <body>
+    <main class="auth-page">
+      <section class="auth-panel">
+        <div class="topbar">
+          <button id="themeToggleBtn" class="btn btn-ghost btn-icon" type="button" aria-label="Toggle theme"></button>
         </div>
 
-        <div class="auth-divider">or</div>
+        <div class="auth-card">
+          <span class="brand-mark">
+            <svg viewBox="11 8 48 48" fill="currentColor" aria-hidden="true">
+              <rect x="14" y="38" width="9" height="12" rx="3" opacity=".55" />
+              <rect x="27.5" y="30" width="9" height="20" rx="3" opacity=".8" />
+              <rect x="41" y="25" width="9" height="25" rx="3" />
+              <path
+                d="M45.5 10.5 56 15.5 45.5 20.5 35 15.5z"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linejoin="round"
+              />
+              <path d="M56 15.5v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <circle cx="56" cy="22.5" r="1.6" />
+            </svg>
+          </span>
+          <h1>Sign in to GPA Calculator</h1>
 
-        <form id="loginForm" class="auth-form" novalidate>
-          <div class="field">
-            <label for="identifier">Username or email</label>
-            <input id="identifier" name="identifier" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="191" />
+          <div class="oauth-row">
+            <a class="google-btn" href="/api/auth/google">
+              <svg viewBox="0 0 48 48" aria-hidden="true">
+                <path
+                  fill="#FFC107"
+                  d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.5z"
+                />
+                <path
+                  fill="#FF3D00"
+                  d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"
+                />
+                <path
+                  fill="#4CAF50"
+                  d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"
+                />
+                <path
+                  fill="#1976D2"
+                  d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.5z"
+                />
+              </svg>
+              Google
+            </a>
+            <a class="google-btn" href="/api/auth/github">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path
+                  d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.7 1.7.3 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z"
+                />
+              </svg>
+              GitHub
+            </a>
           </div>
-          <div class="field">
-            <label for="password">Password</label>
-            <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="128" />
-          </div>
-          <button id="loginBtn" class="btn btn-block" type="submit">Sign in</button>
-        </form>
 
-        <div id="msg" class="alert" role="alert"></div>
-        <noscript><p class="alert">Please enable JavaScript to sign in.</p></noscript>
+          <div class="auth-divider">or</div>
 
-        <p class="auth-hint">New here? Continue with Google or GitHub to create your account.</p>
-        <p id="policy" class="auth-hint"></p>
-      </div>
-    </section>
-  </main>
+          <form id="loginForm" class="auth-form" novalidate>
+            <div class="field">
+              <label for="identifier">Username or email</label>
+              <input
+                id="identifier"
+                name="identifier"
+                type="text"
+                autocomplete="username"
+                autocapitalize="none"
+                spellcheck="false"
+                required
+                maxlength="191"
+              />
+            </div>
+            <div class="field">
+              <label for="password">Password</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                required
+                maxlength="128"
+              />
+            </div>
+            <button id="loginBtn" class="btn btn-block" type="submit">Sign in</button>
+          </form>
 
-  <script src="/login.js"></script>
-</body>
+          <div id="msg" class="alert" role="alert"></div>
+          <noscript><p class="alert">Please enable JavaScript to sign in.</p></noscript>
+
+          <p class="auth-hint">New here? Continue with Google or GitHub to create your account.</p>
+          <p id="policy" class="auth-hint"></p>
+        </div>
+      </section>
+    </main>
+
+    <script src="/login.js"></script>
+  </body>
 </html>

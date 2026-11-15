@@ -16,14 +16,13 @@ const {
   GITHUB_CLIENT_ID,
   GITHUB_CLIENT_SECRET,
   ALLOWED_EMAIL_DOMAINS = '',
-  ALLOW_EXTERNAL_EMAILS = 'true'
+  ALLOW_EXTERNAL_EMAILS = 'true',
 } = process.env;
 
 const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || `${APP_URL}/api/auth/google/callback`;
 const GITHUB_REDIRECT_URI = process.env.GITHUB_REDIRECT_URI || `${APP_URL}/api/auth/github/callback`;
 
-const allowedDomains = ALLOWED_EMAIL_DOMAINS
-  .split(',')
+const allowedDomains = ALLOWED_EMAIL_DOMAINS.split(',')
   .map(s => s.trim().toLowerCase())
   .filter(Boolean);
 
@@ -54,10 +53,11 @@ async function findOrCreateUser(payload) {
   }
 
   const name = (payload.name || email.split('@')[0]).slice(0, 100);
-  const [result] = await pool.query(
-    'INSERT INTO users (name, email, google_sub) VALUES (?, ?, ?)',
-    [name, email, payload.sub]
-  );
+  const [result] = await pool.query('INSERT INTO users (name, email, google_sub) VALUES (?, ?, ?)', [
+    name,
+    email,
+    payload.sub,
+  ]);
   return result.insertId;
 }
 
@@ -82,10 +82,11 @@ async function findOrCreateGithubUser(ghUser, verifiedEmail) {
   }
 
   const name = (ghUser.name || ghUser.login).slice(0, 100);
-  const [result] = await pool.query(
-    'INSERT INTO users (name, email, github_id) VALUES (?, ?, ?)',
-    [name, email, ghUser.id]
-  );
+  const [result] = await pool.query('INSERT INTO users (name, email, github_id) VALUES (?, ?, ?)', [
+    name,
+    email,
+    ghUser.id,
+  ]);
   return result.insertId;
 }
 
@@ -115,13 +116,18 @@ function beginOAuth(req, res, authUrl) {
 async function logIn(req, res, userId) {
   const [rows] = await pool.query('SELECT username, password_hash FROM users WHERE id = ?', [userId]);
   const needsSetup = !rows.length || !rows[0].username || !rows[0].password_hash;
-  startSession(req, needsSetup ? { pendingUserId: userId } : { userId }, err => {
-    if (err) {
-      console.error(err);
-      return res.redirect('/login?error=oauth');
-    }
-    res.redirect(needsSetup ? '/setup' : '/dashboard');
-  }, needsSetup ? SETUP_SESSION_MS : undefined);
+  startSession(
+    req,
+    needsSetup ? { pendingUserId: userId } : { userId },
+    err => {
+      if (err) {
+        console.error(err);
+        return res.redirect('/login?error=oauth');
+      }
+      res.redirect(needsSetup ? '/setup' : '/dashboard');
+    },
+    needsSetup ? SETUP_SESSION_MS : undefined
+  );
 }
 
 const USERNAME_PATTERN = /^[A-Za-z0-9_.]{3,30}$/;
@@ -150,7 +156,7 @@ async function isThrottled(keys) {
 function loginLimits(req, identifier) {
   return [
     { key: `login|${req.ip}|${identifier}`, max: MAX_FAILED_PER_ACCOUNT },
-    { key: `login-ip|${req.ip}`, max: MAX_FAILED_PER_IP }
+    { key: `login-ip|${req.ip}`, max: MAX_FAILED_PER_IP },
   ];
 }
 
@@ -167,7 +173,7 @@ router.get('/google', (req, res) => {
     state,
     // The hd hint limits Google's account chooser to the school domain, so skip it when external accounts are allowed
     ...(allowExternal ? {} : { hd: allowedDomains[0] }),
-    prompt: 'select_account'
+    prompt: 'select_account',
   });
 
   beginOAuth(req, res, url);
@@ -187,7 +193,7 @@ router.get('/google/callback', async (req, res) => {
     const { tokens } = await client.getToken(code);
     const ticket = await client.verifyIdToken({
       idToken: tokens.id_token,
-      audience: GOOGLE_CLIENT_ID
+      audience: GOOGLE_CLIENT_ID,
     });
     const payload = ticket.getPayload();
 
@@ -212,7 +218,7 @@ router.get('/github', (req, res) => {
     client_id: GITHUB_CLIENT_ID,
     redirect_uri: GITHUB_REDIRECT_URI,
     scope: 'read:user user:email',
-    state
+    state,
   });
 
   beginOAuth(req, res, `https://github.com/login/oauth/authorize?${params}`);
@@ -237,8 +243,8 @@ router.get('/github/callback', async (req, res) => {
         client_id: GITHUB_CLIENT_ID,
         client_secret: GITHUB_CLIENT_SECRET,
         code,
-        redirect_uri: GITHUB_REDIRECT_URI
-      })
+        redirect_uri: GITHUB_REDIRECT_URI,
+      }),
     });
     const tokenData = await tokenRes.json();
     if (!tokenData.access_token) {
@@ -248,11 +254,11 @@ router.get('/github/callback', async (req, res) => {
     const headers = {
       Authorization: `Bearer ${tokenData.access_token}`,
       Accept: 'application/vnd.github+json',
-      'User-Agent': 'gpa-calculator' // GitHub's API rejects requests without one
+      'User-Agent': 'gpa-calculator', // GitHub's API rejects requests without one
     };
     const [userRes, emailsRes] = await Promise.all([
       fetch('https://api.github.com/user', { headers }),
-      fetch('https://api.github.com/user/emails', { headers })
+      fetch('https://api.github.com/user/emails', { headers }),
     ]);
     if (!userRes.ok || !emailsRes.ok) {
       throw new Error(`GitHub API error: ${userRes.status}/${emailsRes.status}`);
@@ -276,7 +282,9 @@ router.get('/github/callback', async (req, res) => {
 // Sign in with a username (or email) and password
 router.post('/login', async (req, res) => {
   try {
-    const identifier = String(req.body.identifier ?? '').trim().toLowerCase();
+    const identifier = String(req.body.identifier ?? '')
+      .trim()
+      .toLowerCase();
     const { password } = req.body;
     if (!identifier || typeof password !== 'string' || !password || password.length > MAX_PASSWORD) {
       return res.status(400).json({ error: 'Enter your username or email and your password' });
@@ -290,7 +298,7 @@ router.post('/login', async (req, res) => {
     const user = rows[0];
 
     if (!user || !user.password_hash) {
-      dummyHash = dummyHash || await hashPassword('not-a-real-password');
+      dummyHash = dummyHash || (await hashPassword('not-a-real-password'));
       await verifyPassword(password, dummyHash);
     }
     if (!user || !user.password_hash || !(await verifyPassword(password, user.password_hash))) {
@@ -346,10 +354,11 @@ router.post('/setup', async (req, res) => {
     if (taken.length) return res.status(409).json({ error: 'That username is taken' });
 
     try {
-      await pool.query(
-        'UPDATE users SET username = ?, password_hash = ? WHERE id = ?',
-        [username.toLowerCase(), await hashPassword(password), userId]
-      );
+      await pool.query('UPDATE users SET username = ?, password_hash = ? WHERE id = ?', [
+        username.toLowerCase(),
+        await hashPassword(password),
+        userId,
+      ]);
     } catch (err) {
       if (err.code === 'ER_DUP_ENTRY') return res.status(409).json({ error: 'That username is taken' });
       throw err;
@@ -372,7 +381,7 @@ router.post('/setup', async (req, res) => {
 router.get('/status', (req, res) => {
   res.json({
     signedIn: Boolean(req.session && req.session.userId),
-    pendingSetup: Boolean(req.session && req.session.pendingUserId)
+    pendingSetup: Boolean(req.session && req.session.pendingUserId),
   });
 });
 
@@ -419,10 +428,10 @@ router.post('/password', async (req, res) => {
     await rateLimit.clear(limit.key);
     await pool.query('UPDATE users SET password_hash = ? WHERE id = ?', [await hashPassword(newPassword), userId]);
     // express-mysql-session keeps each session as JSON text, so other sessions of this account can be found by userId
-    await pool.query(
-      "DELETE FROM sessions WHERE session_id <> ? AND JSON_EXTRACT(data, '$.userId') = ?",
-      [req.sessionID, userId]
-    );
+    await pool.query("DELETE FROM sessions WHERE session_id <> ? AND JSON_EXTRACT(data, '$.userId') = ?", [
+      req.sessionID,
+      userId,
+    ]);
 
     startSession(req, { userId }, err => {
       if (err) {

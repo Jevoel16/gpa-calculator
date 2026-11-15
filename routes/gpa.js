@@ -79,15 +79,14 @@ async function computeCumulative(userId, requestedScaleId, termIds, additionalSu
     scale = await resolveScale(userId, requestedScaleId);
     if (!scale) throw new CumulativeError('Unknown grading system');
   } else {
-    scale = termScaleIds.length === 1
-      ? await resolveScale(userId, termScaleIds[0])
-      : await scaleForRequest(userId, null);
+    scale =
+      termScaleIds.length === 1 ? await resolveScale(userId, termScaleIds[0]) : await scaleForRequest(userId, null);
   }
   if (!scale || termScaleIds.some(id => id !== scale.id)) {
     throw new CumulativeError('Selected terms use different grading systems. Pick terms from one grading system.');
   }
 
-  const extras = Array.isArray(additionalSubjects) ? (sanitizeCourses(additionalSubjects, scale) || []) : [];
+  const extras = Array.isArray(additionalSubjects) ? sanitizeCourses(additionalSubjects, scale) || [] : [];
 
   let totalGradePoints = 0;
   let gpaUnits = 0;
@@ -116,7 +115,7 @@ async function computeCumulative(userId, requestedScaleId, termIds, additionalSu
     totalGradePoints: Number(totalGradePoints.toFixed(2)),
     termsIncluded: termsData,
     termCount: termsData.length,
-    additionalSubjectsIncluded: extras
+    additionalSubjectsIncluded: extras,
   };
 }
 
@@ -131,7 +130,9 @@ router.post('/save', requireAuth, async (req, res) => {
     if (!scale) return res.status(400).json({ error: 'Unknown grading system' });
     const courses = sanitizeCourses(req.body.courses, scale);
     if (!courses) {
-      return res.status(400).json({ error: `Each course needs a name, valid units and a grade on the ${scale.name} scale` });
+      return res
+        .status(400)
+        .json({ error: `Each course needs a name, valid units and a grade on the ${scale.name} scale` });
     }
 
     const gpa = computeGpa(courses, scale);
@@ -146,7 +147,7 @@ router.post('/save', requireAuth, async (req, res) => {
       scaleId: scale.id,
       gpa,
       courses,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     });
   } catch (err) {
     console.error(err);
@@ -162,14 +163,16 @@ router.get('/history', requireAuth, async (req, res) => {
       [req.session.userId]
     );
 
-    res.json(rows.map(r => ({
-      id: r.id,
-      termName: r.termName,
-      scaleId: r.scaleId,
-      gpa: Number(r.gpa),
-      courses: parseCourses(r.coursesJson),
-      createdAt: r.createdAt
-    })));
+    res.json(
+      rows.map(r => ({
+        id: r.id,
+        termName: r.termName,
+        scaleId: r.scaleId,
+        gpa: Number(r.gpa),
+        courses: parseCourses(r.coursesJson),
+        createdAt: r.createdAt,
+      }))
+    );
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to retrieve history' });
@@ -179,7 +182,12 @@ router.get('/history', requireAuth, async (req, res) => {
 // Calculate cumulative GPA from selected terms and additional subjects
 router.post('/calculate-cumulative', requireAuth, async (req, res) => {
   try {
-    const result = await computeCumulative(req.session.userId, req.body.scaleId, req.body.termIds, req.body.additionalSubjects);
+    const result = await computeCumulative(
+      req.session.userId,
+      req.body.scaleId,
+      req.body.termIds,
+      req.body.additionalSubjects
+    );
     if (!result.termCount && !result.additionalSubjectsIncluded.length) {
       return res.status(400).json({ error: 'Select at least one term or add additional subjects' });
     }
@@ -198,20 +206,24 @@ router.get('/cgpa', requireAuth, async (req, res) => {
       'SELECT id, record_name AS recordName, cgpa_data AS cgpaData, cgpa, scale_id AS scaleId, created_at AS createdAt FROM cgpa_records WHERE user_id = ? ORDER BY created_at DESC',
       [req.session.userId]
     );
-    res.json(rows.map(r => {
-      let data = {};
-      try { data = typeof r.cgpaData === 'string' ? JSON.parse(r.cgpaData) : (r.cgpaData || {}); } catch {}
-      return {
-        id: r.id,
-        recordName: r.recordName,
-        scaleId: r.scaleId,
-        cumulativeGpa: Number(r.cgpa),
-        totalUnits: Number(data.totalUnits) || 0,
-        termCount: Array.isArray(data.termsIncluded) ? data.termsIncluded.length : 0,
-        subjectCount: Array.isArray(data.additionalSubjectsIncluded) ? data.additionalSubjectsIncluded.length : 0,
-        createdAt: r.createdAt
-      };
-    }));
+    res.json(
+      rows.map(r => {
+        let data = {};
+        try {
+          data = typeof r.cgpaData === 'string' ? JSON.parse(r.cgpaData) : r.cgpaData || {};
+        } catch {}
+        return {
+          id: r.id,
+          recordName: r.recordName,
+          scaleId: r.scaleId,
+          cumulativeGpa: Number(r.cgpa),
+          totalUnits: Number(data.totalUnits) || 0,
+          termCount: Array.isArray(data.termsIncluded) ? data.termsIncluded.length : 0,
+          subjectCount: Array.isArray(data.additionalSubjectsIncluded) ? data.additionalSubjectsIncluded.length : 0,
+          createdAt: r.createdAt,
+        };
+      })
+    );
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to retrieve CGPA records' });
@@ -227,7 +239,8 @@ router.post('/save-cgpa', requireAuth, async (req, res) => {
     }
 
     // Older clients send the previous calculation's termsIncluded/additionalSubjectsIncluded instead of the inputs
-    const termIds = req.body.termIds ?? (Array.isArray(req.body.termsIncluded) ? req.body.termsIncluded.map(t => t && t.id) : []);
+    const termIds =
+      req.body.termIds ?? (Array.isArray(req.body.termsIncluded) ? req.body.termsIncluded.map(t => t && t.id) : []);
     const subjects = req.body.additionalSubjects ?? req.body.additionalSubjectsIncluded ?? [];
     const result = await computeCumulative(req.session.userId, req.body.scaleId, termIds, subjects);
 
@@ -249,7 +262,7 @@ router.post('/save-cgpa', requireAuth, async (req, res) => {
       cumulativeGpa: result.cumulativeGpa,
       totalUnits: result.totalUnits,
       totalGradePoints: result.totalGradePoints,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     });
   } catch (err) {
     if (err instanceof CumulativeError) return res.status(400).json({ error: err.message });
@@ -264,10 +277,10 @@ router.delete('/cgpa/:id', requireAuth, async (req, res) => {
     const id = parseId(req.params.id);
     if (!id) return res.status(404).json({ error: 'CGPA record not found' });
 
-    const [result] = await pool.query(
-      'DELETE FROM cgpa_records WHERE id = ? AND user_id = ?',
-      [id, req.session.userId]
-    );
+    const [result] = await pool.query('DELETE FROM cgpa_records WHERE id = ? AND user_id = ?', [
+      id,
+      req.session.userId,
+    ]);
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'CGPA record not found' });
     }
@@ -292,7 +305,10 @@ router.put('/:id', requireAuth, async (req, res) => {
     // Older clients send no scale; an edit then keeps the term's own scale rather than the user's default
     let scaleId = req.body.scaleId;
     if (scaleId == null || scaleId === '') {
-      const [existing] = await pool.query('SELECT scale_id AS scaleId FROM gpa_records WHERE id = ? AND user_id = ?', [id, req.session.userId]);
+      const [existing] = await pool.query('SELECT scale_id AS scaleId FROM gpa_records WHERE id = ? AND user_id = ?', [
+        id,
+        req.session.userId,
+      ]);
       if (!existing.length) return res.status(404).json({ error: 'Term not found' });
       scaleId = existing[0].scaleId;
     }
@@ -300,7 +316,9 @@ router.put('/:id', requireAuth, async (req, res) => {
     if (!scale) return res.status(400).json({ error: 'Unknown grading system' });
     const courses = sanitizeCourses(req.body.courses, scale);
     if (!courses) {
-      return res.status(400).json({ error: `Each course needs a name, valid units and a grade on the ${scale.name} scale` });
+      return res
+        .status(400)
+        .json({ error: `Each course needs a name, valid units and a grade on the ${scale.name} scale` });
     }
 
     const gpa = computeGpa(courses, scale);
@@ -318,7 +336,7 @@ router.put('/:id', requireAuth, async (req, res) => {
       scaleId: scale.id,
       gpa,
       courses,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     });
   } catch (err) {
     console.error(err);
@@ -332,10 +350,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
     const id = parseId(req.params.id);
     if (!id) return res.status(404).json({ error: 'Term not found' });
 
-    const [result] = await pool.query(
-      'DELETE FROM gpa_records WHERE id = ? AND user_id = ?',
-      [id, req.session.userId]
-    );
+    const [result] = await pool.query('DELETE FROM gpa_records WHERE id = ? AND user_id = ?', [id, req.session.userId]);
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Term not found' });
     }

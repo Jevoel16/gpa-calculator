@@ -7,7 +7,8 @@ function showError() {
   if (error === 'domain') {
     msg.textContent = 'This account is not allowed. Please sign in with your school account (' + domainText + ').';
   } else if (error === 'email') {
-    msg.textContent = 'Your GitHub account has no verified primary email. Verify one in your GitHub email settings and try again.';
+    msg.textContent =
+      'Your GitHub account has no verified primary email. Verify one in your GitHub email settings and try again.';
   } else if (error === 'oauth') {
     msg.textContent = 'Sign-in failed. Please try again.';
   }
@@ -45,7 +46,7 @@ loginForm.addEventListener('submit', async e => {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identifier, password })
+      body: JSON.stringify({ identifier, password }),
     });
     if (res.ok) return window.location.replace('/dashboard');
     const data = await res.json().catch(() => ({}));
@@ -62,7 +63,9 @@ loginForm.addEventListener('submit', async e => {
 // Already signed in: skip the login page
 fetch('/api/auth/status')
   .then(res => res.json())
-  .then(({ signedIn }) => { if (signedIn && !new URLSearchParams(window.location.search).has('error')) window.location.replace('/dashboard'); })
+  .then(({ signedIn }) => {
+    if (signedIn && !new URLSearchParams(window.location.search).has('error')) window.location.replace('/dashboard');
+  })
   .catch(() => {});
 
 fetch('/api/auth/config')

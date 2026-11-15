@@ -41,7 +41,7 @@ form.addEventListener('submit', async e => {
     const res = await fetch('/api/auth/setup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ username, password }),
     });
     if (res.ok) return window.location.replace('/dashboard');
     if (res.status === 401) return window.location.replace('/login');
@@ -55,6 +55,8 @@ form.addEventListener('submit', async e => {
 });
 
 document.getElementById('cancelBtn').addEventListener('click', async () => {
-  try { await fetch('/api/auth/logout', { method: 'POST' }); } catch {}
+  try {
+    await fetch('/api/auth/logout', { method: 'POST' });
+  } catch {}
   window.location.replace('/login');
 });

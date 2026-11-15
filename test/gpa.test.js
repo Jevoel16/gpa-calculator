@@ -7,7 +7,7 @@ const { sanitizeCourses, computeGpa, sumCourses } = require('../routes/gpa').hel
 test('computes a units-weighted GPA', () => {
   const gpa = computeGpa([
     { name: 'Calculus', units: 5, grade: '1.75' },
-    { name: 'Programming', units: 3, grade: '1.25' }
+    { name: 'Programming', units: 3, grade: '1.25' },
   ]);
   // (5 * 1.75 + 3 * 1.25) / 8
   assert.equal(gpa, 1.5625);
@@ -16,7 +16,7 @@ test('computes a units-weighted GPA', () => {
 test('P credits units without affecting the GPA', () => {
   const courses = [
     { name: 'Math', units: 3, grade: '2.00' },
-    { name: 'PE', units: 2, grade: 'P' }
+    { name: 'PE', units: 2, grade: 'P' },
   ];
   assert.equal(computeGpa(courses), 2);
   assert.deepEqual(sumCourses(courses), { gradePointsTotal: 6, units: 3, creditedUnits: 5 });
@@ -26,14 +26,20 @@ test('INC and DROP are neither counted nor credited', () => {
   const courses = [
     { name: 'Math', units: 3, grade: '1.00' },
     { name: 'Ethics', units: 3, grade: 'INC' },
-    { name: 'Art', units: 3, grade: 'drop' }
+    { name: 'Art', units: 3, grade: 'drop' },
   ];
   assert.equal(computeGpa(courses), 1);
   assert.equal(sumCourses(courses).creditedUnits, 3);
 });
 
 test('a failing grade counts as 5.00', () => {
-  assert.equal(computeGpa([{ name: 'A', units: 3, grade: '1.00' }, { name: 'B', units: 3, grade: '5.00' }]), 3);
+  assert.equal(
+    computeGpa([
+      { name: 'A', units: 3, grade: '1.00' },
+      { name: 'B', units: 3, grade: '5.00' },
+    ]),
+    3
+  );
 });
 
 test('returns 0 when nothing counts toward the GPA', () => {
@@ -42,17 +48,15 @@ test('returns 0 when nothing counts toward the GPA', () => {
 });
 
 test('sanitizeCourses trims names and keeps valid courses', () => {
-  assert.deepEqual(
-    sanitizeCourses([{ name: '  Physics  ', units: '4', grade: ' 2.50 ' }]),
-    [{ name: 'Physics', units: 4, grade: '2.50' }]
-  );
+  assert.deepEqual(sanitizeCourses([{ name: '  Physics  ', units: '4', grade: ' 2.50 ' }]), [
+    { name: 'Physics', units: 4, grade: '2.50' },
+  ]);
 });
 
 test('sanitizeCourses keeps an optional course code', () => {
-  assert.deepEqual(
-    sanitizeCourses([{ code: ' CCC100 ', name: 'Computing', units: 3, grade: '1.00' }]),
-    [{ name: 'Computing', units: 3, grade: '1.00', code: 'CCC100' }]
-  );
+  assert.deepEqual(sanitizeCourses([{ code: ' CCC100 ', name: 'Computing', units: 3, grade: '1.00' }]), [
+    { name: 'Computing', units: 3, grade: '1.00', code: 'CCC100' },
+  ]);
   assert.deepEqual(
     sanitizeCourses([{ code: '  ', name: 'Computing', units: 3, grade: '1.00' }]),
     [{ name: 'Computing', units: 3, grade: '1.00' }],

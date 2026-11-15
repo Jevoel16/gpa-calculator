@@ -12,7 +12,7 @@ const SAMPLE = [
   'GEC104\tMathematics in the Modern World\t1.00 ',
   'MAT104\tDiscrete Structure\t1.50 ',
   'NST001\tNational Service Training Program 1\t1.00 ',
-  'PED011\tMovement Competency Training or MCT\t1.00'
+  'PED011\tMovement Competency Training or MCT\t1.00',
 ].join('\r\n');
 
 test('reads the term name and every course from a MyIIT copy', () => {
@@ -22,14 +22,19 @@ test('reads the term name and every course from a MyIIT copy', () => {
   assert.equal(moreTerms, false);
   assert.deepEqual(courses[0], { code: 'CCC100', name: 'Fundamentals of Computing', units: '', grade: '1.00' });
   assert.deepEqual(courses[1], { code: 'CCC101', name: 'Computer Programming 1', units: '', grade: '1.25' });
-  assert.deepEqual(courses[7], { code: 'PED011', name: 'Movement Competency Training or MCT', units: '', grade: '1.00' });
+  assert.deepEqual(courses[7], {
+    code: 'PED011',
+    name: 'Movement Competency Training or MCT',
+    units: '',
+    grade: '1.00',
+  });
 });
 
 test('handles space-separated copies without mistaking a trailing number for units', () => {
   const { courses } = parseMyiitGrades('CCC101  Computer Programming 1  1.25\nGEC101 Understanding the Self 1');
   assert.deepEqual(courses, [
     { code: 'CCC101', name: 'Computer Programming 1', units: '', grade: '1.25' },
-    { code: 'GEC101', name: 'Understanding the Self', units: '', grade: '1.00' }
+    { code: 'GEC101', name: 'Understanding the Self', units: '', grade: '1.00' },
   ]);
 });
 

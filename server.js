@@ -10,8 +10,10 @@ const { SESSION_SECRET, NODE_ENV, PORT = 3000 } = process.env;
 
 const requiredEnv = [
   'SESSION_SECRET',
-  'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET',
-  'GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET'
+  'GOOGLE_CLIENT_ID',
+  'GOOGLE_CLIENT_SECRET',
+  'GITHUB_CLIENT_ID',
+  'GITHUB_CLIENT_SECRET',
 ];
 const missingEnv = requiredEnv.filter(k => !process.env[k]);
 if (missingEnv.length) {
@@ -42,8 +44,8 @@ app.use((req, res, next) => {
       "connect-src 'self'",
       "frame-ancestors 'none'",
       "base-uri 'self'",
-      "form-action 'self'"
-    ].join('; ')
+      "form-action 'self'",
+    ].join('; '),
   });
   if (isProduction) res.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains');
   next();
@@ -63,24 +65,25 @@ app.use('/api', (req, res, next) => {
 });
 
 // Reuse the app's pool on serverless; tests have no database, so they keep sessions in memory
-const sessionStore = NODE_ENV === 'test'
-  ? new session.MemoryStore()
-  : new MySQLStore({ createDatabaseTable: true }, pool);
+const sessionStore =
+  NODE_ENV === 'test' ? new session.MemoryStore() : new MySQLStore({ createDatabaseTable: true }, pool);
 
-app.use(session({
-  name: 'gpa.sid',
-  secret: SESSION_SECRET,
-  store: sessionStore,
-  resave: false,
-  saveUninitialized: false,
-  proxy: isProduction,
-  cookie: {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: isProduction,
-    maxAge: 1000 * 60 * 60 * 24 * 7
-  }
-}));
+app.use(
+  session({
+    name: 'gpa.sid',
+    secret: SESSION_SECRET,
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false,
+    proxy: isProduction,
+    cookie: {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: isProduction,
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    },
+  })
+);
 
 // Blocks cross-site form posts and fetches against state-changing endpoints (defence in depth on top of sameSite cookies)
 app.use('/api', (req, res, next) => {
@@ -121,26 +124,32 @@ app.get('/api/health', async (req, res) => {
 
 // Built from APP_URL so the absolute URLs match whichever domain the app is deployed on
 app.get('/robots.txt', (req, res) => {
-  res.type('txt').send([
-    'User-agent: *',
-    'Allow: /$',
-    'Allow: /login',
-    'Disallow: /dashboard',
-    'Disallow: /setup',
-    'Disallow: /api/',
-    '',
-    `Sitemap: ${APP_URL}/sitemap.xml`,
-    ''
-  ].join('\n'));
+  res
+    .type('txt')
+    .send(
+      [
+        'User-agent: *',
+        'Allow: /$',
+        'Allow: /login',
+        'Disallow: /dashboard',
+        'Disallow: /setup',
+        'Disallow: /api/',
+        '',
+        `Sitemap: ${APP_URL}/sitemap.xml`,
+        '',
+      ].join('\n')
+    );
 });
 
 app.get('/sitemap.xml', (req, res) => {
-  res.type('application/xml').send(
-    '<?xml version="1.0" encoding="UTF-8"?>\n' +
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-    `  <url><loc>${APP_URL}/login</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>\n` +
-    '</urlset>\n'
-  );
+  res
+    .type('application/xml')
+    .send(
+      '<?xml version="1.0" encoding="UTF-8"?>\n' +
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+        `  <url><loc>${APP_URL}/login</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>\n` +
+        '</urlset>\n'
+    );
 });
 
 app.use('/api/auth', require('./routes/auth'));
