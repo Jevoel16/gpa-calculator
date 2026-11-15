@@ -101,7 +101,10 @@ function startSession(req, values, cb, maxAge) {
 }
 
 // Visitors who aren't signed in get a short session for the OAuth round trip, so abandoned attempts expire quickly
-function beginOAuth(req, res, authUrl) {
+async function beginOAuth(req, res, authUrl) {
+  const key = `oauth-ip|${req.ip}`;
+  if ((await rateLimit.getCount(key)) >= MAX_OAUTH_STARTS_PER_IP) return res.redirect('/login?error=busy');
+  await rateLimit.recordFailure(key, LOGIN_WINDOW_MS);
   if (!req.session.userId) req.session.cookie.maxAge = OAUTH_SESSION_MS;
   req.session.save(err => {
     if (err) {
@@ -138,10 +141,14 @@ function isValidPassword(value) {
   return typeof value === 'string' && value.length >= MIN_PASSWORD && value.length <= MAX_PASSWORD;
 }
 
-// Limit per account guess and a wider one per IP, so one address can't spray many accounts
+// Limits per account guess from one IP, per account from any IP (spread-out guessing) and per IP (spraying many accounts)
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const MAX_FAILED_PER_ACCOUNT = 10;
+const MAX_FAILED_PER_ACCOUNT_ANY_IP = 30;
 const MAX_FAILED_PER_IP = 50;
+// Each OAuth start writes a session row, and each "username taken" answer reveals an account
+const MAX_OAUTH_STARTS_PER_IP = 30;
+const MAX_TAKEN_PER_SETUP = 20;
 const TOO_MANY = 'Too many failed attempts. Please wait a few minutes and try again.';
 
 // OAuth hand-offs and unfinished setups only need a short-lived session
@@ -156,6 +163,7 @@ async function isThrottled(keys) {
 function loginLimits(req, identifier) {
   return [
     { key: `login|${req.ip}|${identifier}`, max: MAX_FAILED_PER_ACCOUNT },
+    { key: `login-account|${identifier}`, max: MAX_FAILED_PER_ACCOUNT_ANY_IP },
     { key: `login-ip|${req.ip}`, max: MAX_FAILED_PER_IP },
   ];
 }
@@ -176,7 +184,7 @@ router.get('/google', (req, res) => {
     prompt: 'select_account',
   });
 
-  beginOAuth(req, res, url);
+  return beginOAuth(req, res, url);
 });
 
 // Google redirects back here
@@ -221,7 +229,7 @@ router.get('/github', (req, res) => {
     state,
   });
 
-  beginOAuth(req, res, `https://github.com/login/oauth/authorize?${params}`);
+  return beginOAuth(req, res, `https://github.com/login/oauth/authorize?${params}`);
 });
 
 // GitHub redirects back here
@@ -306,8 +314,8 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid username/email or password' });
     }
 
-    // Only the per-account count resets; the per-IP count keeps limiting spraying from that address
-    await rateLimit.clear(limits[0].key);
+    // Only the account counts reset; the per-IP count keeps limiting spraying from that address
+    await Promise.all([rateLimit.clear(limits[0].key), rateLimit.clear(limits[1].key)]);
     startSession(req, { userId: user.id }, err => {
       if (err) {
         console.error(err);
@@ -350,8 +358,18 @@ router.post('/setup', async (req, res) => {
       return res.status(400).json({ error: `Password must be ${MIN_PASSWORD}–${MAX_PASSWORD} characters` });
     }
 
+    const limits = [
+      { key: `setup|${userId}`, max: MAX_TAKEN_PER_SETUP },
+      { key: `setup-ip|${req.ip}`, max: MAX_FAILED_PER_IP },
+    ];
+    if (await isThrottled(limits)) return res.status(429).json({ error: TOO_MANY });
+    const usernameTaken = async () => {
+      await Promise.all(limits.map(l => rateLimit.recordFailure(l.key, LOGIN_WINDOW_MS)));
+      return res.status(409).json({ error: 'That username is taken' });
+    };
+
     const [taken] = await pool.query('SELECT id FROM users WHERE username = ? AND id <> ?', [username, userId]);
-    if (taken.length) return res.status(409).json({ error: 'That username is taken' });
+    if (taken.length) return usernameTaken();
 
     try {
       await pool.query('UPDATE users SET username = ?, password_hash = ? WHERE id = ?', [
@@ -360,7 +378,7 @@ router.post('/setup', async (req, res) => {
         userId,
       ]);
     } catch (err) {
-      if (err.code === 'ER_DUP_ENTRY') return res.status(409).json({ error: 'That username is taken' });
+      if (err.code === 'ER_DUP_ENTRY') return usernameTaken();
       throw err;
     }
 

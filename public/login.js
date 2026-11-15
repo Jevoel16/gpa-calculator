@@ -11,6 +11,8 @@ function showError() {
       'Your GitHub account has no verified primary email. Verify one in your GitHub email settings and try again.';
   } else if (error === 'oauth') {
     msg.textContent = 'Sign-in failed. Please try again.';
+  } else if (error === 'busy') {
+    msg.textContent = 'Too many sign-in attempts. Please wait a few minutes and try again.';
   }
 }
 
