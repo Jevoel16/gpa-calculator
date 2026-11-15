@@ -29,6 +29,16 @@ npm run db:setup
 
 This creates (or upgrades) the tables in the database from `.env`. You can also run `db/schema.sql` yourself in the MySQL client.
 
+Give the app its own MySQL user with only the rights it needs, and run `db:setup` with an admin user:
+
+```sql
+CREATE USER 'gpa_app'@'%' IDENTIFIED BY '<long random password>';
+-- CREATE is needed because the session store and rate limiter run CREATE TABLE IF NOT EXISTS on start
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE ON gpa_app.* TO 'gpa_app'@'%';
+```
+
+Put that user in `DB_USER`/`DB_PASSWORD` (or `DATABASE_URL`) for the running app. Schema upgrades (`ALTER`, `INDEX`) need an admin user, so use one only while running `npm run db:setup`.
+
 ## 3. Create Google OAuth credentials
 
 1. Open the [Google Cloud Console](https://console.cloud.google.com/), create a project and go to **APIs & Services → OAuth consent screen**.
