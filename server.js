@@ -5,6 +5,7 @@ const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const pool = require('./db/db');
 const APP_URL = require('./lib/app-url');
+const sameOrigin = require('./middleware/same-origin');
 
 const { SESSION_SECRET, NODE_ENV, PORT = 3000 } = process.env;
 
@@ -85,15 +86,7 @@ app.use(
   })
 );
 
-// Blocks cross-site form posts and fetches against state-changing endpoints (defence in depth on top of sameSite cookies)
-app.use('/api', (req, res, next) => {
-  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
-  const origin = req.get('origin');
-  if (origin && origin !== `${req.protocol}://${req.get('host')}`) {
-    return res.status(403).json({ error: 'Cross-origin request blocked' });
-  }
-  next();
-});
+app.use('/api', sameOrigin);
 
 // Old .html links redirect to clean URLs; the strict pattern blocks //evil.com.html open redirects
 app.use((req, res, next) => {
