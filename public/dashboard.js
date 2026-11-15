@@ -142,6 +142,18 @@ async function api(path, opts = {}) {
   return json;
 }
 
+// List endpoints are paginated; the views need every row, so follow nextOffset to the end
+async function apiList(path) {
+  const items = [];
+  let offset = 0;
+  while (offset !== null) {
+    const page = await api(`${path}?limit=100&offset=${offset}`);
+    items.push(...page.items);
+    offset = Number.isInteger(page.nextOffset) ? page.nextOffset : null;
+  }
+  return items;
+}
+
 async function loadMe() {
   const me = await api('/api/auth/me', { method: 'GET' });
   const initial = (me.name || '?').trim().charAt(0).toUpperCase();
@@ -444,7 +456,7 @@ function markMissingUnits(rows) {
 }
 
 async function loadHistory() {
-  allHistory = await api('/api/gpa/history');
+  allHistory = await apiList('/api/gpa/history');
   renderHistory();
   updateCumulativeTermsList();
 }
@@ -680,7 +692,7 @@ async function calculateCumulativeGpaServer(termIds, additionalSubjects = []) {
 }
 
 async function loadCgpaRecords() {
-  const records = await api('/api/gpa/cgpa');
+  const records = await apiList('/api/gpa/cgpa');
   const container = $('cgpaRecordsList');
   container.removeAttribute('aria-busy');
   $('cgpaTab').textContent = records.length ? `Saved CGPA (${records.length})` : 'Saved CGPA';

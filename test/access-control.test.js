@@ -69,7 +69,7 @@ const as = (user, method, path, body) =>
   });
 
 test('the owner sees their own records (the fake database works)', async () => {
-  const history = await (await as(BOB, 'GET', '/api/gpa/history')).json();
+  const { items: history } = await (await as(BOB, 'GET', '/api/gpa/history')).json();
   assert.deepEqual(
     history.map(t => t.id),
     [5]
@@ -77,8 +77,8 @@ test('the owner sees their own records (the fake database works)', async () => {
 });
 
 test("another user's history and CGPA list don't include them", async () => {
-  assert.deepEqual(await (await as(ALICE, 'GET', '/api/gpa/history')).json(), []);
-  assert.deepEqual(await (await as(ALICE, 'GET', '/api/gpa/cgpa')).json(), []);
+  assert.deepEqual(await (await as(ALICE, 'GET', '/api/gpa/history')).json(), { items: [], nextOffset: null });
+  assert.deepEqual(await (await as(ALICE, 'GET', '/api/gpa/cgpa')).json(), { items: [], nextOffset: null });
 });
 
 test("another user's term can't be edited or deleted", async () => {

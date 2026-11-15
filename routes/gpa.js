@@ -1,6 +1,7 @@
 const express = require('express');
 const pool = require('../db/db');
 const logError = require('../lib/log-error');
+const { readPage, toPage } = require('../lib/page');
 const requireAuth = require('../middleware/auth');
 const scales = require('../public/grading-scales');
 const { resolveScale, scaleForRequest } = require('../lib/scales');
@@ -159,21 +160,24 @@ router.post('/save', requireAuth, async (req, res) => {
 // Get all terms for a user
 router.get('/history', requireAuth, async (req, res) => {
   try {
+    const page = readPage(req.query);
     const [rows] = await pool.query(
-      'SELECT id, term_name AS termName, courses_json AS coursesJson, gpa, scale_id AS scaleId, created_at AS createdAt FROM gpa_records WHERE user_id = ? ORDER BY created_at DESC',
-      [req.session.userId]
+      'SELECT id, term_name AS termName, courses_json AS coursesJson, gpa, scale_id AS scaleId, created_at AS createdAt FROM gpa_records WHERE user_id = ? ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?',
+      [req.session.userId, page.limit + 1, page.offset]
     );
 
-    res.json(
-      rows.map(r => ({
+    const { items, nextOffset } = toPage(rows, page);
+    res.json({
+      items: items.map(r => ({
         id: r.id,
         termName: r.termName,
         scaleId: r.scaleId,
         gpa: Number(r.gpa),
         courses: parseCourses(r.coursesJson),
         createdAt: r.createdAt,
-      }))
-    );
+      })),
+      nextOffset,
+    });
   } catch (err) {
     logError(req, err);
     res.status(500).json({ error: 'Failed to retrieve history' });
@@ -203,12 +207,14 @@ router.post('/calculate-cumulative', requireAuth, async (req, res) => {
 // List saved cumulative GPA records
 router.get('/cgpa', requireAuth, async (req, res) => {
   try {
+    const page = readPage(req.query);
     const [rows] = await pool.query(
-      'SELECT id, record_name AS recordName, cgpa_data AS cgpaData, cgpa, scale_id AS scaleId, created_at AS createdAt FROM cgpa_records WHERE user_id = ? ORDER BY created_at DESC',
-      [req.session.userId]
+      'SELECT id, record_name AS recordName, cgpa_data AS cgpaData, cgpa, scale_id AS scaleId, created_at AS createdAt FROM cgpa_records WHERE user_id = ? ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?',
+      [req.session.userId, page.limit + 1, page.offset]
     );
-    res.json(
-      rows.map(r => {
+    const { items, nextOffset } = toPage(rows, page);
+    res.json({
+      items: items.map(r => {
         let data = {};
         try {
           data = typeof r.cgpaData === 'string' ? JSON.parse(r.cgpaData) : r.cgpaData || {};
@@ -223,8 +229,9 @@ router.get('/cgpa', requireAuth, async (req, res) => {
           subjectCount: Array.isArray(data.additionalSubjectsIncluded) ? data.additionalSubjectsIncluded.length : 0,
           createdAt: r.createdAt,
         };
-      })
-    );
+      }),
+      nextOffset,
+    });
   } catch (err) {
     logError(req, err);
     res.status(500).json({ error: 'Failed to retrieve CGPA records' });
