@@ -73,6 +73,34 @@
   --ring: 0 0 0 4px rgba(129, 140, 248, 0.22);
 }
 
+/* System theme: no data-theme set, so the device decides */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --bg: #0b0d17;
+    --surface: #131625;
+    --surface-2: #181c2e;
+    --surface-3: #1f2438;
+    --text: #e6e8f2;
+    --text-muted: #9097b1;
+    --border: #262b42;
+    --border-strong: #343a56;
+    --primary: #818cf8;
+    --primary-hover: #9aa3fb;
+    --primary-soft: rgba(129, 140, 248, 0.14);
+    --primary-text: #0b0d17;
+    --success: #34d399;
+    --success-soft: rgba(52, 211, 153, 0.12);
+    --danger: #f87171;
+    --danger-soft: rgba(248, 113, 113, 0.12);
+    --warning: #fbbf24;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25);
+    --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.45);
+    --ring: 0 0 0 4px rgba(129, 140, 248, 0.22);
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -279,6 +307,57 @@ input[aria-invalid='true'] {
 }
 .btn-icon.btn-sm {
   width: 34px;
+}
+
+.theme-picker {
+  display: inline-flex;
+  flex: none;
+  width: 122px;
+  height: 42px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.theme-picker button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--radius-sm) - 1px);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.theme-picker button:hover {
+  color: var(--text);
+}
+.theme-picker button[aria-pressed='true'] {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.theme-picker svg {
+  width: 18px;
+  height: 18px;
+}
+
+.site-footer {
+  flex: none;
+  padding: 0 24px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+}
+.site-footer p {
+  margin: 0;
+  text-wrap: pretty;
+}
+.site-footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--text);
 }
 .btn-block {
   width: 100%;
@@ -1491,7 +1570,9 @@ input[aria-invalid='true'] {
   }
   .app-main {
     padding-top: 16px;
-    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+  .app-body .site-footer {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
   }
   .app-nav {
     position: fixed;
@@ -1615,5 +1696,12 @@ input[aria-invalid='true'] {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* The theme picker needs the room; the logo mark stays */
+@media (max-width: 440px) {
+  .brand-name {
+    display: none;
   }
 }
