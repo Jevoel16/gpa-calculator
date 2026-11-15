@@ -76,6 +76,8 @@ app.use(
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
+    // Each request pushes the expiry forward, so maxAge is an idle timeout
+    rolling: true,
     proxy: isProduction,
     cookie: {
       httpOnly: true,

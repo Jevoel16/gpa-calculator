@@ -445,11 +445,11 @@ router.post('/password', async (req, res) => {
 
     await rateLimit.clear(limit.key);
     await pool.query('UPDATE users SET password_hash = ? WHERE id = ?', [await hashPassword(newPassword), userId]);
-    // express-mysql-session keeps each session as JSON text, so other sessions of this account can be found by userId
-    await pool.query("DELETE FROM sessions WHERE session_id <> ? AND JSON_EXTRACT(data, '$.userId') = ?", [
-      req.sessionID,
-      userId,
-    ]);
+    // express-mysql-session keeps each session as JSON text; this ends every other signed-in or mid-setup session
+    await pool.query(
+      "DELETE FROM sessions WHERE session_id <> ? AND (JSON_EXTRACT(data, '$.userId') = ? OR JSON_EXTRACT(data, '$.pendingUserId') = ?)",
+      [req.sessionID, userId, userId]
+    );
 
     startSession(req, { userId }, err => {
       if (err) {
