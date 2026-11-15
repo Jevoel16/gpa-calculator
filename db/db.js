@@ -34,6 +34,7 @@ const poolOptions = {
   enableKeepAlive: true,
   maxIdle: 3,
   idleTimeout: 60000,
+  connectTimeout: 10000,
   ssl: sslOptions(),
 };
 
@@ -47,5 +48,13 @@ const pool = DATABASE_URL
       database: DB_NAME,
       ...poolOptions,
     });
+
+// A runaway SELECT is stopped after 10 s instead of holding a connection (MySQL and TiDB both honour this)
+const QUERY_TIMEOUT_MS = 10000;
+pool.on('connection', conn => {
+  conn.query(`SET SESSION max_execution_time = ${QUERY_TIMEOUT_MS}`, err => {
+    if (err) console.error('db: could not set the query timeout', err.code);
+  });
+});
 
 module.exports = pool;

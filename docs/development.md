@@ -5,7 +5,7 @@
 ```
 gpa-calculator/
 ├── .github/workflows/
-│   └── ci.yml             # Runs lint, format check, tests and npm audit on the .nvmrc Node version
+│   └── ci.yml             # Lint, format check, tests and npm audit on the .nvmrc Node version, plus a gitleaks secret scan
 ├── db/
 │   ├── db.js              # MySQL connection pool
 │   └── schema.sql         # Database schema
@@ -55,7 +55,7 @@ gpa-calculator/
 npm test
 ```
 
-The tests use Node's built-in test runner and need **no database** (they point at an address that refuses connections and keep sessions in memory). GitHub Actions ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)) runs them, plus `npm run lint`, `npm run format:check` and `npm audit`, on the Node version in `.nvmrc` for every push and pull request to `main`; a newer push cancels the older run.
+The tests use Node's built-in test runner and need **no database** (they point at an address that refuses connections and keep sessions in memory). GitHub Actions ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)) runs them, plus `npm run lint`, `npm run format:check`, `npm audit` and a gitleaks scan of the full history, on the Node version in `.nvmrc` for every push and pull request to `main`; a newer push cancels the older run.
 
 | File | Covers |
 | --- | --- |
