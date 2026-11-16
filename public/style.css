@@ -1760,3 +1760,31 @@ input[aria-invalid='true'] {
     display: none;
   }
 }
+
+/* Squircle corners where the browser supports corner-shape; others keep the plain rounded ones */
+@supports (corner-shape: squircle) {
+  input,
+  select,
+  .btn,
+  .google-btn,
+  .skip-link,
+  .theme-picker,
+  .theme-picker button,
+  .brand-mark,
+  .alert,
+  .tabs,
+  .tab,
+  .card,
+  .stat,
+  .gpa-hero,
+  .term-pick,
+  .segmented,
+  .seg,
+  .empty-state .icon,
+  .skeleton,
+  .editing-banner,
+  .toast,
+  .dialog {
+    corner-shape: squircle;
+  }
+}
