@@ -1332,6 +1332,58 @@ input[aria-invalid='true'] {
     animation: skeleton-pulse 1.4s ease-in-out infinite;
   }
 }
+/* Three pixels that light up in turn while a list loads */
+.skeleton-pick,
+.skeleton-row,
+.skeleton-card {
+  position: relative;
+}
+.pixel-loader {
+  --pixel-off: color-mix(in srgb, var(--primary) 25%, transparent);
+  position: absolute;
+  right: 48px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  background: var(--primary);
+  box-shadow:
+    12px 0 var(--pixel-off),
+    24px 0 var(--pixel-off);
+  animation: pixel-step 0.9s steps(1) infinite;
+}
+.skeleton-card .pixel-loader {
+  top: auto;
+  bottom: 24px;
+  left: 20px;
+  right: auto;
+}
+/* Slower, not stopped, so a reduced-motion user still sees it is busy */
+@media (prefers-reduced-motion: reduce) {
+  .pixel-loader {
+    animation-duration: 2.7s;
+  }
+}
+@keyframes pixel-step {
+  0% {
+    background: var(--primary);
+    box-shadow:
+      12px 0 var(--pixel-off),
+      24px 0 var(--pixel-off);
+  }
+  33% {
+    background: var(--pixel-off);
+    box-shadow:
+      12px 0 var(--primary),
+      24px 0 var(--pixel-off);
+  }
+  66% {
+    background: var(--pixel-off);
+    box-shadow:
+      12px 0 var(--pixel-off),
+      24px 0 var(--primary);
+  }
+}
 @keyframes skeleton-pulse {
   50% {
     opacity: 0.5;
