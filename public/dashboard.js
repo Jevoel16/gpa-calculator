@@ -82,6 +82,12 @@ function gradeChipClass(gpa, scale = termScale) {
   return tone ? `chip chip-${tone}` : 'chip';
 }
 
+// The grade-band accent: a GPA takes the colour of its band, next to the standing in words
+function toneClass(gpa, scale = termScale) {
+  const tone = Scales.tone(scale, gpa);
+  return tone ? ` tone-${tone}` : '';
+}
+
 function standing(gpa, scale = termScale) {
   return Scales.standing(scale, gpa);
 }
@@ -493,7 +499,7 @@ function renderHistory() {
         </div>
         <span class="${gradeChipClass(r.gpa, scale)}">${escapeHtml(standing(r.gpa, scale) || 'No GPA')}</span>
       </div>
-      <div class="gpa-pill">${formatGpa(r.gpa, scale)}</div>
+      <div class="gpa-pill${toneClass(r.gpa, scale)}">${formatGpa(r.gpa, scale)}</div>
       <div class="meta">
         <span class="chip">${r.courses.length} course${r.courses.length === 1 ? '' : 's'}</span>
         <span class="chip">${units} units</span>
@@ -705,7 +711,7 @@ async function loadCgpaRecords() {
       r => `
     <tr data-id="${r.id}">
       <td><strong>${escapeHtml(r.recordName)}</strong><br/><span class="note-sm">${escapeHtml(new Date(r.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }))} · ${r.totalUnits} units</span></td>
-      <td class="num">${formatGpa(r.cumulativeGpa, scaleOf(r))}</td>
+      <td class="num${toneClass(r.cumulativeGpa, scaleOf(r))}">${formatGpa(r.cumulativeGpa, scaleOf(r))}</td>
       <td><button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Delete CGPA record" title="Delete">${icons.trash}</button></td>
     </tr>`
     )

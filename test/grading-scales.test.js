@@ -41,6 +41,9 @@ test('standings and tones follow the scale direction', () => {
   assert.equal(Scales.standing(msu, 0), '');
   assert.equal(Scales.tone(msu, 1.75), 'success');
   assert.equal(Scales.tone(msu, 5), 'danger');
+  assert.equal(Scales.tone(msu, 2.0), 'primary');
+  assert.equal(Scales.tone(msu, 2.75), 'warning');
+  assert.equal(Scales.tone(msu, 3.0), 'warning');
   assert.equal(Scales.formatGpa(msu, 1.5), '1.50000');
 });
 

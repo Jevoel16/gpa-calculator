@@ -1217,6 +1217,18 @@ input[aria-invalid='true'] {
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
+.tone-success {
+  color: var(--success);
+}
+.tone-primary {
+  color: var(--primary);
+}
+.tone-warning {
+  color: var(--warning);
+}
+.tone-danger {
+  color: var(--danger);
+}
 .term-card .meta {
   display: flex;
   gap: 8px;
