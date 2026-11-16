@@ -363,6 +363,20 @@ input[aria-invalid='true'] {
   min-height: 44px;
   color: var(--text);
 }
+.site-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 20px;
+  font-size: 15px;
+}
+.site-footer nav a {
+  text-decoration: none;
+}
+.site-footer nav a:hover,
+.site-footer nav a[aria-current='page'] {
+  text-decoration: underline;
+}
 .btn-block {
   width: 100%;
 }
@@ -543,6 +557,39 @@ input[aria-invalid='true'] {
 .notfound-top .brand {
   color: var(--text);
   text-decoration: none;
+}
+.doc-page {
+  min-height: 100vh;
+  padding: 24px 32px;
+}
+.doc {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 40px 0 56px;
+}
+.doc h1 {
+  font-size: clamp(30px, 5vw, 40px);
+  letter-spacing: -0.02em;
+  margin: 0 0 12px;
+  text-wrap: balance;
+}
+.doc h2 {
+  font-size: 20px;
+  margin: 36px 0 10px;
+}
+.doc p,
+.doc li {
+  text-wrap: pretty;
+}
+.doc .lead {
+  color: var(--text-muted);
+  font-size: 17px;
+}
+.doc ul {
+  padding-left: 20px;
+}
+.doc li + li {
+  margin-top: 6px;
 }
 .notfound-card {
   margin: auto;
@@ -1653,7 +1700,8 @@ input[aria-invalid='true'] {
   .auth-panel {
     padding: 16px;
   }
-  .notfound-page {
+  .notfound-page,
+  .doc-page {
     padding: 20px 16px;
   }
   .notfound-code {

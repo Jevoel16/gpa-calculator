@@ -139,7 +139,18 @@ test('robots.txt and sitemap.xml point at the app URL', async () => {
   assert.match(robots, /Sitemap: http:\/\/localhost:3000\/sitemap\.xml/);
   const sitemap = await get('/sitemap.xml');
   assert.match(sitemap.headers.get('content-type'), /xml/);
-  assert.match(await sitemap.text(), /<loc>http:\/\/localhost:3000\/login<\/loc>/);
+  const urls = await sitemap.text();
+  assert.match(urls, /<loc>http:\/\/localhost:3000\/login<\/loc>/);
+  assert.match(urls, /<loc>http:\/\/localhost:3000\/accessibility<\/loc>/);
+  assert.match(robots, /Allow: \/accessibility/);
+});
+
+test('the accessibility statement is served at a clean URL', async () => {
+  const res = await get('/accessibility');
+  assert.equal(res.status, 200);
+  const html = await res.text();
+  assert.match(html, /<h1>Accessibility<\/h1>/);
+  assert.match(html, /aria-current="page"/);
 });
 
 test('old .html links redirect without becoming an open redirect', async () => {
@@ -177,8 +188,19 @@ test('static assets and the web manifest are served', async () => {
 test('every page loads Vercel Web Analytics from the same origin', () => {
   const fs = require('node:fs');
   const path = require('node:path');
-  for (const page of ['login', 'dashboard', 'setup', '404']) {
+  for (const page of ['login', 'dashboard', 'setup', '404', 'accessibility']) {
     const html = fs.readFileSync(path.join(__dirname, '..', 'public', `${page}.html`), 'utf8');
     assert.match(html, /<script defer src="\/_vercel\/insights\/script\.js"><\/script>/, page);
+  }
+});
+
+test('every page links the accessibility statement from the footer', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  for (const page of ['login', 'dashboard', 'setup', '404', 'accessibility']) {
+    const html = fs.readFileSync(path.join(__dirname, '..', 'public', `${page}.html`), 'utf8');
+    const footer = html.slice(html.indexOf('<footer class="site-footer">'));
+    assert.match(footer, /<nav aria-label="About GPA Calculator">/, page);
+    assert.match(footer, /href="\/accessibility"/, page);
   }
 });

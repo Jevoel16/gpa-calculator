@@ -127,6 +127,7 @@ app.get('/robots.txt', (req, res) => {
         'User-agent: *',
         'Allow: /$',
         'Allow: /login',
+        'Allow: /accessibility',
         'Disallow: /dashboard',
         'Disallow: /setup',
         'Disallow: /api/',
@@ -144,6 +145,7 @@ app.get('/sitemap.xml', (req, res) => {
       '<?xml version="1.0" encoding="UTF-8"?>\n' +
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
         `  <url><loc>${APP_URL}/login</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>\n` +
+        `  <url><loc>${APP_URL}/accessibility</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>\n` +
         '</urlset>\n'
     );
 });
