@@ -956,6 +956,10 @@ input[aria-invalid='true'] {
   border-color: color-mix(in srgb, currentColor 18%, transparent);
   padding: 12px;
 }
+/* The stat boxes sit on a lighter tint, so their labels need full opacity to pass AA */
+.gpa-hero .stat .stat-label {
+  opacity: 1;
+}
 .gpa-hero .stat-value {
   font-size: 20px;
 }

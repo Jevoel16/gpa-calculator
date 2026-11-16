@@ -164,7 +164,6 @@ async function loadMe() {
   const initial = (me.name || '?').trim().charAt(0).toUpperCase();
   $('welcome').textContent = me.name;
   $('avatar').textContent = initial;
-  $('accountBtn').setAttribute('aria-label', `Account settings for ${me.name}`);
   $('settingsAvatar').textContent = initial;
   $('settingsName').textContent = me.name;
   $('settingsHandle').textContent = me.username ? `@${me.username}` : '';
