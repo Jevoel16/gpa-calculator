@@ -1277,6 +1277,30 @@ input[aria-invalid='true'] {
   padding: 48px 24px;
   color: var(--text-muted);
 }
+/* An empty, ruled transcript page stands in for the history before the first term */
+.transcript-sheet {
+  display: grid;
+  grid-template-columns: 1fr 48px 48px;
+  align-content: start;
+  gap: 0 12px;
+  width: 240px;
+  height: 128px;
+  margin: 0 auto 18px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 21px, var(--border) 21px 22px) 0 34px / 100% calc(100% - 34px)
+      no-repeat,
+    var(--surface);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--text-muted);
+}
+.transcript-sheet span + span {
+  text-align: right;
+}
 .empty-state .icon {
   display: grid;
   place-items: center;
@@ -1846,6 +1870,7 @@ input[aria-invalid='true'] {
   .seg,
   .empty-state .icon,
   .skeleton,
+  .transcript-sheet,
   .editing-banner,
   .toast,
   .dialog {

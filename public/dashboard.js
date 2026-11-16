@@ -13,7 +13,6 @@ const icons = {
   edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
   check:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
-  book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/></svg>',
   copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>',
   alert:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>',
@@ -472,9 +471,9 @@ function renderHistory() {
   if (!allHistory.length) {
     container.innerHTML = `
       <div class="card empty-state">
-        <div class="icon">${icons.book}</div>
-        <h3>No saved terms yet</h3>
-        <p>Create your first term to start building your history.</p>
+        <div class="transcript-sheet" aria-hidden="true"><span>Course</span><span>Units</span><span>Grade</span></div>
+        <h3>No terms yet</h3>
+        <p>Add your first semester to start your transcript.</p>
         <button class="btn" type="button" id="emptyNewTerm">Create a term</button>
       </div>`;
     $('emptyNewTerm').addEventListener('click', () => goTo('term'));
