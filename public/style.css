@@ -108,6 +108,10 @@ html,
 body {
   margin: 0;
 }
+/* Keeps keyboard focus from landing under the sticky header (WCAG 2.4.11) */
+html:has(.app-header) {
+  scroll-padding-top: 88px;
+}
 body {
   font-family:
     'Inter',
@@ -1570,6 +1574,9 @@ input[aria-invalid='true'] {
   }
   .app-main {
     padding-top: 16px;
+  }
+  html:has(.app-header) {
+    scroll-padding-bottom: calc(80px + env(safe-area-inset-bottom));
   }
   .app-body .site-footer {
     padding-bottom: calc(80px + env(safe-area-inset-bottom));
