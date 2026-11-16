@@ -33,6 +33,7 @@ How the app covers each item of the security checklist. Numbers match the checkl
 | 27 | Secret scanning | CI runs gitleaks over the full history. A secret that was ever committed gets rotated, not just deleted. |
 | 28 | Least privilege, minimal data | The app's MySQL user needs only `SELECT, INSERT, UPDATE, DELETE, CREATE` ([setup](setup.md#2-create-the-database)). Stored per user: name, email, username, password hash, OAuth ids and grades. |
 | 29 | This file | Linked from the README. |
+| 30 | Modern Web Guidance security guides | Checked before building sign-in or rendering user HTML. The app renders no user HTML: user text goes through `escapeHtml` or `textContent`. Passkeys are not offered yet. |
 
 API responses are `Cache-Control: no-store`, so per-user data is never stored by browsers or the CDN. Only `public/` is served statically; `.env`, sources and `node_modules` return 404. Vercel Web Analytics is cookie-free and served from the app's own domain.
 

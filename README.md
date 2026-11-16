@@ -39,7 +39,7 @@ GPA Calculator lets students enter their grades each term, see their GPA update 
 </tr>
 <tr>
 <td width="50%" align="center"><b>Cumulative GPA</b><br><a href="docs/images/cumulative.png"><img src="docs/images/cumulative.png" width="100%" alt="Cumulative view with saved terms ticked and the combined CGPA"></a></td>
-<td width="50%" align="center"><b>History</b><br><a href="docs/images/history.png"><img src="docs/images/history.png" width="100%" alt="History view with term cards and the grading scale on the left"></a></td>
+<td width="50%" align="center"><b>History</b><br><a href="docs/images/history.png"><img src="docs/images/history.png" width="100%" alt="History view with term cards, each GPA coloured by its grade band, and the grading scale on the left"></a></td>
 </tr>
 <tr>
 <td width="50%" align="center"><b>Settings</b><br><a href="docs/images/settings.png"><img src="docs/images/settings.png" width="100%" alt="Settings view with account details and the change-password form"></a></td>
@@ -60,9 +60,9 @@ GPA Calculator lets students enter their grades each term, see their GPA update 
 - Paste a semester straight from MyIIT to fill in the term and courses.
 - Cumulative GPA from any saved terms plus extra subjects, saved as named records.
 - Five grading systems, with a default per account and a choice per term ([details](docs/grading-systems.md)).
-- History of saved terms with academic standing, edit, copy and delete.
+- History of saved terms with academic standing, each GPA coloured by its grade band, plus edit, copy and delete.
 - Works on phones, follows the device theme or a fixed light or dark one, and installs to your home screen.
-- Accessible: keyboard friendly and checked against WCAG 2.2 AA.
+- Accessible: built to WCAG 2.2 AA, with Lighthouse Accessibility 100 and no axe violations on every page ([statement](public/accessibility.html), [how it is checked](docs/development.md#accessibility-checks)).
 
 ## Tech Stack
 

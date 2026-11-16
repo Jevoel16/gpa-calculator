@@ -80,8 +80,21 @@ Run these with `npm run dev` before each commit that changes the UI:
 7. **Settings:** your username and email show; a wrong current password, a mismatched confirmation and a short password are rejected; a valid change shows a success toast, the new password signs in, and another browser's session is signed out.
 8. **Phone (375 px):** the bottom tab bar reaches every section, nothing hides behind it, no horizontal scroll.
 9. **Themes:** light and dark both look right, including scrollbars and dropdowns.
-10. **Keyboard:** Tab from the top shows "Skip to content"; every control has a visible focus ring.
-11. **SEO files:** `/robots.txt`, `/sitemap.xml` and `/llms.txt` load and use your `APP_URL`.
+10. **Keyboard:** Tab from the top shows "Skip to content" on every page; every control has a visible focus ring, and a focused field is never hidden under the sticky header or the phone tab bar.
+11. **SEO files:** `/robots.txt`, `/sitemap.xml` and `/llms.txt` load, use your `APP_URL` and list `/accessibility`.
+
+## Accessibility checks
+
+The goal is WCAG 2.2 AA. With the dev server running, check every public page (`/login`, `/accessibility`, `/404`, `/setup`):
+
+```bash
+npx lighthouse http://localhost:3000/login --only-categories=accessibility --chrome-flags="--headless=new"
+npx @axe-core/cli http://localhost:3000/login --tags wcag2a,wcag2aa,wcag21a,wcag21aa,wcag22aa,best-practice
+```
+
+Public pages need Lighthouse Accessibility 100 and zero axe violations; the dashboard needs 95 or more (pass the session cookie with `--extra-headers`). Before each release, go through the main flow with the keyboard alone, then with NVDA, and update the date on the [accessibility statement](../public/accessibility.html).
+
+Last run on 17 November 2026: Lighthouse 100 on `/login`, `/accessibility`, `/404`, `/setup` and `/dashboard` (mobile and desktop), and 0 axe violations on the public pages.
 
 ## Code notes
 

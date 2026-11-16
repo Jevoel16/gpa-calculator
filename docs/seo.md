@@ -1,6 +1,6 @@
 # SEO
 
-Only the sign-in page (`/login`) is indexed; the dashboard and setup pages are private.
+Only the sign-in page (`/login`) and the accessibility statement (`/accessibility`) are indexed; the dashboard and setup pages are private.
 
 - `robots.txt` and `sitemap.xml` are built from `APP_URL`, so set it to your public domain in production.
 - The sign-in page has an absolute canonical tag, a unique title and meta description, JSON-LD, and Open Graph and Twitter share cards with a 1200×630 preview image (`public/og-image.png`).
